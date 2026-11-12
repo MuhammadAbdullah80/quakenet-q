@@ -6,13 +6,7 @@ import { NoEvent } from "@/components/NoEvent";
 import { SequenceStarter } from "@/components/SequenceStarter";
 import { SequenceViewer } from "@/components/SequenceViewer";
 import { Empty, Loading, OfflineBanner, Problem } from "@/components/States";
-import {
-  isNotFound,
-  loadActiveJobId,
-  loadSequence,
-  loadSettings,
-  resolveEvent,
-} from "@/lib/data";
+import { isNotFound, loadActiveJobId, loadSequence, loadSettings, resolveEvent } from "@/lib/data";
 import { fmt, fmtSites, fmtTime } from "@/lib/format";
 import { SEQUENCE_LIMITS } from "@/lib/limits";
 import type { PageProps } from "@/lib/page-types";
@@ -81,7 +75,11 @@ async function MonitorContent({ searchParams }: PageProps) {
       {data ? (
         <>
           <SequenceSummary sequence={data} />
-          <SequenceViewer key={`${data.event_id}-${data.steps.length}`} sequence={data} title={event.name} />
+          <SequenceViewer
+            key={`${data.event_id}-${data.steps.length}`}
+            sequence={data}
+            title={event.name}
+          />
         </>
       ) : null}
     </>
@@ -106,28 +104,7 @@ function SequenceSummary({ sequence }: { sequence: Sequence }) {
           The road check was unavailable, so the sites were not checked for access.
         </p>
       ) : null}
-      <dl className="facts">
-        <div>
-          <dt>Mode</dt>
-          <dd>{sequence.mode === "replay" ? "replay (simulated clock)" : (sequence.mode ?? "n/a")}</dd>
-        </div>
-        <div>
-          <dt>Status</dt>
-          <dd>{sequence.status}</dd>
-        </div>
-        <div>
-          <dt>Hours done</dt>
-          <dd>
-            {typeof sequence.hours_done === "number" ? fmt(sequence.hours_done, 0) : "n/a"} of{" "}
-            {typeof sequence.hours_total === "number" ? fmt(sequence.hours_total, 0) : "n/a"}
-          </dd>
-        </div>
-        <div>
-          <dt>Started, finished</dt>
-          <dd>
-            {fmtTime(sequence.started_utc)}, {fmtTime(sequence.finished_utc)}
-          </dd>
-        </div>
+      <dl className="kpis">
         <div>
           <dt>Plans made</dt>
           <dd>{sequence.plans_made ?? "n/a"}</dd>
@@ -140,11 +117,39 @@ function SequenceSummary({ sequence }: { sequence: Sequence }) {
           <dt>Sites in place now</dt>
           <dd>{sequence.current_sites ? fmtSites(sequence.current_sites) : "n/a"}</dd>
         </div>
-        <div>
-          <dt>Real aftershocks in the replayed period</dt>
-          <dd>{sequence.aftershocks.length}</dd>
-        </div>
       </dl>
+      <details className="more">
+        <summary>More detail</summary>
+        <dl className="facts">
+          <div>
+            <dt>Mode</dt>
+            <dd>
+              {sequence.mode === "replay" ? "replay (simulated clock)" : (sequence.mode ?? "n/a")}
+            </dd>
+          </div>
+          <div>
+            <dt>Status</dt>
+            <dd>{sequence.status}</dd>
+          </div>
+          <div>
+            <dt>Hours done</dt>
+            <dd>
+              {typeof sequence.hours_done === "number" ? fmt(sequence.hours_done, 0) : "n/a"} of{" "}
+              {typeof sequence.hours_total === "number" ? fmt(sequence.hours_total, 0) : "n/a"}
+            </dd>
+          </div>
+          <div>
+            <dt>Started, finished</dt>
+            <dd>
+              {fmtTime(sequence.started_utc)}, {fmtTime(sequence.finished_utc)}
+            </dd>
+          </div>
+          <div>
+            <dt>Real aftershocks in the replayed period</dt>
+            <dd>{sequence.aftershocks.length}</dd>
+          </div>
+        </dl>
+      </details>
       {sequence.settings && Object.keys(sequence.settings).length > 0 ? (
         <p className="small muted">
           Settings used:{" "}

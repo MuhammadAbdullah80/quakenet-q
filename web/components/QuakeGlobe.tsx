@@ -12,6 +12,7 @@ import { feature } from "topojson-client";
 import type { GeometryCollection, Topology } from "topojson-specification";
 import land110 from "world-atlas/land-110m.json";
 import worldQuakes from "@/data/world-quakes.json";
+import { Expand } from "@/components/Expand";
 
 // An interactive globe of earthquakes: drag to turn it, hover a dot for details. It settles on the
 // data when the page opens and pulses only the points that matter (newest, or flagged). Every
@@ -264,7 +265,10 @@ export function QuakeGlobe({
     resize();
     draw(performance.now());
     kick();
+    // React to width changes only: setting the canvas height must not start a resize loop
+    // (a height change can toggle a scrollbar, which changes the width, and so on).
     const ro = new ResizeObserver(() => {
+      if (Math.abs(wrap.clientWidth - size) < 1) return;
       resize();
       draw(performance.now());
     });
@@ -292,27 +296,41 @@ export function QuakeGlobe({
   }, [points]);
 
   return (
-    <figure className="globe">
-      <div className="globe-stage" ref={wrapRef}>
-        <canvas ref={canvasRef} aria-hidden="true" />
-        <div className="globe-tip" ref={tipRef} hidden aria-hidden="true">
-          <span className="globe-tip-title" />
-          <span className="globe-tip-detail" />
+    <Expand
+      title={label}
+      clickToOpen={false}
+      explain={{
+        what: label,
+        read: [
+          "Each dot is an earthquake; bigger dots are bigger magnitudes.",
+          ...(flagLabel ? [`Ringed dots: ${flagLabel}.`] : []),
+          "Faint specks are every magnitude 6.5 and above earthquake since 2000, for context.",
+          "Drag to turn the globe; hover a dot for its name, size and time.",
+        ],
+      }}
+    >
+      <figure className="globe">
+        <div className="globe-stage" ref={wrapRef}>
+          <canvas ref={canvasRef} aria-hidden="true" />
+          <div className="globe-tip" ref={tipRef} hidden aria-hidden="true">
+            <span className="globe-tip-title" />
+            <span className="globe-tip-detail" />
+          </div>
         </div>
-      </div>
-      <figcaption>
-        <span className="globe-caption">{label}</span>
-        <span className="globe-key">
-          <span className="key-dot" aria-hidden="true" /> {dotLabel}
-          {flagLabel ? (
-            <>
-              <span className="key-ring" aria-hidden="true" /> {flagLabel}
-            </>
-          ) : null}
-          <span className="key-faint" aria-hidden="true" /> M6.5 and above since 2000
-        </span>
-        <span className="globe-hint">Drag to turn the globe. Hover a dot for details.</span>
-      </figcaption>
-    </figure>
+        <figcaption>
+          <span className="globe-caption">{label}</span>
+          <span className="globe-key">
+            <span className="key-dot" aria-hidden="true" /> {dotLabel}
+            {flagLabel ? (
+              <>
+                <span className="key-ring" aria-hidden="true" /> {flagLabel}
+              </>
+            ) : null}
+            <span className="key-faint" aria-hidden="true" /> M6.5 and above since 2000
+          </span>
+          <span className="globe-hint">Drag to turn the globe. Hover a dot for details.</span>
+        </figcaption>
+      </figure>
+    </Expand>
   );
 }

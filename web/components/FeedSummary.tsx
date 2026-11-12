@@ -1,5 +1,6 @@
 import type { FeedQuake } from "@/lib/schemas";
 import { fmt, fmtTime } from "@/lib/format";
+import { Expand } from "@/components/Expand";
 
 // The feed at a glance, before the full list: how many earthquakes in each state, how big they
 // were, and the largest one. Every number is counted from the same list the table shows.
@@ -44,23 +45,35 @@ export function FeedSummary({ quakes, threshold }: { quakes: FeedQuake[]; thresh
         ))}
       </ul>
 
-      <figure className="mag-hist">
-        <figcaption>By magnitude (each bar runs from its label to the next)</figcaption>
-        <ol>
-          {bins.map((b, i) => (
-            <li key={b.label} className={b.lo >= threshold ? "is-trigger" : undefined}>
-              <span
-                className="mag-bar"
-                style={{ "--h": b.count / most, "--i": i } as React.CSSProperties}
-              >
-                <span className="mag-n">{b.count}</span>
-              </span>
-              <span className="mag-label">M {b.label}</span>
-            </li>
-          ))}
-        </ol>
-        <p className="mag-note">Trigger magnitude: {fmt(threshold, 1)}</p>
-      </figure>
+      <Expand
+        title="Earthquakes in the past 24 hours, by magnitude"
+        explain={{
+          what: "How many of the past day's earthquakes fell in each magnitude band.",
+          read: [
+            "Each bar runs from its label up to the next label.",
+            "Striped bars are at or above the trigger magnitude, big enough to start the agent.",
+            "Most earthquakes are small; big ones are rare.",
+          ],
+        }}
+      >
+        <figure className="mag-hist">
+          <figcaption>By magnitude (each bar runs from its label to the next)</figcaption>
+          <ol>
+            {bins.map((b, i) => (
+              <li key={b.label} className={b.lo >= threshold ? "is-trigger" : undefined}>
+                <span
+                  className="mag-bar"
+                  style={{ "--h": b.count / most, "--i": i } as React.CSSProperties}
+                >
+                  <span className="mag-n">{b.count}</span>
+                </span>
+                <span className="mag-label">M {b.label}</span>
+              </li>
+            ))}
+          </ol>
+          <p className="mag-note">Trigger magnitude: {fmt(threshold, 1)}</p>
+        </figure>
+      </Expand>
 
       {largest ? (
         <div className="feed-largest">

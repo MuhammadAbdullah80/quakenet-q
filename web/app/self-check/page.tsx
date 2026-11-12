@@ -52,59 +52,70 @@ async function SelfCheckContent({ searchParams }: PageProps) {
           <h2 id="baselines-heading">Classical methods</h2>
           <Problem result={baselines} what="the baselines" />
           {data ? (
-            <div className="table-wrap">
-              <table>
-                <caption>Baselines at risk weight (lam) {data.lam}</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Method</th>
-                    <th scope="col">Sites</th>
-                    <th scope="col" className="num">
-                      Rank
-                    </th>
-                    <th scope="col" className="num">
-                      Risk
-                    </th>
-                    <th scope="col" className="num">
-                      Blur (km)
-                    </th>
-                    <th scope="col" className="num">
-                      Location error (km)
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.methods.map((method) => {
-                    const same = result ? sameSites(method.sites, result.final.sites) : false;
-                    return (
-                      <tr key={method.name} className={same ? "is-highlight" : undefined}>
-                        <th scope="row">
-                          {method.name}{" "}
-                          {same ? <span className="tag tag-ok">same as quantum</span> : null}
-                        </th>
-                        <td className="nowrap">{fmtSites(method.sites)}</td>
-                        <td className="num">{method.rank}</td>
-                        <td className="num">{fmt(method.risk)}</td>
-                        <td className="num">{fmt(method.blur_km)}</td>
-                        <td className="num">{fmt(method.loc_error_mean_km)}</td>
-                      </tr>
-                    );
-                  })}
-                  <tr>
-                    <th scope="row">No new sensors</th>
-                    <td>none</td>
-                    <td className="num">n/a</td>
-                    <td className="num">n/a</td>
-                    <td className="num">{fmt(data.no_new_sensors.blur_km)}</td>
-                    <td className="num">{fmt(data.no_new_sensors.loc_error_mean_km)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <details className="more">
+              <summary>See the numbers: every method</summary>
+              <div className="table-wrap">
+                <table>
+                  <caption>Baselines at risk weight (lam) {data.lam}</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Method</th>
+                      <th scope="col">Sites</th>
+                      <th scope="col" className="num">
+                        Rank
+                      </th>
+                      <th scope="col" className="num">
+                        Risk
+                      </th>
+                      <th scope="col" className="num">
+                        Blur (km)
+                      </th>
+                      <th scope="col" className="num">
+                        Location error (km)
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.methods.map((method) => {
+                      const same = result ? sameSites(method.sites, result.final.sites) : false;
+                      return (
+                        <tr key={method.name} className={same ? "is-highlight" : undefined}>
+                          <th scope="row">
+                            {method.name}{" "}
+                            {same ? <span className="tag tag-ok">same as quantum</span> : null}
+                          </th>
+                          <td className="nowrap">{fmtSites(method.sites)}</td>
+                          <td className="num">{method.rank}</td>
+                          <td className="num">{fmt(method.risk)}</td>
+                          <td className="num">{fmt(method.blur_km)}</td>
+                          <td className="num">{fmt(method.loc_error_mean_km)}</td>
+                        </tr>
+                      );
+                    })}
+                    <tr>
+                      <th scope="row">No new sensors</th>
+                      <td>none</td>
+                      <td className="num">n/a</td>
+                      <td className="num">n/a</td>
+                      <td className="num">{fmt(data.no_new_sensors.blur_km)}</td>
+                      <td className="num">{fmt(data.no_new_sensors.loc_error_mean_km)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </details>
           ) : null}
           {data ? (
             <BarChart
               title="Location error by method"
+              explain={{
+                what: "How far off each method's sensor layout would be, on average, when locating aftershocks it never saw.",
+                read: [
+                  "Shorter bars are better: less error in kilometres.",
+                  "No new sensors is the starting point: only the permanent stations.",
+                  "Lime bars are methods that chose the same sites as the quantum circuit.",
+                ],
+              }}
               note="Mean error locating the later aftershocks, in km. Lower is better."
               unit="km"
               items={[

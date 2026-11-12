@@ -13,11 +13,15 @@ const PAGES = [
   { href: "/self-check", label: "Self-check" },
   { href: "/plan", label: "Plan" },
   { href: "/monitor", label: "Monitor" },
+  { href: "/guide", label: "Guide" },
+] as const;
+
+// Less used pages sit under "More" so the main row stays short.
+const MORE = [
   { href: "/memory", label: "Memory" },
   { href: "/noise", label: "Noise study" },
   { href: "/settings", label: "Settings" },
   { href: "/system", label: "System" },
-  { href: "/guide", label: "Guide" },
 ] as const;
 
 const EVENT_ID = /^[A-Za-z0-9_-]{1,64}$/;
@@ -47,7 +51,9 @@ function NavList({ pathname, event }: { pathname: string | null; event: string |
       list.style.setProperty(`--${name}-w`, `${el.offsetWidth}px`);
       list.style.setProperty(`--${name}-o`, "1");
     };
-    const current = () => list.querySelector<HTMLElement>('a[aria-current="page"]');
+    const current = () =>
+      list.querySelector<HTMLElement>(':scope > li > a[aria-current="page"]') ??
+      list.querySelector<HTMLElement>(".nav-more[data-current] > summary");
     const sync = () => place("ind", current());
     sync();
     list.dataset.ready = "true";
@@ -61,9 +67,38 @@ function NavList({ pathname, event }: { pathname: string | null; event: string |
       });
     }
     const over = (e: Event) => {
-      const a = (e.target as HTMLElement).closest("a");
-      if (a && list.contains(a)) place("hov", a);
+      // Only items in the main row get the highlight, not links inside the More menu.
+      const a = (e.target as HTMLElement).closest<HTMLElement>("a, summary");
+      if (!a) return;
+      const item = a.tagName === "SUMMARY" ? a : a.parentElement?.parentElement === list ? a : null;
+      if (item) place("hov", item);
     };
+    // The More menu: fixed position so the scrolling row does not clip it; closes on navigation,
+    // outside click and Escape.
+    const more = list.querySelector<HTMLDetailsElement>("details.nav-more");
+    more?.removeAttribute("open");
+    const placeMenu = () => {
+      const menu = more?.querySelector<HTMLElement>(".nav-more-list");
+      const summary = more?.querySelector<HTMLElement>("summary");
+      if (!more?.open || !menu || !summary) return;
+      const r = summary.getBoundingClientRect();
+      menu.style.top = `${Math.round(r.bottom + 6)}px`;
+      menu.style.left = `${Math.round(Math.min(r.left, window.innerWidth - menu.offsetWidth - 12))}px`;
+    };
+    const onToggle = () => placeMenu();
+    const onDocClick = (e: MouseEvent) => {
+      if (more?.open && !more.contains(e.target as Node)) more.removeAttribute("open");
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && more?.open) {
+        more.removeAttribute("open");
+        more.querySelector("summary")?.focus();
+      }
+    };
+    more?.addEventListener("toggle", onToggle);
+    document.addEventListener("click", onDocClick);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", placeMenu, { passive: true });
     const out = (e: PointerEvent | FocusEvent) => {
       const next = e.relatedTarget as Node | null;
       if (!next || !list.contains(next)) place("hov", null);
@@ -90,6 +125,10 @@ function NavList({ pathname, event }: { pathname: string | null; event: string |
       list.removeEventListener("pointerout", out);
       list.removeEventListener("focusout", out);
       list.removeEventListener("scroll", edges);
+      more?.removeEventListener("toggle", onToggle);
+      document.removeEventListener("click", onDocClick);
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", placeMenu);
     };
   }, [pathname]);
 
@@ -111,6 +150,30 @@ function NavList({ pathname, event }: { pathname: string | null; event: string |
             </Link>
           </li>
         ))}
+        <li>
+          <details
+            className="nav-more"
+            data-current={MORE.some((page) => page.href === pathname) ? "" : undefined}
+          >
+            <summary>
+              More
+              <span className="nav-more-chevron" aria-hidden="true" />
+            </summary>
+            <ul className="nav-more-list">
+              {MORE.map((page) => (
+                <li key={page.href}>
+                  <Link
+                    href={`${page.href}${query}`}
+                    aria-current={pathname === page.href ? "page" : undefined}
+                  >
+                    {page.label}
+                    <Pending />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </li>
       </ul>
     </nav>
   );

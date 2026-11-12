@@ -6,6 +6,7 @@ import { Empty, Loading, OfflineBanner, Problem } from "@/components/States";
 import { loadEvents } from "@/lib/data";
 import { fmt, fmtTime } from "@/lib/format";
 import { ID_PATTERN } from "@/lib/limits";
+import { Coord } from "@/components/Coord";
 
 export const metadata: Metadata = { title: "Events" };
 
@@ -69,7 +70,7 @@ async function EventsContent() {
                 <th scope="col">Time</th>
                 <th scope="col">Region</th>
                 {showKind ? <th scope="col">Kind</th> : null}
-                {showLocation ? <th scope="col">Location (lat, lon)</th> : null}
+                {showLocation ? <th scope="col">Location</th> : null}
                 <th scope="col">Data</th>
                 <th scope="col">Open</th>
               </tr>
@@ -98,9 +99,7 @@ async function EventsContent() {
                   ) : null}
                   {showLocation ? (
                     <td>
-                      {typeof event.lat === "number" && typeof event.lon === "number"
-                        ? `${fmt(event.lat, 2)}, ${fmt(event.lon, 2)}`
-                        : "n/a"}
+                      <Coord lat={event.lat} lon={event.lon} />
                     </td>
                   ) : null}
                   <td>

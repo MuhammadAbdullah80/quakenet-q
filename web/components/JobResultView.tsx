@@ -3,6 +3,7 @@ import { fmt, fmtPercent, fmtSites, fmtTime, sameSites } from "@/lib/format";
 import { BarChart } from "@/components/BarChart";
 import { SiteMap } from "@/components/SiteMap";
 import { TableFold } from "@/components/TableFold";
+import { Expand } from "@/components/Expand";
 
 // Shows one finished QAOA job. Used on the Quantum page (server-rendered and
 // after polling in the browser) and on the Self-check page.
@@ -34,44 +35,56 @@ export function JobResultView({
         </p>
       </div>
 
-      <div
-        className="lift"
-        role="img"
-        aria-label={`The circuit measured the best network ${fmtPercent(result.p_opt, 2)} of the time, against ${fmtPercent(result.uniform_p_opt, 2)} for a random pick${lift === null ? "" : `: ${fmt(lift, 1)} times more often`}.`}
+      <Expand
+        title="Quantum circuit against a random pick"
+        explain={{
+          what: "How often one measurement of the circuit gave the best network, next to how often a random pick would.",
+          read: [
+            "The big number is how many times more often the circuit found the best network.",
+            "A random pick finds it 1 time in 210.",
+            "Higher is better. It does not need to reach 100%: the best of the most measured networks is kept.",
+          ],
+        }}
       >
-        <p className="lift-head">
-          <span className="lift-x">{lift === null ? "n/a" : `${fmt(lift, 1)}×`}</span>
-          <span className="lift-text">
-            more often than a random pick, the circuit measured the best network
-          </span>
-        </p>
-        <div className="lift-bars" aria-hidden="true">
-          <span className="lift-row is-q">
-            <span className="lift-name">Quantum circuit</span>
-            <span className="lift-track">
-              <span
-                className="lift-fill"
-                style={{
-                  width: `${Math.min(100, (result.p_opt / Math.max(result.p_opt, result.uniform_p_opt)) * 100)}%`,
-                }}
-              />
+        <div
+          className="lift"
+          role="img"
+          aria-label={`The circuit measured the best network ${fmtPercent(result.p_opt, 2)} of the time, against ${fmtPercent(result.uniform_p_opt, 2)} for a random pick${lift === null ? "" : `: ${fmt(lift, 1)} times more often`}.`}
+        >
+          <p className="lift-head">
+            <span className="lift-x">{lift === null ? "n/a" : `${fmt(lift, 1)}×`}</span>
+            <span className="lift-text">
+              more often than a random pick, the circuit measured the best network
             </span>
-            <span className="lift-val">{fmtPercent(result.p_opt, 2)}</span>
-          </span>
-          <span className="lift-row">
-            <span className="lift-name">Random pick</span>
-            <span className="lift-track">
-              <span
-                className="lift-fill"
-                style={{
-                  width: `${Math.min(100, (result.uniform_p_opt / Math.max(result.p_opt, result.uniform_p_opt)) * 100)}%`,
-                }}
-              />
+          </p>
+          <div className="lift-bars" aria-hidden="true">
+            <span className="lift-row is-q">
+              <span className="lift-name">Quantum circuit</span>
+              <span className="lift-track">
+                <span
+                  className="lift-fill"
+                  style={{
+                    width: `${Math.min(100, (result.p_opt / Math.max(result.p_opt, result.uniform_p_opt)) * 100)}%`,
+                  }}
+                />
+              </span>
+              <span className="lift-val">{fmtPercent(result.p_opt, 2)}</span>
             </span>
-            <span className="lift-val">{fmtPercent(result.uniform_p_opt, 2)}</span>
-          </span>
+            <span className="lift-row">
+              <span className="lift-name">Random pick</span>
+              <span className="lift-track">
+                <span
+                  className="lift-fill"
+                  style={{
+                    width: `${Math.min(100, (result.uniform_p_opt / Math.max(result.p_opt, result.uniform_p_opt)) * 100)}%`,
+                  }}
+                />
+              </span>
+              <span className="lift-val">{fmtPercent(result.uniform_p_opt, 2)}</span>
+            </span>
+          </div>
         </div>
-      </div>
+      </Expand>
 
       <dl className="kpis">
         <div>
@@ -142,6 +155,14 @@ export function JobResultView({
 
       <BarChart
         title="Times each network was measured"
+        explain={{
+          what: "Every measurement of the circuit picks one network of 4 sites. This counts how often each network came up.",
+          read: [
+            "Longer bars came up more often.",
+            "The lime bar is the best possible network, found by checking all 210.",
+            "It does not have to be the longest bar. What matters is that it comes up far more often than a random pick would.",
+          ],
+        }}
         note={`Out of ${result.shots} measurements. The best network should come up far more often than a random pick would.`}
         unit="times"
         digits={0}
@@ -154,46 +175,54 @@ export function JobResultView({
       />
 
       <div className="columns">
-        <TableFold total={result.top_counts.length} limit={5} noun="networks">
-          <div className="table-wrap">
-            <table>
-              <caption>Most frequently measured networks (top {result.top_counts.length})</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Sites</th>
-                  <th scope="col" className="num">
-                    Times measured
-                  </th>
-                  <th scope="col" className="num">
-                    Objective
-                  </th>
-                  <th scope="col" className="num">
-                    Rank
-                  </th>
-                  <th scope="col">Note</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.top_counts.map((row) => {
-                  const isFinal = sameSites(row.sites, result.final.sites);
-                  const isOptimum = sameSites(row.sites, result.exact_optimum);
-                  return (
-                    <tr key={row.sites.join("-")} className={isFinal ? "is-highlight" : undefined}>
-                      <td className="nowrap">{fmtSites(row.sites)}</td>
-                      <td className="num">{row.count}</td>
-                      <td className="num">{fmt(row.objective, 1)}</td>
-                      <td className="num">{row.rank}</td>
-                      <td>
-                        {isFinal ? <span className="tag tag-ok">final pick</span> : null}{" "}
-                        {isOptimum ? <span className="tag">exact optimum</span> : null}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </TableFold>
+        <details className="more">
+          <summary>See the numbers: measured networks</summary>
+          <TableFold total={result.top_counts.length} limit={5} noun="networks">
+            <div className="table-wrap">
+              <table>
+                <caption>
+                  Most frequently measured networks (top {result.top_counts.length})
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Sites</th>
+                    <th scope="col" className="num">
+                      Times measured
+                    </th>
+                    <th scope="col" className="num">
+                      Objective
+                    </th>
+                    <th scope="col" className="num">
+                      Rank
+                    </th>
+                    <th scope="col">Note</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.top_counts.map((row) => {
+                    const isFinal = sameSites(row.sites, result.final.sites);
+                    const isOptimum = sameSites(row.sites, result.exact_optimum);
+                    return (
+                      <tr
+                        key={row.sites.join("-")}
+                        className={isFinal ? "is-highlight" : undefined}
+                      >
+                        <td className="nowrap">{fmtSites(row.sites)}</td>
+                        <td className="num">{row.count}</td>
+                        <td className="num">{fmt(row.objective, 1)}</td>
+                        <td className="num">{row.rank}</td>
+                        <td>
+                          {isFinal ? <span className="tag tag-ok">final pick</span> : null}{" "}
+                          {isOptimum ? <span className="tag">exact optimum</span> : null}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </TableFold>
+        </details>
 
         {showMap && instance ? (
           <SiteMap
