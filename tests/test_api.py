@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from api.config import Settings
 from api.main import create_app
 from src.qaoa_solver import dicke_probabilities
+from tests.test_agent_fakes import make_toolkit
 
 TOKEN = "test-token-0123456789abcdef0123456789abcdef"
 AUTH = {"Authorization": f"Bearer {TOKEN}"}
@@ -19,8 +20,11 @@ JOB_BODY = {"kind": "qaoa", "reps": 1, "seed": 0, "shots": 256, "lam": 150}
 
 
 def make_client(tmp_path, solver=None, **overrides) -> TestClient:
+    """The v1 endpoints of the built-in Ridgecrest event; the science layer's event list is faked
+    as empty, so these tests do not depend on it."""
     settings = Settings(token=TOKEN, jobs_dir=Path(tmp_path) / "jobs", **overrides)
-    client = TestClient(create_app(settings, solver=solver), raise_server_exceptions=False)
+    client = TestClient(create_app(settings, solver=solver, toolkit=make_toolkit(events={})),
+                        raise_server_exceptions=False)
     client.headers.update(AUTH)
     return client
 
@@ -114,7 +118,9 @@ def test_health(client):
 def test_events(client):
     body = client.get(f"{V1}/events").json()
     assert body == {"events": [{"id": EVENT, "name": "Ridgecrest, California", "magnitude": 7.1,
-                                "time_utc": "2019-07-06T03:19:53Z", "region": "local", "available": True}]}
+                                "time_utc": "2019-07-06T03:19:53Z", "region": "local", "available": True,
+                                "kind": "benchmark", "usgs_id": "ci38457511", "lat": 35.7695,
+                                "lon": -117.5993333}]}
 
 
 def test_event_metadata_matches_the_cached_data():
@@ -128,14 +134,17 @@ def test_instance(client):
     assert r.status_code == 200
     body = r.json()
     assert set(body) == {"event_id", "n", "k", "decision_hours", "mainshock", "design_events", "valid_events",
-                         "stations", "candidates"}
+                         "stations", "candidates", "grid", "feasibility_checked"}
+    assert body["grid"] == {"lat0": 35.75, "lon0": -117.55}
+    assert body["feasibility_checked"] is False        # the v1 candidates are a plain grid, not road-checked
     assert (body["event_id"], body["n"], body["k"], body["decision_hours"]) == (EVENT, 10, 4, 12)
     assert set(body["mainshock"]) == {"x", "y", "depth"} and body["mainshock"]["depth"] == 8.0
     assert len(body["design_events"]) > 100 and len(body["valid_events"]) > 100
     assert all(len(e) == 3 for e in body["design_events"] + body["valid_events"])
     assert len(body["stations"]) == 14 and set(body["stations"][0]) == {"name", "x", "y"}
     assert [c["id"] for c in body["candidates"]] == list(range(10))
-    assert all(set(c) == {"id", "x", "y", "risk"} and 0 <= c["risk"] <= 1 for c in body["candidates"])
+    assert all(set(c) == {"id", "x", "y", "risk", "lat", "lon"} and 0 <= c["risk"] <= 1 for c in body["candidates"])
+    assert all(35.4 <= c["lat"] <= 36.1 and -117.9 <= c["lon"] <= -117.2 for c in body["candidates"])
 
 
 def test_scoring(client):
@@ -197,9 +206,9 @@ def test_system(client):
     assert body["sources"][0]["url"].startswith("https://earthquake.usgs.gov/")
 
 
-@pytest.mark.parametrize("path", [f"/events/{EVENT}/plan", f"/events/{EVENT}/replay", "/memory"])
-def test_not_built_yet(client, path):
-    assert_error(client.get(V1 + path), 501, "NOT_BUILT")
+@pytest.mark.parametrize("path", [f"/events/{EVENT}/plan", f"/events/{EVENT}/sequence", f"/events/{EVENT}/replay"])
+def test_no_sequence_yet_and_replay_removed(client, path):
+    assert_error(client.get(V1 + path), 404, "NOT_FOUND")
 
 
 # ------------------------------------------------------------------------------- validation and errors
@@ -390,7 +399,9 @@ def test_full_qaoa_job_with_a_tiny_budget(tmp_path, monkeypatch):
     assert (job["kind"], job["event_id"], job["error"]) == ("qaoa", EVENT, None)
     res = job["result"]
     assert set(res) == {"reps", "seed", "shots", "lam", "seconds", "ratio", "p_opt", "uniform_p_opt", "feasible",
-                        "depth", "gates", "evaluations", "exact_optimum", "top_counts", "final", "quantum_agreed"}
+                        "depth", "gates", "evaluations", "exact_optimum", "top_counts", "final", "quantum_agreed",
+                        "objective", "warm_start"}
+    assert (res["objective"], res["warm_start"]) == ("mean", False)
     assert (res["reps"], res["seed"], res["shots"], res["lam"]) == (1, 0, 256, 150)
     assert res["exact_optimum"] == [1, 3, 4, 7]
     assert res["uniform_p_opt"] == pytest.approx(1 / 210)

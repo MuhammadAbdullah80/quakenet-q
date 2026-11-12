@@ -4,8 +4,13 @@ Newest first. "Status" says whether the decision is reflected in the spec or cod
 
 | # | Date | Decision | Why | Status |
 |---|---|---|---|---|
-| 27 | 2026-11-12 | Frontend unit tests use Node's built-in test runner (`npm test` in `web/`), not Jest or Vitest | Node 24 runs TypeScript directly, so pure helpers can be tested with no new dependency | In code |
-| 26 | 2026-11-12 | Accent text colour is `#3d6e0c`, not the brief's `#4f8a12` | `#4f8a12` is 3.51:1 on the mist background and fails WCAG AA for normal text; `#3d6e0c` is 5.08:1. Lime `#c6f35c` stays for marks and fills | In code |
+| 32 | 2026-11-12 | Frontend unit tests use Node's built-in test runner (`npm test` in `web/`), not Jest or Vitest | Node 24 runs TypeScript directly, so pure helpers can be tested with no new dependency | In code |
+| 31 | 2026-11-12 | Accent text colour is `#3d6e0c`, not the brief's `#4f8a12` | `#4f8a12` is 3.51:1 on the mist background and fails WCAG AA for normal text; `#3d6e0c` is 5.08:1. Lime `#c6f35c` stays for marks and fills | In code |
+| 30 | 2026-11-12 | Drift and the track-record error are measured relative to the predicted information gain, not the net score | The net score (information minus risk cost) can be near zero, which made one error read 988% and could trigger false re-plans; the risk cost is the same on both sides, so the information gain is the right scale | In code |
+| 29 | 2026-11-12 | While tuning with CVaR, compute the circuit's output with our own exact simulator (`XYQaoaSimulator`); final measurements still run the Qiskit circuit on StatevectorSampler | CVaR needs the full distribution at every step; the simulator is the same circuit, checked against Qiskit's Statevector in the tests, and makes a plan take seconds instead of minutes | In code |
+| 28 | 2026-11-12 | In the benchmark, rescale the energies of the allowed networks to span 3 units before tuning | At the objective's own scale the useful angles were near 10, which random starts never reached; a constant factor changes only the angle scale | In code (benchmark) |
+| 27 | 2026-11-12 | CVaR with alpha = 0.1 | Picked after a trial on two earthquakes; raised the share of runs whose final pick was exact from 8/15 to 14/15 (cold start) | In code |
+| 26 | 2026-11-12 | Hearing range: Hutton & Boore (1987) attenuation, assumed rural noise 0.03 mm, P wave 0.2 of the peak, readings below signal-to-noise 5 dropped, timing error 0.1 s × max(1, 10/SNR) | Implements decision 16 with stated, simple constants; they are assumptions, not measurements | In code |
 | 25 | 2026-11-12 | Frontend on Vercel; backend on the team laptop, reached through a secure tunnel with a shared secret. Replaces decision 24 | Team decision. Avoids Vercel's limits on run time, scheduling and storage for Qiskit; costs nothing; the laptop already has Tailscale. Cost: live features need the laptop on | In `ARCHITECTURE.md`; not in spec |
 | 24 | 2026-11-12 | ~~Host on Vercel if its limits allow~~; otherwise frontend on Vercel and the Python API elsewhere | Team preference; Qiskit run time, scheduling and storage limits are still to verify | In `ARCHITECTURE.md`; not in spec |
 | 23 | 2026-11-12 | No AI or LLM features anywhere in the app | Team decision: this is a quantum optimisation project, not a chatbot. The AI-layer design written earlier the same day is withdrawn | Docs updated |
@@ -15,8 +20,8 @@ Newest first. "Status" says whether the decision is reflected in the spec or cod
 | 19 | 2026-11-12 | All external calls go through one gateway with per-host limits, cache, retries and a circuit breaker | Respect provider limits; survive outages | In `ARCHITECTURE.md`; not in spec |
 | 18 | 2026-11-12 | Add the DN score next to the D-criterion; held-out data picks the planner | Bloem et al. (2020) found DN best for source location, but the evidence is from one research group and DN can fail on clustered quakes | Decided; not in spec |
 | 17 | 2026-11-12 | Validate top layouts with a slower information-gain estimate (NMC) | Guards against DN's weak spot, as Strutz & Curtis do | Decided; not in spec |
-| 16 | 2026-11-12 | Timing error depends on signal-to-noise; stations below SNR 5 do not count | A constant error overvalues distant sites (NetOpt3D's approach, simplified) | Decided; not in spec |
-| 15 | 2026-11-12 | Add a slope under 20° filter using key-free AWS Terrain Tiles | Steep sites are unusable; OpenTopography needs a key | Decided; not in spec |
+| 16 | 2026-11-12 | Timing error depends on signal-to-noise; stations below SNR 5 do not count | A constant error overvalues distant sites (NetOpt3D's approach, simplified) | In code (opt-in, `hearing_range` setting) |
+| 15 | 2026-11-12 | Add a slope under 20° filter using key-free AWS Terrain Tiles | Steep sites are unusable; OpenTopography needs a key | In code (candidate pools) |
 | 14 | 2026-11-12 | Write DN ourselves; use WoWED-volcano only as a cross-check | It is GPL-3.0; copying would force our project under the same licence | Decided; not in spec |
 | 13 | 2026-11-12 | Keep exhaustive checking plus QAOA; no genetic algorithm or annealing as the main search | Exact at 210 options; the others are approximations | No change needed |
 | 12 | 2026-11-12 | No 3D wave paths | Needs 3D Earth models and heavy solvers; stated as a limitation | Decided; not in spec |

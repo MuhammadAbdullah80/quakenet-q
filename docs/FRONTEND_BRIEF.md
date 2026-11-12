@@ -3,11 +3,12 @@
 For the frontend developer. Read `docs/FRONTEND_HANDOFF.md` first: it covers setup, the current
 pages, and the rules that must not be broken. This brief covers what to build next.
 
-**Status on 2026-11-12:** the console restyle (section 6) is done on branch `frontend-improved`.
-The landing page (section 4), guide page (section 5) and agent pages (section 7) are not started.
+**Status on 2026-11-12:** the console restyle (section 6) is done on branch `frontend-handoff`.
+The agent pages (section 7) are built on `main`. The landing page (section 4) and guide page
+(section 5) are in progress on `frontend-handoff`.
 The live site at https://quakenet-q.vercel.app still shows the plain console until the branch is merged.
 One change from section 2: `--lime-text` is `#3d6e0c`, because `#4f8a12` fails WCAG AA on mist
-(decision 26).
+(decision 31).
 
 ## 1. What the team wants
 

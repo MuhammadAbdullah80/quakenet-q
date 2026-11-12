@@ -6,7 +6,7 @@ import { RUN_COOKIE, runCookieValid, sameOrigin } from "@/lib/passcode";
 import { ID_PATTERN, jobCreatedSchema, startJobSchema } from "@/lib/schemas";
 
 /**
- * Start a QAOA run. The browser calls this handler; only this handler calls the
+ * Start a job: a QAOA run (kind "qaoa") or a replay of the earthquake (kind "sequence"). The browser calls this handler; only this handler calls the
  * Python API. Requires the team passcode cookie (see /api/passcode).
  */
 export async function POST(request: Request, context: { params: Promise<{ eventId: string }> }) {

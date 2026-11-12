@@ -33,3 +33,13 @@
 - "On land" means elevation above 0 m in the tiles. Lakes pass; land below sea level fails. Tile
   elevations over water were not checked against a coastline dataset.
 - The 30 s gateway timeout is what the spec asks for, but it is shorter than Overpass needed today.
+
+**Update, later on 2026-11-12: road retry.** The Overpass query was retried once for each of the five
+failed earthquakes (one attempt with a 120 s timeout; after a failure a 30 s pause and one more attempt;
+then stop). Ridgecrest and South Napa got HTTP 502 on the first attempt and an answer on the second;
+Monte Cristo Range, Ferndale and Puerto Rico answered on the first. Answer sizes: Ridgecrest 13.2 MB,
+South Napa 42.7 MB, Monte Cristo Range 1.5 MB, Ferndale 4.2 MB, Puerto Rico 12.0 MB. All six pools are
+now road-checked; the tables above were regenerated from the cache after the retry. The road query box is
+built from the registry's 4-decimal epicentre (ComCat's own coordinates differ in the 5th decimal, about
+10 m, which would otherwise change the query text and miss the cache). The earlier statement that
+"behaviour on the largest box (Ridgecrest) is untested" no longer holds: it answered in 51 s.

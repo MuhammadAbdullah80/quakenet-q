@@ -19,7 +19,7 @@ from src.geometry import Instance, Scorer
 from src.location import dn_score, location_errors
 from src.qubo import build_objective, energies, to_hamiltonian
 
-from .events import EventRegistry
+from .events import EventRegistry, Loaded
 
 TOP_NETWORKS = 20     # networks listed by the scoring endpoint
 TOP_M = 10            # sampled networks re-scored classically
@@ -46,6 +46,7 @@ class Cache:
 
 @dataclass(frozen=True)
 class EventContext:
+    loaded: Loaded
     inst: Instance
     design: Scorer        # scores on the aftershocks known at decision time (used to plan)
     valid: Scorer         # scores on later aftershocks (used to test)
@@ -83,9 +84,11 @@ class ScienceService:
         spec = self._registry.get(event_id)          # raises NotFound for anything not on the allowlist
 
         def build() -> EventContext:
-            inst = spec.load()
-            design = Scorer(inst, inst.design)
-            return EventContext(inst, design, Scorer(inst, inst.valid), inst.feasible_sets(), design.d_score([]))
+            loaded = spec.load()
+            inst = loaded.inst
+            design = Scorer(inst, np.asarray(inst.design, float)[:, :3])
+            valid = Scorer(inst, np.asarray(inst.valid, float).reshape(-1, np.shape(inst.design)[1])[:, :3])
+            return EventContext(loaded, inst, design, valid, inst.feasible_sets(), design.d_score([]))
         return self._events.get(event_id, build)
 
     @staticmethod
@@ -112,15 +115,21 @@ class ScienceService:
             return round(float(v), 3)
 
         def build() -> dict:
-            inst = ctx.inst
+            inst, loaded = ctx.inst, ctx.loaded
+
+            def latlon(x, y) -> dict:
+                lat, lon = loaded.to_latlon(float(x), float(y))
+                return dict(lat=round(float(lat), 5), lon=round(float(lon), 5))
             return dict(
                 event_id=event_id, n=inst.n, k=inst.k, decision_hours=spec.decision_hours,
-                mainshock=dict(zip(("x", "y", "depth"), map(r, inst.mainshock))),
-                design_events=[[r(v) for v in e] for e in inst.design],
-                valid_events=[[r(v) for v in e] for e in inst.valid],
+                mainshock=dict(zip(("x", "y", "depth"), map(r, list(inst.mainshock)[:3]))),
+                design_events=[[r(v) for v in e[:3]] for e in inst.design],
+                valid_events=[[r(v) for v in e[:3]] for e in inst.valid],
                 stations=[dict(name=str(n), x=r(x), y=r(y)) for n, (x, y) in zip(inst.station_names, inst.stations)],
-                candidates=[dict(id=i, x=r(x), y=r(y), risk=round(float(c), 4))
-                            for i, ((x, y), c) in enumerate(zip(inst.candidates, inst.risk))])
+                candidates=[dict(id=i, x=r(x), y=r(y), risk=round(float(c), 4), **latlon(x, y))
+                            for i, ((x, y), c) in enumerate(zip(inst.candidates, inst.risk))],
+                grid=dict(lat0=float(loaded.lat0), lon0=float(loaded.lon0)),
+                feasibility_checked=bool(loaded.feasibility_checked))
         return self._instances.get(event_id, build)
 
     def scoring(self, event_id: str, lam: float) -> dict:
@@ -213,4 +222,5 @@ class ScienceService:
             depth=int(run["depth"]), gates=int(run["gates"]), evaluations=int(run["evaluations"]),
             exact_optimum=exact_sites, top_counts=scored,
             final=dict(sites=final["sites"], objective=final["objective"], rank=final["rank"]),
-            quantum_agreed=final["sites"] == exact_sites)
+            quantum_agreed=final["sites"] == exact_sites,
+            objective=run.get("objective", "mean"), warm_start=False)

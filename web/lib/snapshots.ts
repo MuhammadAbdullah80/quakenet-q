@@ -2,15 +2,27 @@ import "server-only";
 import type { z } from "zod";
 import baselinesRaw from "@/snapshots/baselines.json";
 import eventsRaw from "@/snapshots/events.json";
+import feedRaw from "@/snapshots/feed.json";
 import instanceRaw from "@/snapshots/instance.json";
 import jobRaw from "@/snapshots/job.json";
+import memoryRaw from "@/snapshots/memory.json";
+import noiseRaw from "@/snapshots/noise.json";
+import planRaw from "@/snapshots/plan.json";
 import scoringRaw from "@/snapshots/scoring.json";
+import sequenceRaw from "@/snapshots/sequence.json";
+import settingsRaw from "@/snapshots/settings.json";
 import {
   baselinesSchema,
   eventsSchema,
+  feedSchema,
   instanceSchema,
   jobSchema,
+  memorySchema,
+  noiseSchema,
+  planSchema,
   scoringSchema,
+  sequenceSchema,
+  settingsSchema,
 } from "@/lib/schemas";
 
 // Saved API responses shipped with the frontend, used when the backend cannot
@@ -43,5 +55,17 @@ export const snapshots = {
   job: (eventId: string) => {
     const job = read(jobSchema, jobRaw);
     return job && job.data.event_id === eventId ? job : null;
+  },
+  settings: () => read(settingsSchema, settingsRaw),
+  feed: () => read(feedSchema, feedRaw),
+  memory: () => read(memorySchema, memoryRaw),
+  noise: () => read(noiseSchema, noiseRaw),
+  sequence: (eventId: string) => {
+    const saved = read(sequenceSchema, sequenceRaw);
+    return saved && saved.data.event_id === eventId ? saved : null;
+  },
+  plan: (eventId: string) => {
+    const saved = read(planSchema, planRaw);
+    return saved && saved.data.event_id === eventId ? saved : null;
   },
 };

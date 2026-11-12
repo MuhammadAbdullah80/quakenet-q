@@ -66,7 +66,7 @@ export function backendConfigured(): boolean {
 }
 
 type RequestOptions = {
-  method?: "GET" | "POST";
+  method?: "GET" | "POST" | "PUT";
   body?: unknown;
   /** Visitor IP, forwarded so the backend can rate-limit per visitor. */
   clientIp?: string | null;

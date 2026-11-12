@@ -1,6 +1,6 @@
 # Benchmark earthquakes: data-quality check
 
-Generated 2026-11-12 14:35 UTC by `research/benchmarks/data_quality.py`. Every number below comes from that script, run on the responses cached in `data/cache/` (each has a sidecar with its URL and retrieval time).
+Generated 2026-11-12 16:03 UTC by `research/benchmarks/data_quality.py`. Every number below comes from that script, run on the responses cached in `data/cache/` (each has a sidecar with its URL and retrieval time).
 
 This answers risk R-2 of the design spec: are the six planned benchmark earthquakes usable?
 
@@ -17,12 +17,12 @@ This answers risk R-2 of the design spec: are the six planned benchmark earthqua
 
 | Earthquake | USGS event ID | M | Radius (km) | Aftershocks 0-12 h | Aftershocks 12 h-7 d | Permanent stations | Temporary stations (networks) | Candidate pool | Feasibility checked | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Ridgecrest 2019 | ci38457511 | 7.1 | 112 | 1056 | 744 | 54 | 493 (3J, 7Q, GS) | 7174 | **no** | usable with caveats |
-| South Napa 2014 | nc72282711 | 6.0 | 50 | 5 | 9 | 187 | 241 (7C, GS, NC) | 506 | **no** | usable with caveats |
-| Monte Cristo Range 2020 | nn00725272 | 6.5 | 50 | 161 | 410 | 18 | 10 (8P, GS, NN) | 1678 | **no** | usable with caveats |
+| Ridgecrest 2019 | ci38457511 | 7.1 | 112 | 1056 | 744 | 54 | 493 (3J, 7Q, GS) | 2110 | yes | usable |
+| South Napa 2014 | nc72282711 | 6.0 | 50 | 5 | 9 | 187 | 241 (7C, GS, NC) | 335 | yes | usable with caveats |
+| Monte Cristo Range 2020 | nn00725272 | 6.5 | 50 | 161 | 410 | 18 | 10 (8P, GS, NN) | 657 | yes | usable |
 | Anchorage 2018 | ak018fcnsk91 | 7.1 | 112 | 324 | 338 | 71 | 8 (GM) | 801 | yes | usable |
-| Ferndale 2022 | nc73821036 | 6.4 | 50 | 48 | 20 | 22 | 1 (NC) | 252 | **no** | usable with caveats |
-| Puerto Rico 2020 | pr2020007007 | 6.4 | 50 | 137 | 710 | 21 | 9 (GS, PR) | 552 | **no** | usable with caveats |
+| Ferndale 2022 | nc73821036 | 6.4 | 50 | 48 | 20 | 22 | 1 (NC) | 141 | yes | usable with caveats |
+| Puerto Rico 2020 | pr2020007007 | 6.4 | 50 | 137 | 710 | 21 | 9 (GS, PR) | 532 | yes | usable |
 
 ## Per earthquake
 
@@ -33,10 +33,9 @@ This answers risk R-2 of the design spec: are the six planned benchmark earthqua
 - Aftershocks M >= 2.5: 1056 in the first 12 h, 744 from 12 h to 7 days.
 - Permanent stations: 54. By network: 8P (1), CI (41), LB (1), NN (4), NP (3), PB (4).
 - Temporary stations: 493. By network: 3J (456), 7Q (27), GS (10).
-- Candidate pool: 7174 points. Filter funnel: grid 9917 -> on_land 9691 -> slope 8391 -> station_gap 7177 -> rupture_gap 7174.
-- Roads checked: **no**; terrain checked: yes.
-- **Warning:** Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (HTTP 502): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2834.7603%2C-118.8431%2C36.7787%2C-116.3556%29%3Bout%20geom%20qt%3B
-- **Verdict: usable with caveats.** road or terrain check did not run, pool is not feasibility-checked.
+- Candidate pool: 2110 points. Filter funnel: grid 9917 -> on_land 9691 -> slope 8391 -> near_road 2716 -> station_gap 2113 -> rupture_gap 2110.
+- Roads checked: yes (Overpass answer 13.2 MB); terrain checked: yes.
+- **Verdict: usable.**
 
 ### South Napa 2014 (nc72282711)
 
@@ -45,10 +44,9 @@ This answers risk R-2 of the design spec: are the six planned benchmark earthqua
 - Aftershocks M >= 2.5: 5 in the first 12 h, 9 from 12 h to 7 days.
 - Permanent stations: 187. By network: BK (18), NC (89), NP (70), PB (2), YK (7), YU (1).
 - Temporary stations: 241. By network: 7C (223), GS (6), NC (12).
-- Candidate pool: 506 points. Filter funnel: grid 1961 -> on_land 1687 -> slope 1630 -> station_gap 507 -> rupture_gap 506.
-- Roads checked: **no**; terrain checked: yes.
-- **Warning:** Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (TimeoutError: The read operation timed out): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2837.7655%2C-122.8847%2C38.6648%2C-121.7400%29%3Bout%20geom%20qt%3B
-- **Verdict: usable with caveats.** only 5 aftershocks in the first 12 h (under 30: the plan must blend in synthetic events, EC-3); only 9 later aftershocks to validate on (under 100); road or terrain check did not run, pool is not feasibility-checked.
+- Candidate pool: 335 points. Filter funnel: grid 1961 -> on_land 1687 -> slope 1630 -> near_road 1298 -> station_gap 336 -> rupture_gap 335.
+- Roads checked: yes (Overpass answer 42.7 MB); terrain checked: yes.
+- **Verdict: usable with caveats.** only 5 aftershocks in the first 12 h (under 30: the plan must blend in synthetic events, EC-3); only 9 later aftershocks to validate on (under 100).
 
 ### Monte Cristo Range 2020 (nn00725272)
 
@@ -57,10 +55,9 @@ This answers risk R-2 of the design spec: are the six planned benchmark earthqua
 - Aftershocks M >= 2.5: 161 in the first 12 h, 410 from 12 h to 7 days.
 - Permanent stations: 18. By network: IM (11), NN (6), NP (1).
 - Temporary stations: 10. By network: 8P (2), GS (1), NN (7).
-- Candidate pool: 1678 points. Filter funnel: grid 1961 -> on_land 1961 -> slope 1891 -> station_gap 1685 -> rupture_gap 1678.
-- Roads checked: **no**; terrain checked: yes.
-- **Warning:** Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (TimeoutError: The read operation timed out): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2837.7192%2C-118.4217%2C38.6186%2C-117.2777%29%3Bout%20geom%20qt%3B
-- **Verdict: usable with caveats.** road or terrain check did not run, pool is not feasibility-checked.
+- Candidate pool: 657 points. Filter funnel: grid 1961 -> on_land 1961 -> slope 1891 -> near_road 725 -> station_gap 661 -> rupture_gap 657.
+- Roads checked: yes (Overpass answer 1.5 MB); terrain checked: yes.
+- **Verdict: usable.**
 
 ### Anchorage 2018 (ak018fcnsk91)
 
@@ -80,10 +77,9 @@ This answers risk R-2 of the design spec: are the six planned benchmark earthqua
 - Aftershocks M >= 2.5: 48 in the first 12 h, 20 from 12 h to 7 days.
 - Permanent stations: 22. By network: BK (6), NC (5), NP (7), PB (4).
 - Temporary stations: 1. By network: NC (1).
-- Candidate pool: 252 points. Filter funnel: grid 1961 -> on_land 681 -> slope 547 -> station_gap 252 -> rupture_gap 252.
-- Roads checked: **no**; terrain checked: yes.
-- **Warning:** Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (TimeoutError: The read operation timed out): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2840.0753%2C-125.0146%2C40.9747%2C-123.8314%29%3Bout%20geom%20qt%3B
-- **Verdict: usable with caveats.** only 20 later aftershocks to validate on (under 100); road or terrain check did not run, pool is not feasibility-checked.
+- Candidate pool: 141 points. Filter funnel: grid 1961 -> on_land 681 -> slope 547 -> near_road 319 -> station_gap 141 -> rupture_gap 141.
+- Roads checked: yes (Overpass answer 4.2 MB); terrain checked: yes.
+- **Verdict: usable with caveats.** only 20 later aftershocks to validate on (under 100).
 
 ### Puerto Rico 2020 (pr2020007007)
 
@@ -92,10 +88,10 @@ This answers risk R-2 of the design spec: are the six planned benchmark earthqua
 - Aftershocks M >= 2.5: 137 in the first 12 h, 710 from 12 h to 7 days.
 - Permanent stations: 21. By network: PR (21).
 - Temporary stations: 9. By network: GS (6), PR (3).
-- Candidate pool: 552 points. Filter funnel: grid 1961 -> on_land 932 -> slope 853 -> station_gap 556 -> rupture_gap 552.
-- Roads checked: **no**; terrain checked: yes.
-- **Warning:** Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (HTTP 502): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2817.5081%2C-67.2840%2C18.4075%2C-66.3386%29%3Bout%20geom%20qt%3B
-- **Verdict: usable with caveats.** road or terrain check did not run, pool is not feasibility-checked.
+- Candidate pool: 532 points. Filter funnel: grid 1961 -> on_land 932 -> slope 853 -> near_road 807 -> station_gap 534 -> rupture_gap 532.
+- Roads checked: yes (Overpass answer 12.0 MB); terrain checked: yes.
+- **Verdict: usable.**
+
 ## Notes written by hand (interpretation, not measurements)
 
 **Service failures on this run (2026-11-12).**
@@ -131,3 +127,13 @@ This answers risk R-2 of the design spec: are the six planned benchmark earthqua
 - "On land" means elevation above 0 m in the tiles. Lakes pass; land below sea level fails. Tile
   elevations over water were not checked against a coastline dataset.
 - The 30 s gateway timeout is what the spec asks for, but it is shorter than Overpass needed today.
+
+**Update, later on 2026-11-12: road retry.** The Overpass query was retried once for each of the five
+failed earthquakes (one attempt with a 120 s timeout; after a failure a 30 s pause and one more attempt;
+then stop). Ridgecrest and South Napa got HTTP 502 on the first attempt and an answer on the second;
+Monte Cristo Range, Ferndale and Puerto Rico answered on the first. Answer sizes: Ridgecrest 13.2 MB,
+South Napa 42.7 MB, Monte Cristo Range 1.5 MB, Ferndale 4.2 MB, Puerto Rico 12.0 MB. All six pools are
+now road-checked; the tables above were regenerated from the cache after the retry. The road query box is
+built from the registry's 4-decimal epicentre (ComCat's own coordinates differ in the 5th decimal, about
+10 m, which would otherwise change the query text and miss the cache). The earlier statement that
+"behaviour on the largest box (Ridgecrest) is untested" no longer holds: it answered in 51 s.

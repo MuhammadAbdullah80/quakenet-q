@@ -31,7 +31,7 @@ import numpy as np
 from PIL import Image
 from scipy.spatial import cKDTree
 
-from src.sources import KM_PER_DEG, Projection, QuakeNetError, http_get
+from src.sources import KM_PER_DEG, Projection, QuakeNetError, cache_info, http_get
 
 GRID_SPACING_KM = 2.0
 ROAD_MAX_KM = 1.5
@@ -249,12 +249,18 @@ def _latlon_pairs(points) -> np.ndarray:
 def build_candidate_pool(lat0: float, lon0: float, radius_km: float, stations=(), rupture_points=(), *,
                          grid_km: float = GRID_SPACING_KM, road_max_km: float = ROAD_MAX_KM,
                          max_slope_deg: float = MAX_SLOPE_DEG, station_gap_km: float = MIN_STATION_GAP_KM,
-                         rupture_gap_km: float = MIN_RUPTURE_GAP_KM, zoom: int | None = None) -> CandidatePool:
+                         rupture_gap_km: float = MIN_RUPTURE_GAP_KM, zoom: int | None = None,
+                         roads_online: bool = True, road_bbox=None) -> CandidatePool:
     """Pool of reachable candidate points around (lat0, lon0) (spec FR-6).
 
     stations and rupture_points are rows of (lat, lon) or dicts with 'lat' and 'lon'; pass the
     permanent stations. Never raises for a failed download: a failed road or terrain check is
     skipped, recorded in `warnings`, and sets feasibility_checked = False.
+
+    roads_online=False (opt-in) uses the road answer only if it is already cached and never asks
+    Overpass, so a slow Overpass cannot hold up a request; the default asks the network as before.
+    road_bbox (opt-in) overrides the (south, west, north, east) box of the road query; by default
+    it is the square around the study circle.
     """
     proj = Projection(lat0, lon0)
     grid = make_grid(radius_km, grid_km)
@@ -269,7 +275,10 @@ def build_candidate_pool(lat0: float, lon0: float, radius_km: float, stations=()
 
     road = None
     try:
-        roads = fetch_roads(bounding_box(lat0, lon0, radius_km))
+        bbox = bounding_box(lat0, lon0, radius_km) if road_bbox is None else tuple(road_bbox)
+        if not roads_online and cache_info(overpass_url(bbox)) is None:
+            raise QuakeNetError("CACHE_MISS", "road query not cached and roads_online=False")
+        roads = fetch_roads(bbox)
         road = road_distance_km(grid, [proj.to_km(r[:, 0], r[:, 1]) for r in roads])
     except (QuakeNetError, ValueError) as err:
         warnings.append(f"Overpass unavailable, road filter skipped (grid and terrain only): {err}")

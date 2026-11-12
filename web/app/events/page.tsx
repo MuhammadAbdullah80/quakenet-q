@@ -13,7 +13,8 @@ export default function EventsPage() {
     <>
       <h1>Events</h1>
       <p className="lede">
-        The benchmark earthquakes the backend can plan for. Pick one to open its candidate sites.
+        The earthquakes the backend can plan for: past benchmark earthquakes and, once the agent has
+        started on them, live ones from the USGS feed. Pick one to open its candidate sites.
       </p>
       <Suspense fallback={<Loading label="Loading earthquakes" />}>
         <EventsContent />
@@ -25,6 +26,9 @@ export default function EventsPage() {
 async function EventsContent() {
   const events = await loadEvents();
   const list = events.state === "live" || events.state === "snapshot" ? events.data.events : null;
+  const showKind = list?.some((e) => e.kind) ?? false;
+  const showLocation =
+    list?.some((e) => typeof e.lat === "number" && typeof e.lon === "number") ?? false;
   return (
     <>
       <OfflineBanner results={[events]} />
@@ -43,6 +47,8 @@ async function EventsContent() {
                 </th>
                 <th scope="col">Time</th>
                 <th scope="col">Region</th>
+                {showKind ? <th scope="col">Kind</th> : null}
+                {showLocation ? <th scope="col">Location (lat, lon)</th> : null}
                 <th scope="col">Data</th>
                 <th scope="col">Open</th>
               </tr>
@@ -51,10 +57,27 @@ async function EventsContent() {
               {list.map((event) => (
                 <tr key={event.id}>
                   <th scope="row">{event.name}</th>
-                  <td>{event.id}</td>
+                  <td>
+                    {event.id}
+                    {event.usgs_id ? (
+                      <span className="muted small"> (USGS {event.usgs_id})</span>
+                    ) : null}
+                  </td>
                   <td className="num">{fmt(event.magnitude, 1)}</td>
                   <td>{fmtTime(event.time_utc)}</td>
                   <td>{event.region}</td>
+                  {showKind ? (
+                    <td>
+                      {event.kind === "live" ? "live" : event.kind === "benchmark" ? "benchmark" : "n/a"}
+                    </td>
+                  ) : null}
+                  {showLocation ? (
+                    <td>
+                      {typeof event.lat === "number" && typeof event.lon === "number"
+                        ? `${fmt(event.lat, 2)}, ${fmt(event.lon, 2)}`
+                        : "n/a"}
+                    </td>
+                  ) : null}
                   <td>
                     {event.available ? (
                       <span className="tag tag-ok">available</span>

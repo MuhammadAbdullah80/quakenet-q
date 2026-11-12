@@ -4,8 +4,15 @@ import { fmt } from "@/lib/format";
 // Plain SVG map in the event's local km grid (x east, y north). No map tiles.
 // Works in both server and client components (no hooks, no browser APIs).
 
+/** What the map needs. An Instance fits; so does a sequence step (risk may be unknown). */
+export type MapData = Pick<Instance, "mainshock" | "design_events" | "valid_events" | "stations"> & {
+  /** Picks the relief image when one exists for this event's local grid. */
+  event_id?: string;
+  candidates: { id: number; x: number; y: number; risk?: number | null }[];
+};
+
 type Props = {
-  instance: Instance;
+  instance: MapData;
   /** Sites to ring as "chosen" (solid blue ring). */
   chosen?: readonly number[];
   chosenLabel?: string;
@@ -13,6 +20,10 @@ type Props = {
   secondary?: readonly number[];
   secondaryLabel?: string;
   title: string;
+  /** Legend text for the filled dots (default: aftershocks used to plan). */
+  designLabel?: string;
+  /** Legend text for the open dots (default: later aftershocks). */
+  validLabel?: string;
 };
 
 // Real shaded relief drawn in the page palette (scripts/build_web_assets.py). Square, north up,
@@ -20,6 +31,8 @@ type Props = {
 const RELIEF: Record<string, { href: string; extent: number }> = {
   ridgecrest2019: { href: "/relief/ridgecrest-900.webp", extent: 64 },
 };
+
+const NEUTRAL = { fill: "#dde3df", text: "#10291a" };
 
 const RAMP: [number, number, number][] = [
   [255, 243, 214],
@@ -65,6 +78,8 @@ export function SiteMap({
   secondary = [],
   secondaryLabel = "Exact optimum",
   title,
+  designLabel = "Aftershock used to plan",
+  validLabel = "Later aftershock",
 }: Props) {
   const xs = [
     instance.mainshock.x,
@@ -102,10 +117,15 @@ export function SiteMap({
   const ticksY: number[] = [];
   for (let v = Math.ceil(minY / step) * step; v <= maxY; v += step) ticksY.push(v);
 
-  const risks = instance.candidates.map((c) => c.risk);
-  const riskMin = Math.min(...risks);
-  const riskMax = Math.max(...risks);
+  const risks = instance.candidates
+    .map((c) => c.risk)
+    .filter((r): r is number => typeof r === "number");
+  const hasRisk = risks.length > 0;
+  const riskMin = hasRisk ? Math.min(...risks) : 0;
+  const riskMax = hasRisk ? Math.max(...risks) : 0;
   const riskT = (risk: number) => (riskMax > riskMin ? (risk - riskMin) / (riskMax - riskMin) : 0.5);
+  const fillFor = (risk: number | null | undefined) =>
+    typeof risk === "number" ? riskColour(riskT(risk)) : NEUTRAL;
 
   const chosenSet = new Set(chosen);
   const secondarySet = new Set(secondary);
@@ -115,10 +135,10 @@ export function SiteMap({
   const description =
     `${title}. Local grid in kilometres, north up. ` +
     `${instance.candidates.length} candidate sites, ${instance.stations.length} permanent stations, ` +
-    `${instance.design_events.length} aftershocks used to plan, ${instance.valid_events.length} later aftershocks.` +
+    `Aftershocks: ${instance.design_events.length} marked "${designLabel.toLowerCase()}", ${instance.valid_events.length} marked "${validLabel.toLowerCase()}".` +
     (showChosen ? ` ${chosenLabel}: sites ${[...chosen].join(", ")}.` : "");
 
-  const relief = RELIEF[instance.event_id];
+  const relief = instance.event_id ? RELIEF[instance.event_id] : undefined;
   const low = riskColour(0);
   const high = riskColour(1);
 
@@ -209,7 +229,7 @@ export function SiteMap({
 
         <g>
           {instance.candidates.map((c) => {
-            const colour = riskColour(riskT(c.risk));
+            const colour = fillFor(c.risk);
             return (
               <g key={c.id}>
                 {secondarySet.has(c.id) ? (
@@ -248,7 +268,11 @@ export function SiteMap({
                   fill={colour.fill}
                   strokeWidth={u * 0.3}
                 >
-                  <title>{`Candidate site ${c.id}, risk ${fmt(c.risk)}`}</title>
+                  <title>
+                    {typeof c.risk === "number"
+                      ? `Candidate site ${c.id}, risk ${fmt(c.risk)}`
+                      : `Candidate site ${c.id}`}
+                  </title>
                 </circle>
                 <text
                   x={X(c.x)}
@@ -276,36 +300,51 @@ export function SiteMap({
             </svg>
             Mainshock
           </li>
-          <li>
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <circle className="map-design" cx="10" cy="10" r="4" />
-            </svg>
-            Aftershock used to plan
-          </li>
-          <li>
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <circle className="map-valid" cx="10" cy="10" r="5" strokeWidth="2" />
-            </svg>
-            Later aftershock
-          </li>
+          {instance.design_events.length > 0 ? (
+            <li>
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <circle className="map-design" cx="10" cy="10" r="4" />
+              </svg>
+              {designLabel}
+            </li>
+          ) : null}
+          {instance.valid_events.length > 0 ? (
+            <li>
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <circle className="map-valid" cx="10" cy="10" r="5" strokeWidth="2" />
+              </svg>
+              {validLabel}
+            </li>
+          ) : null}
           <li>
             <svg viewBox="0 0 20 20" aria-hidden="true">
               <polygon className="map-station" strokeWidth="1" points={triangle(10, 10, 8)} />
             </svg>
             Permanent station
           </li>
-          <li>
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <circle className="map-candidate" cx="10" cy="10" r="8" fill={low.fill} />
-            </svg>
-            Candidate, lowest risk ({fmt(riskMin)})
-          </li>
-          <li>
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <circle className="map-candidate" cx="10" cy="10" r="8" fill={high.fill} />
-            </svg>
-            Candidate, highest risk ({fmt(riskMax)})
-          </li>
+          {hasRisk ? (
+            <>
+              <li>
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <circle className="map-candidate" cx="10" cy="10" r="8" fill={low.fill} />
+                </svg>
+                Candidate, lowest risk ({fmt(riskMin)})
+              </li>
+              <li>
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <circle className="map-candidate" cx="10" cy="10" r="8" fill={high.fill} />
+                </svg>
+                Candidate, highest risk ({fmt(riskMax)})
+              </li>
+            </>
+          ) : (
+            <li>
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <circle className="map-candidate" cx="10" cy="10" r="8" fill={NEUTRAL.fill} />
+              </svg>
+              Candidate site (number inside)
+            </li>
+          )}
           {showChosen ? (
             <li>
               <svg viewBox="0 0 20 20" aria-hidden="true">

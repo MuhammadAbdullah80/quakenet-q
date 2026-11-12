@@ -1,0 +1,77 @@
+{
+  "trigger_magnitude": 6.5,
+  "station_radius_km": 100,
+  "sensors": 4,
+  "candidates": 10,
+  "risk_weight": 150,
+  "move_cost": 40,
+  "monitor_interval_hours": 1,
+  "monitor_hours": 72,
+  "drift_centroid_km": 5,
+  "drift_score_drop": 0.2,
+  "min_real_aftershocks": 30,
+  "qaoa_layers": 3,
+  "shots": 1024,
+  "hearing_range": true,
+  "live_enabled": false,
+  "max_plans_per_hour": 4,
+  "limits": {
+    "trigger_magnitude": [
+      3,
+      9
+    ],
+    "station_radius_km": [
+      20,
+      300
+    ],
+    "sensors": [
+      2,
+      4
+    ],
+    "candidates": [
+      8,
+      10
+    ],
+    "risk_weight": [
+      0,
+      1000
+    ],
+    "move_cost": [
+      0,
+      500
+    ],
+    "monitor_interval_hours": [
+      1,
+      12
+    ],
+    "monitor_hours": [
+      6,
+      168
+    ],
+    "drift_centroid_km": [
+      1,
+      50
+    ],
+    "drift_score_drop": [
+      0.05,
+      0.9
+    ],
+    "min_real_aftershocks": [
+      5,
+      200
+    ],
+    "qaoa_layers": [
+      1,
+      5
+    ],
+    "shots": [
+      128,
+      4096
+    ],
+    "max_plans_per_hour": [
+      1,
+      20
+    ]
+  },
+  "updated_utc": "2026-11-12T16:22:53Z"
+}

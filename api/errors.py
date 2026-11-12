@@ -29,3 +29,12 @@ class RateLimited(ApiError):
     def __init__(self, message: str, retry_after: int):
         super().__init__(message)
         self.retry_after = max(1, int(retry_after))
+
+
+class InvalidInput(ApiError):
+    """A request that is well-formed but cannot be carried out; the message is safe to show."""
+    code = "INVALID_INPUT"
+
+
+class FeedUnavailable(ApiError):
+    code = "FEED_UNAVAILABLE"

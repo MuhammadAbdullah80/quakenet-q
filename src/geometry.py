@@ -53,6 +53,8 @@ class Instance:
     risk: np.ndarray        # (N,) access-risk cost in [0, 1]
     mainshock: np.ndarray   # (3,)
     k: int = K_SENSORS
+    design_mag: np.ndarray | None = None  # (E,) magnitudes of `design`, when known (optional)
+    valid_mag: np.ndarray | None = None   # (V,) magnitudes of `valid`, when known (optional)
 
     @property
     def n(self) -> int:
@@ -102,21 +104,138 @@ def load_instance() -> Instance:
                     xyz([main])[0])
 
 
-def _rows(events: np.ndarray, sites: np.ndarray) -> np.ndarray:
+def _rows(events: np.ndarray, sites: np.ndarray, v: float = V_P) -> np.ndarray:
     """Sensitivity rows g[e, s] = d(arrival time)/d(x, y, z, origin time), shape (E, S, 4)."""
     diff = events[:, None, :] - np.column_stack([sites, np.zeros(len(sites))])[None]
     dist = np.linalg.norm(diff, axis=2, keepdims=True)
-    return np.concatenate([diff / (V_P * dist), np.ones_like(dist)], axis=2)
+    return np.concatenate([diff / (v * dist), np.ones_like(dist)], axis=2)
+
+
+# ----------------------------------------------------------------------- hearing range (opt-in)
+#
+# A far station cannot hear a small aftershock, and a weak arrival is picked less precisely.
+# This follows the idea of NetOpt3D (Hardt & Scherbaum 1994), where the picking error depends on
+# the signal-to-noise ratio, and Aki (1976) on signal-to-noise in seismic measurements. It is a
+# SIMPLIFICATION: one attenuation law, one noise level for every site, no site effects, no
+# frequency dependence and no instrument response. The constants below are assumptions, not
+# measurements, and are stated in the report.
+#
+#   amplitude:  Wood-Anderson-equivalent peak amplitude from the southern-California local
+#               magnitude law of Hutton & Boore (1987):
+#                   log10 A[mm] = M - 1.110 log10(r / 100) - 0.00189 (r - 100) - 3.0
+#               (r = hypocentral distance in km; by definition M 3 at 100 km gives 1 mm).
+#   P wave:     the first-arriving P wave is taken as P_TO_PEAK of that (S-dominated) peak.
+#   noise:      one assumed rural background level, NOISE_WA_MM (Wood-Anderson-equivalent).
+#   SNR < 5:    the station does not count for that event (no pick).
+#   pick error: sigma = SIGMA_T * max(1, SNR_GOOD / SNR), so 0.1 s at SNR >= 10, 0.2 s at SNR 5.
+#   With these numbers an M 2.5 is heard to about 55 km and an M 3.0 to about 150 km.
+NOISE_WA_MM = 0.03       # assumed quiet rural background noise, mm (Wood-Anderson equivalent)
+P_TO_PEAK = 0.2          # assumed P amplitude as a fraction of the Wood-Anderson peak
+MIN_SNR = 5.0            # below this the arrival is not picked (decision 16)
+SNR_GOOD = 10.0          # at or above this the pick error is the base SIGMA_T
+MIN_DIST_KM = 1.0        # distances are clipped here so the law stays finite
+# With hearing range a small event may be heard by fewer than 4 stations, which leaves its location
+# undetermined. A weak prior (50 km in each coordinate, 10 s in origin time) keeps the information
+# matrix invertible; it is used only when hearing=True.
+PRIOR_KM, PRIOR_S = 50.0, 10.0
+
+
+def wa_amplitude_mm(mag, r_km):
+    """Wood-Anderson-equivalent peak amplitude in mm (Hutton & Boore 1987 attenuation)."""
+    r = np.maximum(np.asarray(r_km, float), MIN_DIST_KM)
+    return 10.0 ** (np.asarray(mag, float) - 1.110 * np.log10(r / 100.0) - 0.00189 * (r - 100.0) - 3.0)
+
+
+def snr(mag, r_km):
+    """Assumed P-wave signal-to-noise ratio of an event of magnitude `mag` at hypocentral distance r_km."""
+    return P_TO_PEAK * wa_amplitude_mm(mag, r_km) / NOISE_WA_MM
+
+
+def pick_sigma(snr_value):
+    """Arrival-time picking error in s for a signal-to-noise ratio; inf when the event is not heard."""
+    q = np.asarray(snr_value, float)
+    with np.errstate(divide="ignore"):
+        sigma = SIGMA_T * np.maximum(1.0, SNR_GOOD / q)
+    return np.where(q >= MIN_SNR, sigma, np.inf)
+
+
+def event_magnitudes(inst: "Instance", events: np.ndarray, mags=None) -> np.ndarray:
+    """Magnitudes for `events`: `mags` if given, else column 3 of an (E, >=4) array, else the
+    instance's design_mag / valid_mag when `events` is inst.design / inst.valid."""
+    if mags is not None:
+        out = np.asarray(mags, float).reshape(-1)
+    elif np.ndim(events) == 2 and np.shape(events)[1] >= 4:
+        out = np.asarray(events, float)[:, 3]
+    elif events is inst.design and inst.design_mag is not None:
+        out = np.asarray(inst.design_mag, float)
+    elif events is inst.valid and inst.valid_mag is not None:
+        out = np.asarray(inst.valid_mag, float)
+    else:
+        raise ValueError("hearing=True needs magnitudes: pass mags=, an (E, 5) event array, "
+                         "or an Instance with design_mag / valid_mag")
+    if len(out) != len(events):
+        raise ValueError(f"{len(out)} magnitudes for {len(events)} events")
+    return out
+
+
+def pick_weights(xyz: np.ndarray, sites: np.ndarray, mags: np.ndarray) -> np.ndarray:
+    """1 / sigma^2 for every event and site, shape (E, S); 0 where the site cannot hear the event."""
+    sites3 = np.column_stack([sites, np.zeros(len(sites))])
+    r = np.linalg.norm(xyz[:, None, :] - sites3[None], axis=2)
+    return 1.0 / pick_sigma(snr(mags[:, None], r)) ** 2
 
 
 class Scorer:
-    """Location-quality scores of a network = permanent stations + chosen candidates."""
+    """Location-quality scores of a network = permanent stations + chosen candidates.
 
-    def __init__(self, inst: Instance, events: np.ndarray):
-        gp = _rows(events, inst.stations)
-        self.base = np.einsum("esi,esj->eij", gp, gp) / SIGMA_T**2   # Fisher info, permanent net
-        gc = _rows(events, inst.candidates)
-        self.add = np.einsum("esi,esj->esij", gc, gc) / SIGMA_T**2   # rank-1 term per candidate
+    Optional, off by default (the defaults reproduce the published proof of concept exactly):
+      * hearing=True: per station-event pick error from signal-to-noise (see the constants above);
+        a pair with signal-to-noise under 5 does not count. Needs magnitudes (`mags`, an (E, 5)
+        event array, or the instance's design_mag / valid_mag).
+      * velocities=[...], weights=[...]: an ensemble of uniform P velocities (km/s); the D-score
+        and the blur are the weighted means over the models (weights default to equal).
+        `fisher`, `base` and `add` refer to the first model.
+    """
+
+    def __init__(self, inst: Instance, events: np.ndarray, *, mags=None, hearing: bool = False,
+                 velocities=None, weights=None):
+        if not hearing and velocities is None:
+            events = np.asarray(events, float)[:, :3]
+            gp = _rows(events, inst.stations)
+            self.base = np.einsum("esi,esj->eij", gp, gp) / SIGMA_T**2   # Fisher info, permanent net
+            gc = _rows(events, inst.candidates)
+            self.add = np.einsum("esi,esj->esij", gc, gc) / SIGMA_T**2   # rank-1 term per candidate
+            self.velocities, self.model_weights = (V_P,), (1.0,)
+            self._models = [(self.base, self.add)]
+            return
+
+        xyz = np.asarray(events, float)[:, :3]
+        vel = tuple(float(v) for v in (velocities if velocities is not None else (V_P,)))
+        w = np.full(len(vel), 1.0 / max(len(vel), 1)) if weights is None else np.asarray(weights, float).reshape(-1)
+        if not vel or len(w) != len(vel) or np.any(w < 0) or w.sum() <= 0 or min(vel) <= 0:
+            raise ValueError("velocities must be positive; weights non-negative, one per velocity, not all zero")
+        self.velocities, self.model_weights = vel, tuple(float(x) for x in w / w.sum())
+        if hearing:
+            m = event_magnitudes(inst, events, mags)
+            wp, wc = pick_weights(xyz, inst.stations, m), pick_weights(xyz, inst.candidates, m)
+            prior = np.diag([PRIOR_KM**-2] * 3 + [PRIOR_S**-2])
+        else:
+            wp = np.full((len(xyz), len(inst.stations)), SIGMA_T**-2)
+            wc = np.full((len(xyz), len(inst.candidates)), SIGMA_T**-2)
+            prior = np.zeros((4, 4))
+        self._models = []
+        for v in vel:
+            gp, gc = _rows(xyz, inst.stations, v), _rows(xyz, inst.candidates, v)
+            base = np.einsum("es,esi,esj->eij", wp, gp, gp) + prior
+            add = np.einsum("es,esi,esj->esij", wc, gc, gc)
+            self._models.append((base, add))
+        self.base, self.add = self._models[0]
+
+    @staticmethod
+    def _fisher(model, selected) -> np.ndarray:
+        base, add = model
+        sel = list(selected)
+        return base + add[:, sel].sum(axis=1) if sel else base
 
     def fisher(self, selected) -> np.ndarray:
         sel = list(selected)
@@ -124,9 +243,18 @@ class Scorer:
 
     def d_score(self, selected) -> float:
         """D-optimality: sum over events of log det of the location Fisher matrix (higher is better)."""
-        return float(np.linalg.slogdet(self.fisher(selected))[1].sum())
+        if len(self._models) == 1:
+            return float(np.linalg.slogdet(self.fisher(selected))[1].sum())
+        return float(sum(w * np.linalg.slogdet(self._fisher(m, selected))[1].sum()
+                         for w, m in zip(self.model_weights, self._models)))
 
     def blur_km(self, selected) -> float:
         """Mean expected hypocentre uncertainty in km: sqrt(trace of the x,y,z covariance)."""
-        cov = np.linalg.inv(self.fisher(selected))
-        return float(np.sqrt(np.trace(cov[:, :3, :3], axis1=1, axis2=2)).mean())
+        if len(self._models) == 1:
+            cov = np.linalg.inv(self.fisher(selected))
+            return float(np.sqrt(np.trace(cov[:, :3, :3], axis1=1, axis2=2)).mean())
+        out = 0.0
+        for w, m in zip(self.model_weights, self._models):
+            cov = np.linalg.inv(self._fisher(m, selected))
+            out += w * float(np.sqrt(np.trace(cov[:, :3, :3], axis1=1, axis2=2)).mean())
+        return out

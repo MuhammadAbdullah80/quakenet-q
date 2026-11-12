@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // Capture real API responses from a running backend into web/snapshots/, so the
 // site can show them when the backend is offline. Overwrites the placeholder
-// (mock) files. Only GET endpoints are called; no run is started.
+// (mock) files. Only GET endpoints are called; no run is started. Version 2
+// endpoints (settings, feed, memory, noise, sequence, plan) are captured when the
+// backend has them and skipped quietly on 404 or 501.
 //
 // Usage (from web/):
 //   node --env-file=.env.local scripts/capture-snapshots.mjs [event_id] [lam]
@@ -40,7 +42,7 @@ try {
   fail("BACKEND_URL is not a valid URL");
 }
 
-async function get(path) {
+async function get(path, { optional = false } = {}) {
   let response;
   try {
     response = await fetch(base + path, {
@@ -56,6 +58,11 @@ async function get(path) {
     body = await response.json();
   } catch {
     // handled below
+  }
+  // Version 2 endpoints the backend does not have yet (501), or has nothing for (404).
+  if (optional && (response.status === 404 || response.status === 501)) {
+    console.log(`skipped ${path} (${response.status}): left the saved snapshot as it is`);
+    return null;
   }
   if (!response.ok) {
     const code = body?.error?.code ?? "no error code";
@@ -114,6 +121,20 @@ if (finished) {
     `warning: no finished QAOA job for "${event.id}" on the backend. snapshots/job.json was NOT updated ` +
       "(it may still be the placeholder). Run one from the Quantum page, then capture again.",
   );
+}
+
+// Version 2 (the agent). Skipped quietly when the backend answers 404 or 501.
+const optionalSnapshots = [
+  ["settings.json", "/settings"],
+  ["feed.json", "/feed"],
+  ["memory.json", "/memory"],
+  ["noise.json", "/noise"],
+  ["sequence.json", `${eventPath}/sequence`],
+  ["plan.json", `${eventPath}/plan`],
+];
+for (const [name, path] of optionalSnapshots) {
+  const body = await get(path, { optional: true });
+  if (body) await save(name, body);
 }
 
 console.log(`done: snapshots captured for "${event.id}" at lam ${lam}.`);
