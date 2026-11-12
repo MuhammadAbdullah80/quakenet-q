@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { Instance } from "@/lib/schemas";
 import { fmt } from "@/lib/format";
 
@@ -131,6 +132,8 @@ export function SiteMap({
   const fillFor = (risk: number | null | undefined) =>
     typeof risk === "number" ? riskColour(riskT(risk)) : NEUTRAL;
 
+  const nDesign = Math.max(1, instance.design_events.length);
+  const nValid = Math.max(1, instance.valid_events.length);
   const chosenSet = new Set(chosen);
   const secondarySet = new Set(secondary);
   const showSecondary = secondary.length > 0;
@@ -191,12 +194,24 @@ export function SiteMap({
 
         <g className="map-design">
           {instance.design_events.map((e, i) => (
-            <circle key={i} cx={X(e[0])} cy={Y(e[1])} r={u * 0.6} />
+            <circle
+              key={i}
+              cx={X(e[0])}
+              cy={Y(e[1])}
+              r={u * 0.6}
+              style={{ "--i": (i / nDesign).toFixed(3) } as CSSProperties}
+            />
           ))}
         </g>
         <g className="map-valid" strokeWidth={u * 0.3}>
           {instance.valid_events.map((e, i) => (
-            <circle key={i} cx={X(e[0])} cy={Y(e[1])} r={u * 0.75} />
+            <circle
+              key={i}
+              cx={X(e[0])}
+              cy={Y(e[1])}
+              r={u * 0.75}
+              style={{ "--i": (i / nValid).toFixed(3) } as CSSProperties}
+            />
           ))}
         </g>
 
@@ -232,10 +247,10 @@ export function SiteMap({
         </polygon>
 
         <g>
-          {instance.candidates.map((c) => {
+          {instance.candidates.map((c, k) => {
             const colour = fillFor(c.risk);
             return (
-              <g key={c.id}>
+              <g key={c.id} className="map-site" style={{ "--k": k } as CSSProperties}>
                 {secondarySet.has(c.id) ? (
                   <circle
                     className="map-secondary"
@@ -261,6 +276,14 @@ export function SiteMap({
                       cy={Y(c.y)}
                       r={u * 4.1}
                       strokeWidth={u * 1}
+                      pathLength={1}
+                    />
+                    <circle
+                      className="map-chosen-pulse"
+                      cx={X(c.x)}
+                      cy={Y(c.y)}
+                      r={u * 4.1}
+                      strokeWidth={u * 0.6}
                     />
                   </g>
                 ) : null}

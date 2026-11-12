@@ -1,4 +1,5 @@
 import { ViewTransition, type ReactNode } from "react";
+import { PageTrace } from "@/components/PageTrace";
 
 // A template remounts on every navigation, so each page enters and leaves through this boundary.
 // The nav marks a move to a later step as "nav-forward" and an earlier one as "nav-back" (the
@@ -10,7 +11,10 @@ export default function Template({ children }: { children: ReactNode }) {
       exit={{ "nav-forward": "nav-forward", "nav-back": "nav-back", default: "page-fade" }}
       default="none"
     >
-      {children}
+      <div className="page">
+        <PageTrace />
+        {children}
+      </div>
     </ViewTransition>
   );
 }

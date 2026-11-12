@@ -1004,8 +1004,8 @@ tr[aria-current="step"] > * {
 }
 
 /* Landing page: the scroll story (docs/FRONTEND_BRIEF.md section 4) */
-main:has(> .story),
-main:has(> .story-static) {
+main:has(.story),
+main:has(.story-static) {
   max-width: none;
   padding: 0;
 }
@@ -1713,5 +1713,304 @@ tbody tr > * {
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
+  }
+}
+
+/* Seismograph band behind each console page's title (components/PageTrace.tsx) */
+.page {
+  position: relative;
+  isolation: isolate;
+}
+.page-trace {
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3.25rem;
+  pointer-events: none;
+}
+.page-trace canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.page-trace-label {
+  display: none;
+}
+/* Narrow screens: a slim strip above the title. */
+.page:has(> .page-trace) {
+  padding-top: 3rem;
+}
+/* Wide screens: the trace fills the empty column beside the title and intro. */
+@media (min-width: 64rem) {
+  .page:has(> .page-trace) {
+    padding-top: 0;
+  }
+  .page-trace {
+    left: 46rem;
+    top: 1.75rem;
+    height: 6.5rem;
+  }
+  .page-trace-label {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.35rem);
+    max-width: 100%;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.66rem;
+    line-height: 1.4;
+    letter-spacing: 0.03em;
+    color: var(--ink2);
+    text-align: right;
+  }
+  .page-trace-label > span {
+    display: block;
+    white-space: nowrap;
+  }
+}
+
+/* Motion for maps, charts and sections. All of it is off under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  /* Map: aftershocks arrive in order, then the later ones, then sites, then the chosen rings. */
+  .map-design circle,
+  .map-valid circle {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: map-dot 420ms var(--ease-out) both;
+  }
+  .map-design circle {
+    animation-delay: calc(var(--i, 0) * 1000ms);
+  }
+  .map-valid circle {
+    animation-delay: calc(900ms + var(--i, 0) * 500ms);
+  }
+  .map-site {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: map-pop 460ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: calc(1100ms + var(--k, 0) * 55ms);
+  }
+  .map-chosen {
+    stroke-dasharray: 1;
+    animation: map-draw 700ms var(--ease-out) 1700ms both;
+  }
+  .map-chosen-halo {
+    animation: map-fade 400ms ease-out 1700ms both;
+  }
+  .map-chosen-pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: map-pulse 1300ms var(--ease-out) 2200ms 2 both;
+  }
+  .map-station,
+  .map-station-label,
+  .map-mainshock {
+    animation: map-fade 500ms ease-out 200ms both;
+  }
+
+  /* Bars grow from the axis, one after another. */
+  .bar-fill {
+    transform-origin: left center;
+    animation: bar-grow 700ms var(--ease-out) both;
+  }
+  .bar-row:nth-child(2) .bar-fill { animation-delay: 60ms; }
+  .bar-row:nth-child(3) .bar-fill { animation-delay: 120ms; }
+  .bar-row:nth-child(4) .bar-fill { animation-delay: 180ms; }
+  .bar-row:nth-child(5) .bar-fill { animation-delay: 240ms; }
+  .bar-row:nth-child(6) .bar-fill { animation-delay: 300ms; }
+  .bar-row:nth-child(7) .bar-fill { animation-delay: 360ms; }
+  .bar-row:nth-child(n + 8) .bar-fill { animation-delay: 420ms; }
+
+  /* The noise study line draws itself, then its points land. */
+  .chart-line {
+    stroke-dasharray: 1;
+    animation: map-draw 1100ms var(--ease-out) 150ms both;
+  }
+  .chart-point {
+    animation: map-fade 300ms ease-out 1000ms both;
+  }
+}
+.map-chosen-pulse {
+  fill: none;
+  stroke: var(--lime-text);
+  opacity: 0;
+}
+.map-site circle.map-candidate {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--dur-2) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.map-site:hover circle.map-candidate {
+  transform: scale(1.18);
+}
+@keyframes map-dot {
+  from {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+@keyframes map-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+@keyframes map-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes map-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes map-pulse {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.3);
+  }
+}
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* Sections rise in as they scroll into view (browsers with scroll-driven animations). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .table-wrap:not(.panel .table-wrap),
+    dl.facts > div,
+    .bar-chart,
+    .map-figure,
+    .chart-figure,
+    ul.cards > li,
+    .guide-pages > div,
+    .run-cards > li,
+    .run-stats > div {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+  }
+}
+@keyframes reveal {
+  from {
+    opacity: 0;
+    translate: 0 22px;
+  }
+}
+
+/* Interactive earthquake globe (Events, Live feed) */
+.globe {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem 2rem;
+  align-items: center;
+  margin: 1.5rem 0 2rem;
+}
+.globe-stage {
+  position: relative;
+  width: min(100%, 26rem);
+  margin: 0 auto;
+  cursor: grab;
+  touch-action: pan-y;
+}
+.globe-stage[data-dragging] {
+  cursor: grabbing;
+}
+.globe-stage canvas {
+  display: block;
+  width: 100%;
+}
+.globe-tip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  max-width: 16rem;
+  padding: 0.5rem 0.7rem;
+  border-left: 2px solid var(--paper);
+  background: rgba(16, 41, 26, 0.92);
+  color: var(--paper);
+  pointer-events: none;
+  font-size: var(--step--1);
+  line-height: 1.35;
+}
+.globe-tip[hidden] {
+  display: none;
+}
+.globe-tip-title {
+  font-weight: 600;
+}
+.globe-tip-detail {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  color: #c9d3cc;
+}
+.globe figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.globe-caption {
+  font-family: var(--font-head), sans-serif;
+  font-weight: 600;
+  font-size: var(--step-1);
+  line-height: 1.25;
+}
+.globe-key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+  font-size: var(--step--1);
+  color: var(--ink2);
+}
+.globe-key > span[aria-hidden] {
+  display: inline-block;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  margin-left: 0.5rem;
+}
+.globe-key > span[aria-hidden]:first-child {
+  margin-left: 0;
+}
+.key-dot {
+  background: var(--ink);
+}
+.key-ring {
+  border: 2px solid var(--ink);
+  box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 6px var(--ink);
+}
+.key-faint {
+  width: 0.4rem !important;
+  height: 0.4rem !important;
+  background: rgba(16, 41, 26, 0.35);
+}
+.globe-hint {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  color: var(--ink2);
+}
+@media (min-width: 52rem) {
+  .globe {
+    grid-template-columns: 26rem minmax(0, 1fr);
+  }
+  .globe-stage {
+    margin: 0;
   }
 }

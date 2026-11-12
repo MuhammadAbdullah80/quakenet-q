@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { QuakeGlobe } from "@/components/QuakeGlobe";
 import { Empty, Loading, OfflineBanner, Problem } from "@/components/States";
 import { loadEvents } from "@/lib/data";
 import { fmt, fmtTime } from "@/lib/format";
@@ -34,6 +35,26 @@ async function EventsContent() {
       <OfflineBanner results={[events]} />
       <Problem result={events} what="the list of earthquakes" />
       {list && list.length === 0 ? <Empty>The backend lists no earthquakes yet.</Empty> : null}
+      {list && list.some((e) => typeof e.lat === "number" && typeof e.lon === "number") ? (
+        <QuakeGlobe
+          label="Where each earthquake struck."
+          dotLabel="earthquake the backend can plan for"
+          flagLabel={
+            list.some((e) => e.kind === "live") ? "live earthquake the agent started on" : undefined
+          }
+          points={list
+            .filter((e) => typeof e.lat === "number" && typeof e.lon === "number")
+            .map((e) => ({
+              id: e.id,
+              lat: e.lat as number,
+              lon: e.lon as number,
+              mag: e.magnitude,
+              title: e.name,
+              detail: `M ${fmt(e.magnitude, 1)}, ${fmtTime(e.time_utc)}${e.kind ? `, ${e.kind}` : ""}`,
+              flag: e.kind === "live",
+            }))}
+        />
+      ) : null}
       {list && list.length > 0 ? (
         <div className="table-wrap">
           <table>
@@ -68,7 +89,11 @@ async function EventsContent() {
                   <td>{event.region}</td>
                   {showKind ? (
                     <td>
-                      {event.kind === "live" ? "live" : event.kind === "benchmark" ? "benchmark" : "n/a"}
+                      {event.kind === "live"
+                        ? "live"
+                        : event.kind === "benchmark"
+                          ? "benchmark"
+                          : "n/a"}
                     </td>
                   ) : null}
                   {showLocation ? (
