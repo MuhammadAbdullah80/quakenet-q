@@ -15,7 +15,7 @@ Last updated: 2026-11-12
 | Live mode (watching the USGS feed) | ✅ Built, off by default; tested with a fake feed only |
 | Web API v1 + v2 (FastAPI, on the team laptop) | ✅ Built, 303 tests pass |
 | Next.js console with agent pages (Vercel) | ✅ Built: Settings, Live feed, Plan, Monitor, Memory, Noise study |
-| Frontend redesign (`docs/FRONTEND_BRIEF.md`) | ⏳ Branch `frontend-handoff`: console restyle done (palette, Plex type, relief map, charts); landing page and guide page in progress |
+| Frontend redesign (`docs/FRONTEND_BRIEF.md`) | ✅ Branch `frontend-handoff`: console restyle, landing scroll story at `/`, guide at `/guide`. Not merged to `main` yet |
 | Report and README | ⏳ Ridgecrest results updated; agent and benchmark sections added |
 | Video | ❌ Not recorded |
 | Spec v2 | ⏳ Not rewritten; `docs/API.md` and `docs/DECISIONS.md` record what changed |

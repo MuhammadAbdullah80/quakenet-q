@@ -59,6 +59,8 @@ Browser ──► this app (pages and /api routes, server code) ──► Python
 
 | Page | Backend calls |
 |---|---|
+| `/` | None. The scroll story, built from `data/story.json`, `data/world-quakes.json` and `public/relief/` |
+| `/guide` | None. How to use the site and what every number means |
 | `/events` | `GET /events` (shows kind and location when the backend sends them) |
 | `/feed` | `GET /feed`; start the agent on a qualifying earthquake |
 | `/candidates` | `GET /events/{id}/instance` (SVG map in km, plus tables) |

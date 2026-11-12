@@ -65,7 +65,7 @@ npm run build
 | `/plan`, `/monitor`, `/memory` | Placeholders that show "not built yet" | Backend not built |
 | `/system` | Health, job list, data sources | Working |
 
-`/` redirects to `/events`.
+`/` is the landing page (the scroll story) and `/guide` explains the site. Both need no backend.
 
 ## 5. Where things live
 
