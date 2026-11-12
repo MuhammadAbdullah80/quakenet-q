@@ -3694,3 +3694,192 @@ body:has(.demo) .site-footer {
     top: 6rem;
   }
 }
+
+/* ===== Final polish ===== */
+
+/* Tables as clean cards */
+.table-wrap {
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--paper);
+  box-shadow: 0 1px 2px rgba(16, 41, 26, 0.04), 0 8px 24px rgba(16, 41, 26, 0.05);
+}
+.table-wrap table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.table-wrap caption {
+  padding: 1rem 1.1rem 0.75rem;
+}
+.table-wrap th,
+.table-wrap td {
+  padding: 0.7rem 0.9rem;
+}
+.table-wrap thead th {
+  background: var(--info-bg);
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink2);
+}
+.table-wrap thead th:first-child {
+  border-top-left-radius: 0;
+}
+.table-wrap tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.table-wrap tbody tr > * {
+  transition: background-color var(--dur-1) ease-out, box-shadow var(--dur-1) ease-out;
+}
+.table-wrap tbody tr:hover > * {
+  background: #eef6eb;
+}
+.table-wrap tbody tr:hover > :first-child {
+  box-shadow: inset 3px 0 0 var(--forest);
+}
+.table-wrap tbody th[scope="row"] {
+  font-weight: 600;
+}
+.fold[data-open="false"] .fold-body .table-wrap {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* In-cell bars (components/CellBar.tsx) */
+.cell-bar {
+  display: inline-grid;
+  grid-template-columns: 5.5rem auto;
+  align-items: center;
+  gap: 0.6rem;
+  justify-content: end;
+}
+.cell-bar-track {
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--info-bg);
+  overflow: hidden;
+}
+.cell-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--forest);
+  opacity: 0.75;
+  transform-origin: left;
+}
+tr.is-highlight .cell-bar-fill {
+  background: var(--lime-text);
+  opacity: 1;
+}
+.cell-bar-text {
+  min-width: 3.2rem;
+  text-align: right;
+}
+
+/* Bar charts: gridlines at each tick, rounded data ends, hover emphasis */
+.bar-track {
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(var(--gstep, 100%) - 1px),
+    rgba(16, 41, 26, 0.09) calc(var(--gstep, 100%) - 1px),
+    rgba(16, 41, 26, 0.09) var(--gstep, 100%)
+  );
+}
+.bar-fill {
+  border-radius: 0 4px 4px 0;
+  transition: opacity var(--dur-1) ease-out;
+}
+.bar-row {
+  border-radius: 6px;
+  transition: background-color var(--dur-1) ease-out;
+}
+.bar-row:hover {
+  background: rgba(16, 41, 26, 0.04);
+}
+.bar-row:hover .bar-fill {
+  opacity: 0.7;
+}
+.bar-row.is-highlight:hover .bar-fill {
+  opacity: 1;
+}
+.bar-row:hover .bar-value {
+  font-weight: 600;
+}
+.bar-chart {
+  padding: 1rem 1.1rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--paper);
+}
+
+/* Noise chart points grow on hover */
+.chart-point {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--dur-1) ease-out;
+}
+.chart-point:hover {
+  transform: scale(1.5);
+}
+
+/* Tiles: gentle lift on hover */
+.kpis > div,
+.status-tile,
+.run-stats > div {
+  transition: transform var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out);
+}
+.kpis > div:hover,
+.status-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(16, 41, 26, 0.08);
+}
+.kpis > div {
+  border-radius: 10px;
+}
+
+/* Section headings carry a short dark green accent */
+main h2:not(.expand-head h2):not(.demo h2)::after {
+  content: "";
+  display: block;
+  width: 2.25rem;
+  height: 3px;
+  margin-top: 0.45rem;
+  border-radius: 2px;
+  background: var(--forest);
+}
+caption::after,
+.story-panel h2::after {
+  display: none;
+}
+
+/* Panels and notices: softer, rounder */
+.panel {
+  border-radius: 10px;
+}
+.notice {
+  border-radius: 0 8px 8px 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cell-bar-fill {
+    animation: bar-grow 800ms var(--ease-out) 150ms both;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kpis > div:hover,
+  .status-tile:hover {
+    transform: none;
+  }
+}
+@media (max-width: 43.7rem) {
+  .cell-bar {
+    grid-template-columns: 3rem auto;
+  }
+}
+.row-open {
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.row-open:hover {
+  text-decoration: underline;
+}

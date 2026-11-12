@@ -1,4 +1,5 @@
 import { ViewTransition, type ReactNode } from "react";
+import { CountUp } from "@/components/CountUp";
 import { PageTrace } from "@/components/PageTrace";
 import { StepStrip } from "@/components/StepStrip";
 
@@ -14,6 +15,7 @@ export default function Template({ children }: { children: ReactNode }) {
     >
       <div className="page">
         <StepStrip />
+        <CountUp />
         <PageTrace />
         {children}
       </div>
