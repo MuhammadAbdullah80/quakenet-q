@@ -1,0 +1,7 @@
+{
+ "url": "https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2838.1612%2C-122.3810%2C38.2692%2C-122.2436%29%3Bout%20geom%20qt%3B",
+ "retrieved_utc": "2026-11-12T14:16:49Z",
+ "status": 200,
+ "bytes": 518585,
+ "sha256": "a4ff815bb9b8d0a067ac342b986f5725b6775bd20b38c2795b845f0829609d24"
+}

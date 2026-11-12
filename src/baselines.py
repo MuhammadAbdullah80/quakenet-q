@@ -56,5 +56,29 @@ def simulated_annealing(n: int, k: int, score: Score, seed: int = 0, steps: int 
     return tuple(sorted(best))
 
 
+def azimuthal_gap(points: np.ndarray, centre: np.ndarray) -> float:
+    """Largest angle (degrees) around `centre` that contains no station."""
+    az = np.sort(np.degrees(np.arctan2(*(points - centre).T)))
+    return float(np.max(np.diff(np.concatenate([az, az[:1] + 360.0]))))
+
+
+def expert_rule(stations: np.ndarray, candidates: np.ndarray, centre: np.ndarray, k: int) -> tuple[int, ...]:
+    """A stand-in for field practice: no optimisation, no physics model.
+
+    Add sensors one at a time. Each time, pick the site that leaves the smallest azimuthal gap
+    around the aftershock centre; among sites within one degree of the best, take the one
+    closest to the centre ("improve azimuthal coverage, get near-field observations").
+    """
+    chosen: list[int] = []
+    for _ in range(k):
+        current = np.vstack([stations, candidates[chosen]]) if chosen else stations
+        free = [i for i in range(len(candidates)) if i not in chosen]
+        gaps = {i: azimuthal_gap(np.vstack([current, candidates[i]]), centre) for i in free}
+        best = min(gaps.values())
+        near_best = [i for i in free if gaps[i] <= best + 1.0]
+        chosen.append(min(near_best, key=lambda i: float(np.linalg.norm(candidates[i] - centre))))
+    return tuple(sorted(chosen))
+
+
 def random_pick(n: int, k: int, seed: int = 0) -> tuple[int, ...]:
     return tuple(sorted(np.random.default_rng(seed).choice(n, size=k, replace=False).tolist()))

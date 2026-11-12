@@ -5,3 +5,12 @@ __pycache__/
 figures_quick/
 results/results_quick.json
 docs/superpowers/
+
+# Next.js console (web/)
+web/node_modules/
+web/.next/
+web/.env*
+!web/.env.example
+.env
+var/
+data/cache/

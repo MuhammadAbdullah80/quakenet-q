@@ -1,0 +1,7 @@
+{
+ "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=nc72282711&format=geojson",
+ "retrieved_utc": "2026-11-12T14:12:23Z",
+ "status": 200,
+ "bytes": 128277,
+ "sha256": "5f570e227b4bd5a34c40375cf8cc3f58d4fce7ea5944a49cf9ce89e997eb56a5"
+}

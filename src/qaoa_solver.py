@@ -47,13 +47,26 @@ def dicke_state(n: int, k: int) -> QuantumCircuit:
 
 
 def cost_layer(qc: QuantumCircuit, h: SparsePauliOp, gamma) -> None:
-    """exp(-i gamma H) for a Hamiltonian made of Z and ZZ terms."""
+    """exp(-i gamma H) for a Hamiltonian made of products of Z (Z, ZZ, ZZZ, ...).
+
+    A product of Z on several qubits is the parity of those qubits, so we compute the parity
+    onto the last qubit with a CX ladder, rotate it, and undo the ladder.
+    """
     for label, qubits, coeff in h.to_sparse_list():
-        c = float(np.real(coeff))
-        if label == "Z":
-            qc.rz(2 * gamma * c, qubits[0])
-        elif label == "ZZ":
-            qc.rzz(2 * gamma * c, qubits[0], qubits[1])
+        c, q = float(np.real(coeff)), list(qubits)
+        if set(label) != {"Z"}:
+            raise ValueError(f"cost Hamiltonian must be diagonal, got term {label}")
+        if len(q) == 1:
+            qc.rz(2 * gamma * c, q[0])
+        elif len(q) == 2:
+            qc.rzz(2 * gamma * c, q[0], q[1])
+        else:
+            ladder = list(zip(q, q[1:]))
+            for a, b in ladder:
+                qc.cx(a, b)
+            qc.rz(2 * gamma * c, q[-1])
+            for a, b in reversed(ladder):
+                qc.cx(a, b)
 
 
 def xy_ring_mixer(qc: QuantumCircuit, beta) -> None:
@@ -87,8 +100,9 @@ def penalty_qaoa_circuit(h: SparsePauliOp, reps: int) -> QuantumCircuit:
 
 
 # --------------------------------------------------------------------------- hybrid loop
-def _optimise(qc: QuantumCircuit, h: SparsePauliOp, reps: int, seed: int, restarts: int):
-    """COBYLA on the Estimator expectation value, best of several random starts."""
+def _optimise(qc: QuantumCircuit, h: SparsePauliOp, reps: int, seed: int, restarts: int, init=None,
+              maxiter: int = 250):
+    """COBYLA on the Estimator expectation value, best of several starts (random, plus `init` if given)."""
     est = StatevectorEstimator()
     params = list(qc.parameters)  # sorted by name: beta[0..], gamma[0..]
     rng = np.random.default_rng(seed)
@@ -100,9 +114,11 @@ def _optimise(qc: QuantumCircuit, h: SparsePauliOp, reps: int, seed: int, restar
         return val
 
     best = None
-    for _ in range(restarts):
-        x0 = rng.uniform(-0.5, 0.5, size=len(params))
-        res = minimize(energy, x0, method="COBYLA", options=dict(maxiter=250, rhobeg=0.3))
+    starts = [rng.uniform(-0.5, 0.5, size=len(params)) for _ in range(restarts)]
+    if init is not None:
+        starts.insert(0, np.asarray(init, float))
+    for x0 in starts:
+        res = minimize(energy, x0, method="COBYLA", options=dict(maxiter=maxiter, rhobeg=0.3))
         if best is None or res.fun < best.fun:
             best = res
     return best.x, float(best.fun), trace
@@ -120,16 +136,25 @@ def _sample(qc: QuantumCircuit, theta, shots: int, seed: int) -> dict[tuple[int,
     return out
 
 
-def _run(qc, h, reps, seed, restarts, shots):
-    theta, e, trace = _optimise(qc, h, reps, seed, restarts)
+def _run(qc, h, reps, seed, restarts, shots, init=None, maxiter=250):
+    theta, e, trace = _optimise(qc, h, reps, seed, restarts, init, maxiter)
     probs = Statevector(qc.assign_parameters(theta)).probabilities()  # exact distribution, for analysis
     return dict(theta=theta.tolist(), energy=e, trace=trace, probs=probs,
-                counts=_sample(qc, theta, shots, seed), depth=qc.decompose(reps=3).depth(),
+                counts=_sample(qc, theta, shots, seed), depth=qc.decompose(reps=3).depth(), gates=qc.decompose(reps=3).size(),
                 evaluations=len(trace))
 
 
-def run_xy_qaoa(h: SparsePauliOp, k: int, reps: int, seed: int = 0, restarts: int = 4, shots: int = 1024):
-    return _run(xy_qaoa_circuit(h, k, reps), h, reps, seed, restarts, shots)
+def run_xy_qaoa(h: SparsePauliOp, k: int, reps: int, seed: int = 0, restarts: int = 4, shots: int = 1024, init=None,
+                maxiter: int = 250):
+    """`init` is an optional starting point (angles in circuit-parameter order: all beta, then all gamma)."""
+    return _run(xy_qaoa_circuit(h, k, reps), h, reps, seed, restarts, shots, init, maxiter)
+
+
+def extend_angles(theta, reps: int) -> np.ndarray:
+    """Starting point for reps+1 layers from the best angles for `reps` layers (repeat the last layer)."""
+    theta = np.asarray(theta, float)
+    beta, gamma = theta[:reps], theta[reps:]
+    return np.concatenate([beta, beta[-1:], gamma, gamma[-1:]])
 
 
 def run_penalty_qaoa(h_pen: SparsePauliOp, reps: int, seed: int = 0, restarts: int = 4, shots: int = 1024):

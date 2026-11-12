@@ -1,0 +1,289 @@
+[
+ {
+  "key": "ridgecrest2019",
+  "name": "Ridgecrest 2019",
+  "usgs_id": "ci38457511",
+  "errors": [],
+  "mag": 7.1,
+  "time": "2019-07-06T03:19:53.040000+00:00",
+  "lat": 35.7695,
+  "lon": -117.5993333,
+  "depth_km": 8,
+  "place": "Ridgecrest Earthquake Sequence",
+  "radius_km": 112.2,
+  "registry_matches": true,
+  "aftershocks_0_12h": 1056,
+  "aftershocks_12h_7d": 744,
+  "comcat_rows": 1801,
+  "permanent_stations": 54,
+  "permanent_networks": {
+   "8P": 1,
+   "CI": 41,
+   "LB": 1,
+   "NN": 4,
+   "NP": 3,
+   "PB": 4
+  },
+  "temporary_stations": 493,
+  "temporary_networks": {
+   "3J": 456,
+   "7Q": 27,
+   "GS": 10
+  },
+  "pool_size": 7174,
+  "funnel": {
+   "grid": 9917,
+   "on_land": 9691,
+   "slope": 8391,
+   "station_gap": 7177,
+   "rupture_gap": 7174
+  },
+  "feasibility_checked": false,
+  "roads_checked": false,
+  "terrain_checked": true,
+  "pool_warnings": [
+   "Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (HTTP 502): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2834.7603%2C-118.8431%2C36.7787%2C-116.3556%29%3Bout%20geom%20qt%3B"
+  ],
+  "verdict": "usable with caveats",
+  "reasons": [
+   "road or terrain check did not run, pool is not feasibility-checked"
+  ]
+ },
+ {
+  "key": "southnapa2014",
+  "name": "South Napa 2014",
+  "usgs_id": "nc72282711",
+  "errors": [],
+  "mag": 6.02,
+  "time": "2014-08-24T10:20:44.070000+00:00",
+  "lat": 38.2151667,
+  "lon": -122.3123333,
+  "depth_km": 11.12,
+  "place": "The 2014 South Napa, California Earthquake",
+  "radius_km": 50.0,
+  "registry_matches": true,
+  "aftershocks_0_12h": 5,
+  "aftershocks_12h_7d": 9,
+  "comcat_rows": 15,
+  "permanent_stations": 187,
+  "permanent_networks": {
+   "BK": 18,
+   "NC": 89,
+   "NP": 70,
+   "PB": 2,
+   "YK": 7,
+   "YU": 1
+  },
+  "temporary_stations": 241,
+  "temporary_networks": {
+   "7C": 223,
+   "GS": 6,
+   "NC": 12
+  },
+  "pool_size": 506,
+  "funnel": {
+   "grid": 1961,
+   "on_land": 1687,
+   "slope": 1630,
+   "station_gap": 507,
+   "rupture_gap": 506
+  },
+  "feasibility_checked": false,
+  "roads_checked": false,
+  "terrain_checked": true,
+  "pool_warnings": [
+   "Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (TimeoutError: The read operation timed out): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2837.7655%2C-122.8847%2C38.6648%2C-121.7400%29%3Bout%20geom%20qt%3B"
+  ],
+  "verdict": "usable with caveats",
+  "reasons": [
+   "only 5 aftershocks in the first 12 h (under 30: the plan must blend in synthetic events, EC-3)",
+   "only 9 later aftershocks to validate on (under 100)",
+   "road or terrain check did not run, pool is not feasibility-checked"
+  ]
+ },
+ {
+  "key": "montecristo2020",
+  "name": "Monte Cristo Range 2020",
+  "usgs_id": "nn00725272",
+  "errors": [],
+  "mag": 6.5,
+  "time": "2020-05-15T11:03:27.176000+00:00",
+  "lat": 38.1689,
+  "lon": -117.8497,
+  "depth_km": 2.7,
+  "place": "Monte Cristo Range, NV Earthquake",
+  "radius_km": 50.0,
+  "registry_matches": true,
+  "aftershocks_0_12h": 161,
+  "aftershocks_12h_7d": 410,
+  "comcat_rows": 572,
+  "permanent_stations": 18,
+  "permanent_networks": {
+   "IM": 11,
+   "NN": 6,
+   "NP": 1
+  },
+  "temporary_stations": 10,
+  "temporary_networks": {
+   "8P": 2,
+   "GS": 1,
+   "NN": 7
+  },
+  "pool_size": 1678,
+  "funnel": {
+   "grid": 1961,
+   "on_land": 1961,
+   "slope": 1891,
+   "station_gap": 1685,
+   "rupture_gap": 1678
+  },
+  "feasibility_checked": false,
+  "roads_checked": false,
+  "terrain_checked": true,
+  "pool_warnings": [
+   "Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (TimeoutError: The read operation timed out): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2837.7192%2C-118.4217%2C38.6186%2C-117.2777%29%3Bout%20geom%20qt%3B"
+  ],
+  "verdict": "usable with caveats",
+  "reasons": [
+   "road or terrain check did not run, pool is not feasibility-checked"
+  ]
+ },
+ {
+  "key": "anchorage2018",
+  "name": "Anchorage 2018",
+  "usgs_id": "ak018fcnsk91",
+  "errors": [],
+  "mag": 7.1,
+  "time": "2018-11-30T17:29:29.330000+00:00",
+  "lat": 61.3464,
+  "lon": -149.9552,
+  "depth_km": 46.7,
+  "place": "1 km SE of Point MacKenzie, Alaska",
+  "radius_km": 112.2,
+  "registry_matches": true,
+  "aftershocks_0_12h": 324,
+  "aftershocks_12h_7d": 338,
+  "comcat_rows": 663,
+  "permanent_stations": 71,
+  "permanent_networks": {
+   "AK": 28,
+   "AT": 1,
+   "AV": 3,
+   "GD": 1,
+   "NP": 35,
+   "PN": 1,
+   "TA": 2
+  },
+  "temporary_stations": 8,
+  "temporary_networks": {
+   "GM": 8
+  },
+  "pool_size": 801,
+  "funnel": {
+   "grid": 9917,
+   "on_land": 9016,
+   "slope": 7549,
+   "near_road": 1086,
+   "station_gap": 808,
+   "rupture_gap": 801
+  },
+  "feasibility_checked": true,
+  "roads_checked": true,
+  "terrain_checked": true,
+  "pool_warnings": [],
+  "overpass_bytes": 7174204,
+  "verdict": "usable",
+  "reasons": []
+ },
+ {
+  "key": "ferndale2022",
+  "name": "Ferndale 2022",
+  "usgs_id": "nc73821036",
+  "errors": [],
+  "mag": 6.4,
+  "time": "2022-12-20T10:34:24.770000+00:00",
+  "lat": 40.525,
+  "lon": -124.423,
+  "depth_km": 17.91,
+  "place": "15km WSW of Ferndale, CA",
+  "radius_km": 50.0,
+  "registry_matches": true,
+  "aftershocks_0_12h": 48,
+  "aftershocks_12h_7d": 20,
+  "comcat_rows": 69,
+  "permanent_stations": 22,
+  "permanent_networks": {
+   "BK": 6,
+   "NC": 5,
+   "NP": 7,
+   "PB": 4
+  },
+  "temporary_stations": 1,
+  "temporary_networks": {
+   "NC": 1
+  },
+  "pool_size": 252,
+  "funnel": {
+   "grid": 1961,
+   "on_land": 681,
+   "slope": 547,
+   "station_gap": 252,
+   "rupture_gap": 252
+  },
+  "feasibility_checked": false,
+  "roads_checked": false,
+  "terrain_checked": true,
+  "pool_warnings": [
+   "Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (TimeoutError: The read operation timed out): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2840.0753%2C-125.0146%2C40.9747%2C-123.8314%29%3Bout%20geom%20qt%3B"
+  ],
+  "verdict": "usable with caveats",
+  "reasons": [
+   "only 20 later aftershocks to validate on (under 100)",
+   "road or terrain check did not run, pool is not feasibility-checked"
+  ]
+ },
+ {
+  "key": "puertorico2020",
+  "name": "Puerto Rico 2020",
+  "usgs_id": "pr2020007007",
+  "errors": [],
+  "mag": 6.4,
+  "time": "2020-01-07T08:24:27.370000+00:00",
+  "lat": 17.9578,
+  "lon": -66.8113,
+  "depth_km": 6,
+  "place": "4 km SSE of Indios, Puerto Rico",
+  "radius_km": 50.0,
+  "registry_matches": true,
+  "aftershocks_0_12h": 137,
+  "aftershocks_12h_7d": 710,
+  "comcat_rows": 848,
+  "permanent_stations": 21,
+  "permanent_networks": {
+   "PR": 21
+  },
+  "temporary_stations": 9,
+  "temporary_networks": {
+   "GS": 6,
+   "PR": 3
+  },
+  "pool_size": 552,
+  "funnel": {
+   "grid": 1961,
+   "on_land": 932,
+   "slope": 853,
+   "station_gap": 556,
+   "rupture_gap": 552
+  },
+  "feasibility_checked": false,
+  "roads_checked": false,
+  "terrain_checked": true,
+  "pool_warnings": [
+   "Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (HTTP 502): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2817.5081%2C-67.2840%2C18.4075%2C-66.3386%29%3Bout%20geom%20qt%3B"
+  ],
+  "verdict": "usable with caveats",
+  "reasons": [
+   "road or terrain check did not run, pool is not feasibility-checked"
+  ]
+ }
+]

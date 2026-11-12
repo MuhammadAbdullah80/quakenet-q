@@ -1,0 +1,93 @@
+{
+  "lam": 150,
+  "no_new_sensors": {
+    "blur_km": 2.7347758580444044,
+    "loc_error_mean_km": 2.8858843940826233
+  },
+  "methods": [
+    {
+      "name": "Exact (brute force)",
+      "sites": [
+        1,
+        3,
+        4,
+        7
+      ],
+      "objective": 643.8816376845998,
+      "rank": 1,
+      "risk": 2.063215953514632,
+      "blur_km": 1.5033774133054818,
+      "loc_error_mean_km": 2.3141074863493882
+    },
+    {
+      "name": "Greedy forward",
+      "sites": [
+        1,
+        3,
+        4,
+        7
+      ],
+      "objective": 643.8816376845998,
+      "rank": 1,
+      "risk": 2.063215953514632,
+      "blur_km": 1.5033774133054818,
+      "loc_error_mean_km": 2.3141074863493882
+    },
+    {
+      "name": "Backward elimination",
+      "sites": [
+        1,
+        3,
+        4,
+        7
+      ],
+      "objective": 643.8816376845998,
+      "rank": 1,
+      "risk": 2.063215953514632,
+      "blur_km": 1.5033774133054818,
+      "loc_error_mean_km": 2.3141074863493882
+    },
+    {
+      "name": "Simulated annealing",
+      "sites": [
+        1,
+        3,
+        4,
+        7
+      ],
+      "objective": 643.8816376845998,
+      "rank": 1,
+      "risk": 2.063215953514632,
+      "blur_km": 1.5033774133054818,
+      "loc_error_mean_km": 2.3141074863493882
+    },
+    {
+      "name": "Expert rule (azimuthal gap)",
+      "sites": [
+        0,
+        1,
+        2,
+        6
+      ],
+      "objective": 350.61054098586646,
+      "rank": 159,
+      "risk": 2.2477308804252143,
+      "blur_km": 1.6698515926864357,
+      "loc_error_mean_km": 2.5127242264788423
+    },
+    {
+      "name": "Best by D_N criterion",
+      "sites": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "objective": 488.4865779522397,
+      "rank": 45,
+      "risk": 2.954882799354516,
+      "blur_km": 1.5349271265813444,
+      "loc_error_mean_km": 2.3503546091229293
+    }
+  ]
+}

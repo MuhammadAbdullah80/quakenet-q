@@ -1,0 +1,78 @@
+"""Application factory.  Start with:  uvicorn api.main:create_app --factory --host 127.0.0.1 --port 8000"""
+from __future__ import annotations
+
+import re
+from contextlib import asynccontextmanager
+from typing import Callable
+
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+from src.qaoa_solver import run_xy_qaoa
+
+from . import API_VERSION
+from .config import Settings
+from .errors import ApiError, RateLimited
+from .ratelimit import RateLimiter
+from .routes import router
+from .security import GatewayMiddleware, error_body
+from .services.events import default_registry
+from .services.jobs import JobService
+from .services.science import ScienceService
+
+STATUS = {"UNAUTHORIZED": 401, "NOT_FOUND": 404, "INVALID_INPUT": 422, "RATE_LIMITED": 429, "JOB_RUNNING": 409,
+          "NOT_BUILT": 501, "INTERNAL": 500}
+FIELD = re.compile(r"[A-Za-z0-9_]{1,32}")
+
+
+def create_app(settings: Settings | None = None, solver: Callable | None = None) -> FastAPI:
+    """Raises RuntimeError (so the server does not start) if QUAKENET_TOKEN is missing or too short."""
+    settings = settings or Settings.from_env()
+    solver = solver or run_xy_qaoa
+    registry = default_registry(settings.region)
+    science = ScienceService(registry)
+    jobs = JobService(
+        settings.jobs_dir, hourly_cap=settings.hourly_cap,
+        execute=lambda event_id, params: science.qaoa(event_id, restarts=settings.qaoa_restarts,
+                                                      maxiter=settings.qaoa_maxiter, solver=solver, **params))
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI):
+        yield
+        jobs.close()
+
+    # No CORS (the browser never calls this API) and no hosted docs page (it would load third-party scripts).
+    app = FastAPI(title="QuakeNet-Q API", version=API_VERSION, lifespan=lifespan,
+                  openapi_url="/api/v1/openapi.json", docs_url=None, redoc_url=None)
+    app.state.settings, app.state.registry, app.state.science, app.state.jobs = settings, registry, science, jobs
+    app.state.limiter = RateLimiter({"read": settings.read_limit, "job": settings.job_limit})
+
+    @app.exception_handler(ApiError)
+    async def api_error(_: Request, exc: ApiError):
+        headers = {"Retry-After": str(exc.retry_after)} if isinstance(exc, RateLimited) else None
+        return JSONResponse(error_body(exc.code, exc.message), STATUS[exc.code], headers=headers)
+
+    @app.exception_handler(RequestValidationError)
+    async def invalid_input(_: Request, exc: RequestValidationError):
+        # Field name and rule only: the rejected value is never echoed back.
+        parts = []
+        for err in exc.errors()[:5]:
+            loc = [str(p) for p in err.get("loc", ())[1:]]
+            name = ".".join(p if FIELD.fullmatch(p) else "?" for p in loc) or "body"
+            parts.append(f"{name}: {err.get('type', 'invalid')}")
+        return JSONResponse(error_body("INVALID_INPUT", "Invalid input (" + "; ".join(parts) + ")."), 422)
+
+    @app.exception_handler(StarletteHTTPException)
+    async def http_error(_: Request, exc: StarletteHTTPException):
+        if exc.status_code == 404:
+            return JSONResponse(error_body("NOT_FOUND", "Not found."), 404)
+        if exc.status_code == 405:
+            return JSONResponse(error_body("INVALID_INPUT", "Method not allowed."), 405, headers=exc.headers)
+        code = "INVALID_INPUT" if 400 <= exc.status_code < 500 else "INTERNAL"
+        return JSONResponse(error_body(code, "Request failed."), exc.status_code)
+
+    app.include_router(router)
+    app.add_middleware(GatewayMiddleware, token=settings.token)
+    return app

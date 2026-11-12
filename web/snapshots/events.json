@@ -1,0 +1,12 @@
+{
+  "events": [
+    {
+      "id": "ridgecrest2019",
+      "name": "Ridgecrest, California",
+      "magnitude": 7.1,
+      "time_utc": "2019-07-06T03:19:53Z",
+      "region": "local",
+      "available": true
+    }
+  ]
+}

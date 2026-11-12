@@ -1,0 +1,7 @@
+{
+ "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&starttime=2014-08-24T10:20:44&endtime=2014-08-26T10:20:44&latitude=38.2152&longitude=-122.3123&maxradiuskm=10.0&minmagnitude=2.5&orderby=time-asc",
+ "retrieved_utc": "2026-11-12T14:12:24Z",
+ "status": 200,
+ "bytes": 6085,
+ "sha256": "43f80a78ff304f36ab834fc55e218628d5b4c7aadc323c0ec35bb3d3a447c275"
+}

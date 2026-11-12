@@ -5,10 +5,12 @@ import numpy as np
 import pytest
 from qiskit.quantum_info import Statevector
 
-from src.baselines import backward_elimination, brute_force, greedy_forward, simulated_annealing
+from src.baselines import (azimuthal_gap, backward_elimination, brute_force, expert_rule, greedy_forward,
+                           simulated_annealing)
+from src.location import dn_score, location_errors
 from src.geometry import Scorer, load_instance
-from src.qaoa_solver import dicke_probabilities, dicke_state, run_xy_qaoa, xy_qaoa_circuit
-from src.qubo import build_qubo, energies, to_hamiltonian
+from src.qaoa_solver import cost_layer, dicke_probabilities, dicke_state, run_xy_qaoa, xy_qaoa_circuit
+from src.qubo import build_objective, build_qubo, energies, to_hamiltonian
 
 warnings.filterwarnings("ignore")
 LAM = 150.0
@@ -52,6 +54,34 @@ def test_qubo_is_exact_for_one_and_two_sites(inst, scorer):
     d0 = scorer.d_score([])
     assert q.value([3]) == pytest.approx(scorer.d_score([3]) - d0)
     assert q.value([2, 7]) == pytest.approx(scorer.d_score([2, 7]) - d0)
+
+
+@pytest.fixture(scope="module")
+def exact(inst, scorer):
+    return build_objective(inst, scorer, LAM, order=4)
+
+
+def test_order_4_objective_is_exact_for_every_4_site_network(inst, scorer, exact):
+    base = scorer.d_score([])
+    for s in inst.feasible_sets():
+        truth = scorer.d_score(s) - LAM * inst.risk[list(s)].sum() - base
+        assert exact.value(s) == pytest.approx(truth, abs=1e-6)
+
+
+def test_exact_hamiltonian_matches_objective_on_every_basis_state(exact):
+    h, const = to_hamiltonian(exact)
+    assert {len(q) for _, q, _ in h.to_sparse_list()} == {1, 2, 3, 4}
+    assert np.allclose(np.real(h.to_matrix(sparse=True).diagonal()) + const, energies(exact))
+
+
+def test_cost_layer_applies_the_exact_phase_to_every_network(inst, exact):
+    h, const = to_hamiltonian(exact)
+    gamma = 0.37
+    before = Statevector(dicke_state(inst.n, inst.k))
+    qc = dicke_state(inst.n, inst.k)
+    cost_layer(qc, h, gamma)
+    expected = before.data * np.exp(-1j * gamma * (energies(exact) - const))
+    assert np.allclose(Statevector(qc).data, expected)
 
 
 def test_hamiltonian_matches_qubo_on_every_allowed_network(inst, qubo):
@@ -100,3 +130,27 @@ def test_brute_force_is_never_beaten(inst, qubo):
         picked = method(inst.n, inst.k, qubo.value)
         assert len(set(picked)) == inst.k
         assert qubo.value(picked) <= best + 1e-9
+
+
+def test_azimuthal_gap_of_four_compass_points_is_90_degrees():
+    pts = np.array([[1.0, 0.0], [0.0, 1.0], [-1.0, 0.0], [0.0, -1.0]])
+    assert azimuthal_gap(pts, np.zeros(2)) == pytest.approx(90.0)
+
+
+def test_expert_rule_fills_the_largest_gap_first():
+    stations = np.array([[10.0, 0.0], [0.0, 10.0]])            # east and north only
+    candidates = np.array([[9.0, 1.0], [-7.0, -7.0], [0.0, 9.0]])
+    assert expert_rule(stations, candidates, np.zeros(2), k=1) == (1,)   # the south-west site
+
+
+def test_location_error_shrinks_when_sensors_are_added(inst):
+    events = inst.valid[:25]
+    with_none = location_errors(inst, (), events, trials=1).mean()
+    with_four = location_errors(inst, (0, 1, 4, 7), events, trials=1).mean()
+    assert with_four < with_none
+
+
+def test_dn_score_rewards_spread_over_duplication(inst):
+    spread, bunched = (1, 4, 7, 8), (5, 6, 2, 3)
+    assert np.isfinite(dn_score(inst, spread, inst.design))
+    assert dn_score(inst, spread, inst.design) != dn_score(inst, bunched, inst.design)
