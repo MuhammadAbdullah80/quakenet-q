@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { Expand } from "@/components/Expand";
+import { ZoomFrame } from "@/components/ZoomFrame";
 import type { Instance } from "@/lib/schemas";
 import { fmt } from "@/lib/format";
 
@@ -143,6 +144,9 @@ export function SiteMap({
   const fillFor = (risk: number | null | undefined) =>
     typeof risk === "number" ? riskColour(riskT(risk)) : NEUTRAL;
 
+  // Zoom (components/ZoomFrame.tsx) spreads the map out; each mark counter-scales around its own
+  // point so it keeps its size and crowded marks separate instead of growing together.
+  const mz = (x: number, y: number) => ({ transformOrigin: `${x}px ${y}px` }) as CSSProperties;
   const nDesign = Math.max(1, instance.design_events.length);
   const nValid = Math.max(1, instance.valid_events.length);
   const chosenSet = new Set(chosen);
@@ -172,216 +176,237 @@ export function SiteMap({
       ...(showChosen ? [`Lime rings mark ${chosenLabel.toLowerCase()}s.`] : []),
       ...(moves.length ? ["Arrows show a sensor moving from one site to another."] : []),
       "Hover a mark to see its name and value.",
+      "Use the magnifier buttons to zoom: the map spreads out while the marks stay the same size, so crowded spots separate. Drag to move around.",
     ],
   };
 
   return (
-    <Expand title={title} explain={explain}>
+    <Expand title={title} explain={explain} clickToOpen={false}>
       <figure className="map-figure">
-        <svg
-          className={live ? "map-svg is-live" : "map-svg"}
-          viewBox={`${minX} ${-maxY} ${size} ${size}`}
-          role="img"
-          aria-label={description}
-        >
-          {relief ? (
-            <image
-              className="map-relief"
-              href={relief.href}
-              x={-relief.extent}
-              y={-relief.extent}
-              width={2 * relief.extent}
-              height={2 * relief.extent}
-              preserveAspectRatio="none"
-            />
-          ) : null}
-          <g className="map-grid" strokeWidth={u * 0.15}>
-            {ticksX.map((v) => (
-              <line key={`gx${v}`} x1={X(v)} x2={X(v)} y1={Y(minY)} y2={Y(maxY)} />
-            ))}
-            {ticksY.map((v) => (
-              <line key={`gy${v}`} x1={X(minX)} x2={X(maxX)} y1={Y(v)} y2={Y(v)} />
-            ))}
-          </g>
-          <g className="map-axis-label" fontSize={u * 2.4}>
-            {ticksX.map((v) => (
-              <text key={`tx${v}`} x={X(v) + u * 0.6} y={Y(minY) - u}>
-                {v} km
-              </text>
-            ))}
-            {ticksY.map((v) => (
-              <text key={`ty${v}`} x={X(minX) + u * 0.6} y={Y(v) - u * 0.6}>
-                {v} km
-              </text>
-            ))}
-            <text x={X(maxX) - u * 5} y={Y(maxY) + u * 4} fontWeight="700">
-              N ↑
-            </text>
-          </g>
-
-          <g className="map-design">
-            {instance.design_events.map((e, i) => (
-              <circle
-                key={i}
-                cx={X(e[0])}
-                cy={Y(e[1])}
-                r={u * 0.6}
-                style={{ "--i": (i / nDesign).toFixed(3) } as CSSProperties}
-              />
-            ))}
-          </g>
-          <g className="map-valid" strokeWidth={u * 0.3}>
-            {instance.valid_events.map((e, i) => (
-              <circle
-                key={i}
-                cx={X(e[0])}
-                cy={Y(e[1])}
-                r={u * 0.75}
-                style={{ "--i": (i / nValid).toFixed(3) } as CSSProperties}
-              />
-            ))}
-          </g>
-
-          <g>
-            {instance.stations.map((s) => (
-              <g key={s.name}>
-                <polygon
-                  className="map-station"
-                  strokeWidth={u * 0.3}
-                  points={triangle(X(s.x), Y(s.y), u * 2)}
-                >
-                  <title>{`Permanent station ${s.name}`}</title>
-                </polygon>
-                <text
-                  className="map-station-label"
-                  x={X(s.x) + u * 2.6}
-                  y={Y(s.y) + u}
-                  fontSize={u * 2.6}
-                  fontWeight="600"
-                >
-                  {s.name}
-                </text>
-              </g>
-            ))}
-          </g>
-
-          <polygon
-            className="map-mainshock"
-            strokeWidth={u * 0.3}
-            points={star(X(instance.mainshock.x), Y(instance.mainshock.y), u * 3)}
+        <ZoomFrame label={title}>
+          <svg
+            className={live ? "map-svg is-live" : "map-svg"}
+            viewBox={`${minX} ${-maxY} ${size} ${size}`}
+            role="img"
+            aria-label={description}
           >
-            <title>{`Mainshock, depth ${fmt(instance.mainshock.depth, 1)} km`}</title>
-          </polygon>
-
-          {moves.length > 0 ? (
-            <g className="map-moves" key={`moves-${ringKey}`}>
-              <defs>
-                <marker
-                  id="map-arrow"
-                  viewBox="0 0 10 10"
-                  refX="8"
-                  refY="5"
-                  markerWidth="5"
-                  markerHeight="5"
-                  orient="auto-start-reverse"
+            {relief ? (
+              <image
+                className="map-relief"
+                href={relief.href}
+                x={-relief.extent}
+                y={-relief.extent}
+                width={2 * relief.extent}
+                height={2 * relief.extent}
+                preserveAspectRatio="none"
+              />
+            ) : null}
+            <g className="map-grid" strokeWidth={u * 0.15}>
+              {ticksX.map((v) => (
+                <line key={`gx${v}`} x1={X(v)} x2={X(v)} y1={Y(minY)} y2={Y(maxY)} />
+              ))}
+              {ticksY.map((v) => (
+                <line key={`gy${v}`} x1={X(minX)} x2={X(maxX)} y1={Y(v)} y2={Y(v)} />
+              ))}
+            </g>
+            <g className="map-axis-label" fontSize={u * 2.4}>
+              {ticksX.map((v) => (
+                <text
+                  key={`tx${v}`}
+                  className="mz"
+                  style={mz(X(v) + u * 0.6, Y(minY) - u)}
+                  x={X(v) + u * 0.6}
+                  y={Y(minY) - u}
                 >
-                  <path d="M0,0 L10,5 L0,10 z" className="map-move-head" />
-                </marker>
-              </defs>
-              {moves.map((m) => {
-                const a = instance.candidates.find((c) => c.id === m.from);
-                const b = instance.candidates.find((c) => c.id === m.to);
-                if (!a || !b) return null;
-                // Stop short of both circles so the arrow reads as "from here to there".
-                const dx = X(b.x) - X(a.x);
-                const dy = Y(b.y) - Y(a.y);
-                const len = Math.hypot(dx, dy) || 1;
-                const pad = u * 4.6;
-                return (
-                  <path
-                    key={`${m.from}-${m.to}`}
-                    className="map-move"
-                    d={`M${X(a.x) + (dx / len) * pad},${Y(a.y) + (dy / len) * pad} L${X(b.x) - (dx / len) * pad},${Y(b.y) - (dy / len) * pad}`}
-                    strokeWidth={u * 0.7}
-                    markerEnd="url(#map-arrow)"
-                    pathLength={1}
+                  {v} km
+                </text>
+              ))}
+              {ticksY.map((v) => (
+                <text
+                  key={`ty${v}`}
+                  className="mz"
+                  style={mz(X(minX) + u * 0.6, Y(v) - u * 0.6)}
+                  x={X(minX) + u * 0.6}
+                  y={Y(v) - u * 0.6}
+                >
+                  {v} km
+                </text>
+              ))}
+              <text x={X(maxX) - u * 5} y={Y(maxY) + u * 4} fontWeight="700">
+                N ↑
+              </text>
+            </g>
+
+            <g className="map-design">
+              {instance.design_events.map((e, i) => (
+                <g key={i} className="mz" style={mz(X(e[0]), Y(e[1]))}>
+                  <circle
+                    cx={X(e[0])}
+                    cy={Y(e[1])}
+                    r={u * 0.6}
+                    style={{ "--i": (i / nDesign).toFixed(3) } as CSSProperties}
                   />
+                </g>
+              ))}
+            </g>
+            <g className="map-valid" strokeWidth={u * 0.3}>
+              {instance.valid_events.map((e, i) => (
+                <g key={i} className="mz" style={mz(X(e[0]), Y(e[1]))}>
+                  <circle
+                    cx={X(e[0])}
+                    cy={Y(e[1])}
+                    r={u * 0.75}
+                    style={{ "--i": (i / nValid).toFixed(3) } as CSSProperties}
+                  />
+                </g>
+              ))}
+            </g>
+
+            <g>
+              {instance.stations.map((s) => (
+                <g key={s.name} className="mz" style={mz(X(s.x), Y(s.y))}>
+                  <polygon
+                    className="map-station"
+                    strokeWidth={u * 0.3}
+                    points={triangle(X(s.x), Y(s.y), u * 2)}
+                  >
+                    <title>{`Permanent station ${s.name}`}</title>
+                  </polygon>
+                  <text
+                    className="map-station-label"
+                    x={X(s.x) + u * 2.6}
+                    y={Y(s.y) + u}
+                    fontSize={u * 2.6}
+                    fontWeight="600"
+                  >
+                    {s.name}
+                  </text>
+                </g>
+              ))}
+            </g>
+
+            <g className="mz" style={mz(X(instance.mainshock.x), Y(instance.mainshock.y))}>
+              <polygon
+                className="map-mainshock"
+                strokeWidth={u * 0.3}
+                points={star(X(instance.mainshock.x), Y(instance.mainshock.y), u * 3)}
+              >
+                <title>{`Mainshock, depth ${fmt(instance.mainshock.depth, 1)} km`}</title>
+              </polygon>
+            </g>
+
+            {moves.length > 0 ? (
+              <g className="map-moves" key={`moves-${ringKey}`}>
+                <defs>
+                  <marker
+                    id="map-arrow"
+                    viewBox="0 0 10 10"
+                    refX="8"
+                    refY="5"
+                    markerWidth="5"
+                    markerHeight="5"
+                    orient="auto-start-reverse"
+                  >
+                    <path d="M0,0 L10,5 L0,10 z" className="map-move-head" />
+                  </marker>
+                </defs>
+                {moves.map((m) => {
+                  const a = instance.candidates.find((c) => c.id === m.from);
+                  const b = instance.candidates.find((c) => c.id === m.to);
+                  if (!a || !b) return null;
+                  // Stop short of both circles so the arrow reads as "from here to there".
+                  const dx = X(b.x) - X(a.x);
+                  const dy = Y(b.y) - Y(a.y);
+                  const len = Math.hypot(dx, dy) || 1;
+                  const pad = u * 4.6;
+                  return (
+                    <path
+                      key={`${m.from}-${m.to}`}
+                      className="map-move"
+                      d={`M${X(a.x) + (dx / len) * pad},${Y(a.y) + (dy / len) * pad} L${X(b.x) - (dx / len) * pad},${Y(b.y) - (dy / len) * pad}`}
+                      strokeWidth={u * 0.7}
+                      markerEnd="url(#map-arrow)"
+                      pathLength={1}
+                    />
+                  );
+                })}
+              </g>
+            ) : null}
+            <g>
+              {instance.candidates.map((c, k) => {
+                const colour = fillFor(c.risk);
+                return (
+                  <g key={c.id} className="mz" style={mz(X(c.x), Y(c.y))}>
+                    <g className="map-site" style={{ "--k": k } as CSSProperties}>
+                      {secondarySet.has(c.id) ? (
+                        <circle
+                          className="map-secondary"
+                          cx={X(c.x)}
+                          cy={Y(c.y)}
+                          r={u * 5.2}
+                          strokeWidth={u * 0.7}
+                          strokeDasharray={`${u * 1.4} ${u}`}
+                        />
+                      ) : null}
+                      {chosenSet.has(c.id) ? (
+                        <g key={`ring-${ringKey}`}>
+                          <circle
+                            className="map-chosen-halo"
+                            cx={X(c.x)}
+                            cy={Y(c.y)}
+                            r={u * 4.1}
+                            strokeWidth={u * 1.7}
+                          />
+                          <circle
+                            className="map-chosen"
+                            cx={X(c.x)}
+                            cy={Y(c.y)}
+                            r={u * 4.1}
+                            strokeWidth={u * 1}
+                            pathLength={1}
+                          />
+                          <circle
+                            className="map-chosen-pulse"
+                            cx={X(c.x)}
+                            cy={Y(c.y)}
+                            r={u * 4.1}
+                            strokeWidth={u * 0.6}
+                          />
+                        </g>
+                      ) : null}
+                      <circle
+                        className="map-candidate"
+                        cx={X(c.x)}
+                        cy={Y(c.y)}
+                        r={u * 2.7}
+                        fill={colour.fill}
+                        strokeWidth={u * 0.3}
+                      >
+                        <title>
+                          {typeof c.risk === "number"
+                            ? `Candidate site ${c.id}, risk ${fmt(c.risk)}`
+                            : `Candidate site ${c.id}`}
+                        </title>
+                      </circle>
+                      <text
+                        x={X(c.x)}
+                        y={Y(c.y)}
+                        fontSize={u * 3.2}
+                        fontWeight="700"
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fill={colour.text}
+                        pointerEvents="none"
+                      >
+                        {c.id}
+                      </text>
+                    </g>
+                  </g>
                 );
               })}
             </g>
-          ) : null}
-          <g>
-            {instance.candidates.map((c, k) => {
-              const colour = fillFor(c.risk);
-              return (
-                <g key={c.id} className="map-site" style={{ "--k": k } as CSSProperties}>
-                  {secondarySet.has(c.id) ? (
-                    <circle
-                      className="map-secondary"
-                      cx={X(c.x)}
-                      cy={Y(c.y)}
-                      r={u * 5.2}
-                      strokeWidth={u * 0.7}
-                      strokeDasharray={`${u * 1.4} ${u}`}
-                    />
-                  ) : null}
-                  {chosenSet.has(c.id) ? (
-                    <g key={`ring-${ringKey}`}>
-                      <circle
-                        className="map-chosen-halo"
-                        cx={X(c.x)}
-                        cy={Y(c.y)}
-                        r={u * 4.1}
-                        strokeWidth={u * 1.7}
-                      />
-                      <circle
-                        className="map-chosen"
-                        cx={X(c.x)}
-                        cy={Y(c.y)}
-                        r={u * 4.1}
-                        strokeWidth={u * 1}
-                        pathLength={1}
-                      />
-                      <circle
-                        className="map-chosen-pulse"
-                        cx={X(c.x)}
-                        cy={Y(c.y)}
-                        r={u * 4.1}
-                        strokeWidth={u * 0.6}
-                      />
-                    </g>
-                  ) : null}
-                  <circle
-                    className="map-candidate"
-                    cx={X(c.x)}
-                    cy={Y(c.y)}
-                    r={u * 2.7}
-                    fill={colour.fill}
-                    strokeWidth={u * 0.3}
-                  >
-                    <title>
-                      {typeof c.risk === "number"
-                        ? `Candidate site ${c.id}, risk ${fmt(c.risk)}`
-                        : `Candidate site ${c.id}`}
-                    </title>
-                  </circle>
-                  <text
-                    x={X(c.x)}
-                    y={Y(c.y)}
-                    fontSize={u * 3.2}
-                    fontWeight="700"
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fill={colour.text}
-                    pointerEvents="none"
-                  >
-                    {c.id}
-                  </text>
-                </g>
-              );
-            })}
-          </g>
-        </svg>
+          </svg>
+        </ZoomFrame>
 
         <figcaption>
           <ul className="map-legend">

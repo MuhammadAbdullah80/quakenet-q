@@ -13,8 +13,8 @@ export default function NoisePage() {
     <>
       <h1>Noise study</h1>
       <p className="lede">
-        How the quantum circuit holds up when its gates make errors. The same kind of circuit is run
-        on a smaller version of the problem in a simulator that adds random gate errors.
+        Real quantum hardware makes small mistakes. This simulation adds those mistakes on purpose
+        to show how much they would hurt the circuit.
       </p>
       <div className="notice notice-warn">
         <p className="notice-title">This is a simulation, not a run on a quantum computer.</p>

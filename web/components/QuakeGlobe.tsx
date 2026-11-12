@@ -123,14 +123,18 @@ export function QuakeGlobe({
         size / 2,
         size * 0.52,
       );
-      glow.addColorStop(0, "rgba(16, 41, 26, 0.18)");
-      glow.addColorStop(1, "rgba(16, 41, 26, 0)");
+      const darkBase = document.documentElement.dataset.theme === "dark";
+      glow.addColorStop(0, darkBase ? "rgba(198, 243, 92, 0.10)" : "rgba(16, 41, 26, 0.18)");
+      glow.addColorStop(1, darkBase ? "rgba(198, 243, 92, 0)" : "rgba(16, 41, 26, 0)");
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, size, size);
       ctx.beginPath();
       path({ type: "Sphere" });
       ctx.fillStyle = "#10291a";
       ctx.fill();
+      ctx.strokeStyle = "rgba(232, 239, 233, 0.28)";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
       ctx.beginPath();
       path(GRATICULE);
       ctx.strokeStyle = "rgba(231, 235, 232, 0.07)";

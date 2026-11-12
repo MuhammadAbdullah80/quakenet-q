@@ -13,9 +13,8 @@ export default function MemoryPage() {
     <>
       <h1>Memory</h1>
       <p className="lede">
-        What the agent has learned across earthquakes: circuit angles that worked before (a good
-        starting point for the next quantum run), how much it trusts each travel-time model, and how
-        well its past plans predicted their own score.
+        Settings that worked well before, how much the agent trusts each speed model of the ground,
+        and how good its past predictions were.
       </p>
       <Suspense fallback={<Loading label="Loading the memory" />}>
         <MemoryContent />

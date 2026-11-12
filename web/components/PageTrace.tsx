@@ -72,12 +72,15 @@ export function PageTrace() {
 
     const draw = (t: number) => {
       ctx.clearRect(0, 0, w, h);
+      // Ink follows the theme: light lines on the dark green base, dark lines on the light one.
+      const rgb =
+        document.documentElement.dataset.theme === "dark" ? "232, 239, 233" : "16, 41, 26";
       const mid = h * 0.56;
       const amp = h * 0.36;
       const n = trace.length;
       const upto = Math.max(1, Math.floor(n * t));
       // Hour ticks along the baseline.
-      ctx.strokeStyle = "rgba(16, 41, 26, 0.14)";
+      ctx.strokeStyle = `rgba(${rgb}, 0.14)`;
       ctx.lineWidth = 1;
       for (let k = Math.ceil(t0 * 2) / 2; k <= t1; k += 0.5) {
         const x = ((k - t0) / (t1 - t0)) * w;
@@ -89,7 +92,7 @@ export function PageTrace() {
       ctx.beginPath();
       ctx.moveTo(0, mid);
       ctx.lineTo(w, mid);
-      ctx.strokeStyle = "rgba(16, 41, 26, 0.08)";
+      ctx.strokeStyle = `rgba(${rgb}, 0.08)`;
       ctx.stroke();
 
       ctx.beginPath();
@@ -99,7 +102,7 @@ export function PageTrace() {
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = "rgba(16, 41, 26, 0.5)";
+      ctx.strokeStyle = `rgba(${rgb}, 0.5)`;
       ctx.lineWidth = 1.25;
       ctx.lineJoin = "round";
       ctx.stroke();
@@ -135,7 +138,10 @@ export function PageTrace() {
       draw(1);
     });
     ro.observe(canvas);
+    const onTheme = () => draw(1);
+    window.addEventListener("qn-theme-change", onTheme);
     return () => {
+      window.removeEventListener("qn-theme-change", onTheme);
       ro.disconnect();
       cancelAnimationFrame(raf);
     };

@@ -16,9 +16,8 @@ export default function QuantumPage({ searchParams }: PageProps) {
     <>
       <h1>Quantum</h1>
       <p className="lede">
-        Run the quantum optimisation algorithm (QAOA) on the backend and see which networks it
-        measures most often. A run is a job: it starts at once and this page checks its status
-        every 2 seconds.
+        The circuit is run many times; each run names one choice of 4 sites. The best choice should
+        come up far more often than a random guess would.
       </p>
       <Suspense fallback={<Loading label="Loading the quantum module" />}>
         <QuantumContent searchParams={searchParams} />

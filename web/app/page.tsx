@@ -74,7 +74,8 @@ export default function HomePage() {
               ))}
             </ol>
             <p>
-              New here? The <Link href="/guide">guide</Link> explains every map, chart and number.
+              New here? The <Link href="/guide">guide</Link> explains every map, chart and number,
+              and the <Link href="/demo">demo</Link> walks through the whole story in eight steps.
             </p>
           </div>
 

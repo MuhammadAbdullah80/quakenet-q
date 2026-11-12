@@ -3,12 +3,12 @@
   /* Palette from docs/FRONTEND_BRIEF.md section 2. Lime means a sensor or a chosen site, nothing else. */
   --ink: #10291a;
   --ink2: #2c4434;
-  --mist: #e2eae3;
-  --paper: #f4f7f3;
+  --mist: #edf6ea;
+  --paper: #f8fcf6;
   --lime: #c6f35c;
   /* Darker than the brief's #4f8a12, which is 3.51:1 on mist and fails WCAG AA for text. This is 5.08:1. */
   --lime-text: #3d6e0c;
-  --rule: #c3ccc5;
+  --rule: #cddbc9;
   --rule-strong: #10291a;
   --ok-bg: #eef7dc;
   --warn: #7a4b00;
@@ -16,6 +16,10 @@
   --bad: #9b1c1c;
   --bad-bg: #fbe9e7;
   --focus: #10291a;
+  /* Fixed colours for surfaces that stay dark green (or light) in every theme. */
+  --forest: #10291a;
+  --forest-2: #0a1d12;
+  --cream: #f6f7f4;
 
   --step--1: 0.8125rem;
   --step-0: 1rem;
@@ -39,7 +43,7 @@
   --accent: var(--ink);
   --accent-text: var(--paper);
   --ok: var(--lime-text);
-  --info-bg: #dde3df;
+  --info-bg: #e3efdf;
 }
 
 * {
@@ -127,8 +131,8 @@ dl.facts dd {
   position: absolute;
   left: -999px;
   top: 0;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--forest);
+  color: var(--cream);
   padding: 0.6rem 1rem;
   z-index: 100;
 }
@@ -221,7 +225,7 @@ body:has(.story) .site-header {
   margin-right: 0.45em;
   border-radius: 50%;
   background: var(--lime);
-  box-shadow: 0 0 0 2px var(--ink);
+  box-shadow: 0 0 0 2px var(--forest);
   vertical-align: 0.08em;
 }
 .site-header .tagline {
@@ -314,10 +318,10 @@ body:has(.story) .site-header {
 }
 .nav a:hover,
 .nav a:focus-visible {
-  color: var(--ink);
+  color: var(--forest);
 }
 .nav a[aria-current="page"] {
-  color: var(--ink);
+  color: var(--forest);
   font-weight: 500;
 }
 /* Before the script runs, the current page still gets its underline. */
@@ -336,7 +340,7 @@ body:has(.story) .site-header {
   height: 0.4rem;
   border-radius: 50%;
   background: var(--lime);
-  box-shadow: 0 0 0 1px var(--ink);
+  box-shadow: 0 0 0 1px var(--forest);
   opacity: 0;
   transform: scale(0.4);
   pointer-events: none;
@@ -634,7 +638,7 @@ dl.facts dd {
 }
 
 pre.raw {
-  background: var(--ink);
+  background: var(--forest);
   color: #dfe8e2;
   padding: 1rem;
   border-radius: 4px;
@@ -1088,7 +1092,7 @@ main:has(.story-static) {
   max-width: 30rem;
   font-size: var(--step--1);
   line-height: 1.5;
-  color: var(--paper);
+  color: var(--cream);
   text-align: center;
 }
 .story-label {
@@ -1103,7 +1107,7 @@ main:has(.story-static) {
   font-family: var(--font-mono), monospace;
   font-size: 0.72rem;
   line-height: 1.35;
-  color: var(--paper);
+  color: var(--cream);
   background: rgba(16, 41, 26, 0.72);
   white-space: nowrap;
   pointer-events: none;
@@ -1123,7 +1127,7 @@ main:has(.story-static) {
   font-weight: 600;
   font-size: clamp(1.6rem, 3.8vw, 2.75rem);
   line-height: 1.15;
-  color: var(--paper);
+  color: var(--cream);
   text-align: center;
   opacity: 0;
   visibility: hidden;
@@ -1151,8 +1155,8 @@ main:has(.story-static) {
   font-size: 0.75rem;
   letter-spacing: 0.04em;
   padding: 0.2rem 0.5rem;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--forest);
+  color: var(--cream);
   font-variant-numeric: tabular-nums;
 }
 .story-station {
@@ -1942,9 +1946,9 @@ tbody tr > * {
   gap: 0.1rem;
   max-width: 16rem;
   padding: 0.5rem 0.7rem;
-  border-left: 2px solid var(--paper);
+  border-left: 2px solid var(--cream);
   background: rgba(16, 41, 26, 0.92);
-  color: var(--paper);
+  color: var(--cream);
   pointer-events: none;
   font-size: var(--step--1);
   line-height: 1.35;
@@ -2187,8 +2191,8 @@ tbody tr > * {
   gap: 0.2rem;
   padding: 1rem 1.1rem;
   border-radius: 3px;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--forest);
+  color: var(--cream);
 }
 .feed-largest-kicker {
   color: #c9d3cc;
@@ -2251,7 +2255,7 @@ tbody tr > * {
   font-weight: 700;
   font-size: clamp(2.6rem, 6vw, 3.6rem);
   line-height: 1;
-  color: var(--paper);
+  color: var(--cream);
   font-variant-numeric: tabular-nums;
 }
 .lift-text {
@@ -2283,7 +2287,7 @@ tbody tr > * {
   transform-origin: left;
 }
 .lift-row.is-q .lift-fill {
-  background: var(--paper);
+  background: var(--cream);
 }
 .lift-val {
   text-align: right;
@@ -2609,7 +2613,7 @@ details.more[open] > :not(summary) {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background: var(--paper);
+  background: var(--cream);
 }
 .circuit-time {
   font-variant-numeric: tabular-nums;
@@ -2707,10 +2711,10 @@ td.clip {
   box-shadow: 0 8px 28px rgba(16, 41, 26, 0.28);
 }
 .site-header .brand a {
-  color: var(--paper);
+  color: var(--cream);
 }
 .site-header .brand-mark {
-  box-shadow: 0 0 0 2px var(--paper);
+  box-shadow: 0 0 0 2px var(--cream);
 }
 .site-header .brand-mark::after {
   border-color: var(--lime);
@@ -2721,23 +2725,23 @@ td.clip {
 .nav a:hover,
 .nav a:focus-visible,
 .nav a[aria-current="page"] {
-  color: var(--paper);
+  color: var(--cream);
 }
 .nav ul::before {
   background: rgba(246, 247, 244, 0.1);
 }
 .nav ul::after {
-  background: var(--paper);
+  background: var(--cream);
   height: 3px;
 }
 .nav ul:not([data-ready]) a[aria-current="page"] {
-  border-bottom-color: var(--paper);
+  border-bottom-color: var(--cream);
 }
 .site-header :focus-visible {
-  outline-color: var(--paper);
+  outline-color: var(--cream);
 }
 .site-footer {
-  background: var(--ink);
+  background: var(--forest);
   border-top: 0;
   color: #c9d3cc;
 }
@@ -2856,7 +2860,7 @@ body {
 .nav-more > summary:hover,
 .nav-more[open] > summary,
 .nav-more[data-current] > summary {
-  color: var(--paper);
+  color: var(--cream);
 }
 .nav-more-chevron {
   width: 0.4rem;
@@ -2877,7 +2881,7 @@ body {
   padding: 0.35rem;
   min-width: 11rem;
   border-radius: 6px;
-  background: var(--ink);
+  background: var(--forest);
   border: 1px solid #2c4434;
   box-shadow: 0 16px 40px rgba(16, 41, 26, 0.35);
 }
@@ -2981,15 +2985,15 @@ dd > .coord + .coord {
   align-items: center;
   gap: 1rem;
   padding: 0.9rem 1.25rem;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--forest);
+  color: var(--cream);
 }
 .expand-head h2 {
   margin: 0;
   font-size: 1.2rem;
 }
 .expand-head button.secondary {
-  color: var(--paper);
+  color: var(--cream);
   border-color: rgba(246, 247, 244, 0.5);
 }
 .expand-head button.secondary:hover {
@@ -3174,7 +3178,7 @@ dd > .coord + .coord {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--paper);
+  color: var(--cream);
   text-decoration: none;
   font-family: var(--font-head), sans-serif;
   font-weight: 700;
@@ -3186,7 +3190,7 @@ dd > .coord + .coord {
   height: 0.6rem;
   border-radius: 50%;
   background: var(--lime);
-  box-shadow: 0 0 0 2px var(--paper);
+  box-shadow: 0 0 0 2px var(--cream);
 }
 .demo-tag {
   font-family: var(--font-mono), monospace;
@@ -3224,7 +3228,7 @@ dd > .coord + .coord {
   font-size: clamp(2rem, 4.2vw, 3.6rem);
   line-height: 1.02;
   letter-spacing: -0.02em;
-  color: var(--paper);
+  color: var(--cream);
 }
 .demo-caption {
   margin: 0;
@@ -3279,7 +3283,7 @@ dd > .coord + .coord {
 }
 .demo-visual .expand:has(.circuit) {
   background: rgba(0, 0, 0, 0.18);
-  color: var(--paper);
+  color: var(--cream);
 }
 .demo-visual .circuit canvas {
   height: min(22rem, calc(100dvh - 18rem));
@@ -3321,7 +3325,7 @@ dd > .coord + .coord {
   transform-origin: left;
 }
 .demo-lift-fill.is-q {
-  background: var(--paper);
+  background: var(--cream);
 }
 .demo-links {
   list-style: none;
@@ -3338,7 +3342,7 @@ dd > .coord + .coord {
   padding: 1rem 1.25rem;
   border: 1px solid rgba(246, 247, 244, 0.25);
   border-radius: 8px;
-  color: var(--paper);
+  color: var(--cream);
   text-decoration: none;
   font-family: var(--font-head), sans-serif;
   font-weight: 600;
@@ -3359,13 +3363,13 @@ dd > .coord + .coord {
   padding: 1rem clamp(1rem, 4vw, 3rem) 1.25rem;
 }
 .demo-controls button {
-  background: var(--paper);
-  color: var(--ink);
-  border-color: var(--paper);
+  background: var(--cream);
+  color: var(--forest);
+  border-color: var(--cream);
 }
 .demo-controls button.secondary {
   background: transparent;
-  color: var(--paper);
+  color: var(--cream);
   border-color: rgba(246, 247, 244, 0.45);
 }
 .demo-play {
@@ -3392,7 +3396,7 @@ dd > .coord + .coord {
   overflow: hidden;
 }
 .demo-dots button.is-on {
-  background: var(--paper) !important;
+  background: var(--cream) !important;
 }
 .demo-dot-fill {
   position: absolute;
@@ -3453,5 +3457,240 @@ dd > .coord + .coord {
 @media (prefers-reduced-motion: reduce) {
   .demo-dot-fill {
     animation: none;
+  }
+}
+
+/* Map magnifier (components/ZoomFrame.tsx) */
+.zoom-frame {
+  position: relative;
+  max-width: 44rem;
+}
+.zoom-controls {
+  position: absolute;
+  z-index: 3;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.2rem;
+  border-radius: 8px;
+  background: rgba(16, 41, 26, 0.88);
+  box-shadow: 0 6px 18px rgba(16, 41, 26, 0.25);
+}
+.zoom-controls button {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cream);
+}
+.zoom-controls button:hover:not(:disabled) {
+  background: rgba(246, 247, 244, 0.14);
+}
+.zoom-controls button:disabled {
+  opacity: 0.35;
+}
+.zoom-controls svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.zoom-controls .zoom-reset {
+  width: auto;
+  padding: 0 0.6rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.zoom-level {
+  min-width: 2.4rem;
+  text-align: center;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
+}
+.zoom-scroll {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 4px;
+  overscroll-behavior: contain;
+}
+.zoom-frame[data-zoomed="true"] .zoom-scroll {
+  overflow: auto;
+  cursor: grab;
+  touch-action: pan-x pan-y;
+}
+.zoom-frame[data-zoomed="true"] .zoom-scroll:active {
+  cursor: grabbing;
+}
+.zoom-content .map-svg {
+  max-width: none;
+  width: 100%;
+}
+/* Marks keep their screen size as the map grows. */
+.map-svg .mz {
+  transform-box: view-box;
+  transform: scale(calc(1 / var(--mz, 1)));
+}
+.map-grid line,
+.map-move,
+.map-svg .map-chosen,
+.map-svg .map-chosen-halo,
+.map-svg .map-secondary {
+  vector-effect: non-scaling-stroke;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .map-svg .mz {
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+}
+/* In the expanded view the magnified map fills the space. */
+.expand-figure .zoom-frame {
+  max-width: min(100%, calc(100dvh - 13rem));
+  margin: 0 auto;
+}
+.expand-figure .zoom-content .map-svg {
+  max-height: none;
+}
+/* The demo takes the whole screen: hide the site frame behind it. */
+body:has(.demo) .site-header,
+body:has(.demo) .site-footer {
+  display: none;
+}
+.demo-visual .bar-chart {
+  padding: 1.25rem 1.5rem;
+  border-radius: 10px;
+  background: var(--cream);
+  color: var(--forest);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+}
+
+/* Fine zoom: slider, live level, smooth only for button presses. */
+.zoom-slider {
+  width: 7rem;
+  min-width: 0;
+  min-height: 0;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  accent-color: var(--lime);
+  cursor: pointer;
+}
+.zoom-level {
+  min-width: 3rem;
+}
+.zoom-scroll {
+  touch-action: pan-x pan-y;
+}
+.zoom-frame[data-smooth="false"] .map-svg .mz {
+  transition: none;
+}
+@media (max-width: 30rem) {
+  .zoom-slider {
+    width: 4.5rem;
+  }
+}
+
+
+/* Step strip: where this page sits in the process (components/StepStrip.tsx) */
+.steps {
+  margin: 1.25rem 0 0.5rem;
+}
+.steps ol {
+  list-style: none;
+  display: flex;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.steps ol::-webkit-scrollbar {
+  display: none;
+}
+.steps li {
+  flex: 1 0 auto;
+}
+.steps a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.4rem 0.75rem 0.4rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink2);
+  text-decoration: none;
+  font-size: var(--step--1);
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-1) ease-out,
+    border-color var(--dur-1) ease-out;
+}
+.steps a:hover {
+  border-color: var(--ink2);
+  color: var(--ink);
+}
+.steps-num {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: var(--info-bg);
+  color: var(--ink);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.steps li.is-done .steps-num {
+  background: var(--forest);
+  color: var(--cream);
+}
+.steps li.is-now a {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: var(--cream);
+  font-weight: 600;
+}
+.steps li.is-now .steps-num {
+  background: var(--lime);
+  color: var(--forest);
+}
+.steps-now {
+  margin: 1.25rem 0 0;
+  padding: 0.7rem 1rem;
+  border-left: 4px solid var(--forest);
+  border-radius: 0 6px 6px 0;
+  background: var(--info-bg);
+  font-size: 1.02rem;
+  line-height: 1.5;
+  max-width: 52rem;
+}
+.steps-note {
+  margin: 1.25rem 0 0.25rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink2);
+}
+/* The trace band moves below the strip on wide screens. */
+@media (min-width: 64rem) {
+  .page:has(> .steps-now) .page-trace {
+    top: 6rem;
   }
 }
