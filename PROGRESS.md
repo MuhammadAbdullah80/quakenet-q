@@ -13,7 +13,7 @@ Last updated: 2026-11-12
 | Benchmarks on five more earthquakes | ✅ Run (`results/benchmarks.json`); South Napa skipped (too few aftershocks) |
 | Agent loop: trigger, first plan, hourly checks, re-plans, memory | ✅ Built; a real 24-hour Ridgecrest replay runs in about 20 seconds |
 | Live mode (watching the USGS feed) | ✅ Built, off by default; tested with a fake feed only |
-| Web API v1 + v2 (FastAPI, on the team laptop) | ✅ Built, 303 tests pass |
+| Web API v1 + v2 (FastAPI, on the team laptop) | ✅ Built, 305 tests pass |
 | Next.js console with agent pages (Vercel) | ✅ Built: Settings, Live feed, Plan, Monitor, Memory, Noise study |
 | Frontend redesign (`docs/FRONTEND_BRIEF.md`) | ✅ Merged: console restyle, landing scroll story at `/`, guide at `/guide` |
 | Report, README, video script | ✅ Report rebuilt as a formatted 20-page document: cover, contents, idea history, caveats, brief checklist, glossary; PDF copy alongside |

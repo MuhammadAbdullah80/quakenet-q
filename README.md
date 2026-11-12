@@ -108,7 +108,7 @@ Requires Python 3.10+.
 
 ```bash
 pip install -r requirements.txt
-python -m pytest tests -q          # 303 checks, about 45 s
+python -m pytest tests -q          # 305 checks, about 45 s
 python run_experiment.py --quick   # 1 seed, p = 1: under a minute
 python run_experiment.py           # full run: about 45 minutes
 python run_benchmarks.py           # five more earthquakes: about 11 minutes

@@ -2,7 +2,7 @@
   "lam": 150,
   "no_new_sensors": {
     "blur_km": 2.7347758580444044,
-    "loc_error_mean_km": 2.8858843940826233
+    "loc_error_mean_km": 2.9960851909214488
   },
   "methods": [
     {
@@ -17,7 +17,7 @@
       "rank": 1,
       "risk": 2.063215953514632,
       "blur_km": 1.5033774133054818,
-      "loc_error_mean_km": 2.3141074863493882
+      "loc_error_mean_km": 2.311634199883852
     },
     {
       "name": "Greedy forward",
@@ -31,7 +31,7 @@
       "rank": 1,
       "risk": 2.063215953514632,
       "blur_km": 1.5033774133054818,
-      "loc_error_mean_km": 2.3141074863493882
+      "loc_error_mean_km": 2.311634199883852
     },
     {
       "name": "Backward elimination",
@@ -45,7 +45,7 @@
       "rank": 1,
       "risk": 2.063215953514632,
       "blur_km": 1.5033774133054818,
-      "loc_error_mean_km": 2.3141074863493882
+      "loc_error_mean_km": 2.311634199883852
     },
     {
       "name": "Simulated annealing",
@@ -59,7 +59,7 @@
       "rank": 1,
       "risk": 2.063215953514632,
       "blur_km": 1.5033774133054818,
-      "loc_error_mean_km": 2.3141074863493882
+      "loc_error_mean_km": 2.311634199883852
     },
     {
       "name": "Expert rule (azimuthal gap)",
@@ -73,7 +73,7 @@
       "rank": 159,
       "risk": 2.2477308804252143,
       "blur_km": 1.6698515926864357,
-      "loc_error_mean_km": 2.5127242264788423
+      "loc_error_mean_km": 2.625478240654471
     },
     {
       "name": "Best by D_N criterion",
@@ -87,7 +87,7 @@
       "rank": 45,
       "risk": 2.954882799354516,
       "blur_km": 1.5349271265813444,
-      "loc_error_mean_km": 2.3503546091229293
+      "loc_error_mean_km": 2.363928592518014
     }
   ]
 }

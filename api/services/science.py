@@ -24,6 +24,8 @@ from .events import EventRegistry, Loaded
 TOP_NETWORKS = 20     # networks listed by the scoring endpoint
 TOP_M = 10            # sampled networks re-scored classically
 SA_SEEDS = 5
+LOC_TRIALS = 3       # noise draws per aftershock in the location test; same as run_experiment.py,
+                     # so the console shows the numbers in the report
 Sites = tuple[int, ...]
 
 
@@ -105,7 +107,7 @@ class ScienceService:
 
     def _loc_error(self, event_id: str, ctx: EventContext, sel: Sites) -> float:
         return self._loc.get((event_id, tuple(sel)), lambda: float(
-            location_errors(ctx.inst, tuple(sel), ctx.inst.valid, trials=1).mean()))
+            location_errors(ctx.inst, tuple(sel), ctx.inst.valid, trials=LOC_TRIALS).mean()))
 
     # ------------------------------------------------------------------ read endpoints
     def instance(self, event_id: str) -> dict:

@@ -190,6 +190,16 @@ def test_baselines(client):
     assert body["methods"][0]["sites"] == [1, 3, 4, 7] and body["methods"][0]["rank"] == 1
 
 
+def test_baselines_match_the_committed_experiment(client):
+    """The console must show the same location errors as the report (results/results.json)."""
+    ref = json.loads((Path(__file__).resolve().parent.parent / "results" / "results.json").read_text())
+    body = client.get(f"{V1}/events/{EVENT}/baselines", params={"lam": ref["instance"]["lam"]}).json()
+    assert body["no_new_sensors"]["loc_error_mean_km"] == pytest.approx(
+        ref["location_test"]["no_new_sensors_mean_km"], abs=0.005)
+    for m in body["methods"]:
+        assert m["loc_error_mean_km"] == pytest.approx(ref["methods"][m["name"]]["loc_error_mean_km"], abs=0.005), m["name"]
+
+
 def test_baselines_are_cached(client):
     client.get(f"{V1}/events/{EVENT}/baselines")
     t0 = time.perf_counter()

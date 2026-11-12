@@ -1,6 +1,9 @@
 """Application factory.  Start with:  uvicorn api.main:create_app --factory --host 127.0.0.1 --port 8000"""
 from __future__ import annotations
 
+import logging
+import threading
+
 import re
 from contextlib import asynccontextmanager
 from functools import lru_cache
@@ -25,9 +28,18 @@ from .services.events import default_registry
 from .services.jobs import JobService
 from .services.science import ScienceService
 
+log = logging.getLogger("quakenet.api")
+
 STATUS = {"UNAUTHORIZED": 401, "NOT_FOUND": 404, "INVALID_INPUT": 422, "RATE_LIMITED": 429, "JOB_RUNNING": 409,
           "NOT_BUILT": 501, "INTERNAL": 500, "FEED_UNAVAILABLE": 503}
 FIELD = re.compile(r"[A-Za-z0-9_]{1,32}")
+
+
+def _warm(compute: Callable[[], object]) -> None:
+    try:
+        compute()
+    except Exception:                                   # a failed warm-up only means a slower first visit
+        log.warning("noise study warm-up failed", exc_info=True)
 
 
 def create_app(settings: Settings | None = None, solver: Callable | None = None, toolkit=None,
@@ -64,6 +76,9 @@ def create_app(settings: Settings | None = None, solver: Callable | None = None,
     async def lifespan(_: FastAPI):
         if settings.scheduler:
             agent.start()
+            # Fill the noise-study cache in the background: computing it takes longer than the
+            # console waits for an answer, so the first visitor after a restart would see an error.
+            threading.Thread(target=_warm, args=(agent.noise,), name="warm-noise", daemon=True).start()
         yield
         agent.stop()
         jobs.close()

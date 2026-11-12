@@ -48,7 +48,7 @@ Where the rest of the document and this section disagree, this section and `docs
 | FR-27, FR-28 Memory | Built. The velocity weights stay equal in practice: without measured arrival times the models cannot be told apart |
 | FR-29 Leave-one-out | **Partly built.** `run_benchmarks.py` warm-starts each earthquake from the angles of the other ones; there is no full replay loop |
 | NFR-1 Plan within 5 minutes | Met. A plan takes seconds; a 24-hour replay about 20 seconds |
-| NFR-2 to NFR-8 | Met. 303 tests run offline in about 45 s |
+| NFR-2 to NFR-8 | Met. 305 tests run offline in about 45 s |
 | Hearing range (decision 16) | Built, opt-in, with assumed constants (decision 26) |
 | DN score (decision 18) | In the experiment only; the planner uses the D-criterion |
 | NMC check (decision 17) | **Not built** |

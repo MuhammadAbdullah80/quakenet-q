@@ -285,3 +285,17 @@ def test_noise_is_cached(c):
 def test_unknown_event_sequence_is_404(c):
     for path in ("/events/nope/sequence", "/events/nope/plan", "/events/BAD!/sequence"):
         assert_error(c.get(V1 + path), 404, "NOT_FOUND")
+
+
+def test_noise_study_is_warmed_at_startup(tmp_path):
+    """The first visitor after a restart must not wait for the noise study (the console gives up after 10 s)."""
+    settings = Settings(token=TOKEN, jobs_dir=Path(tmp_path) / "jobs", feed_poll_s=3600)
+    before = Noise.calls
+    app = create_app(settings, toolkit=make_toolkit(), feed_get=Get(), noise=Noise())
+    with TestClient(app) as client:
+        deadline = time.time() + 5
+        while Noise.calls == before and time.time() < deadline:
+            time.sleep(0.02)
+        assert Noise.calls == before + 1
+        assert client.get(f"{V1}/noise", headers=AUTH).status_code == 200
+        assert Noise.calls == before + 1          # served from the cache

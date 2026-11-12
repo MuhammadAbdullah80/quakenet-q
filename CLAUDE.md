@@ -38,7 +38,7 @@ speedup is claimed.
 ## Commands
 
 ```bash
-python -m pytest tests -q            # 303 checks, about 45 s
+python -m pytest tests -q            # 305 checks, about 45 s
 python run_experiment.py --quick     # proof of concept, under a minute
 python run_experiment.py             # full run, about 45 minutes
 python run_extras.py                 # noise study and agent replay (results/extras.json), about 1 min

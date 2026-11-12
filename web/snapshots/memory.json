@@ -5,14 +5,14 @@
       "sensors": 4,
       "candidates": 10,
       "layers": 3,
-      "count": 3,
+      "count": 12,
       "median": [
-        0.099,
-        -0.6699,
-        -0.3822,
-        -0.838,
-        2.225,
-        2.1933
+        0.4512,
+        -0.3831,
+        -0.3455,
+        -0.8497,
+        2.2816,
+        2.6467
       ]
     }
   ],
@@ -54,8 +54,32 @@
       "predicted_score": 753.033,
       "realised_score": 875.038,
       "error": 0.1135
+    },
+    {
+      "event_id": "ferndale2022",
+      "hour": 0,
+      "stage": "first_plan",
+      "predicted_score": 174.781,
+      "realised_score": 185.671,
+      "error": 0.0621
+    },
+    {
+      "event_id": "ferndale2022",
+      "hour": 1,
+      "stage": "replan",
+      "predicted_score": 151.867,
+      "realised_score": 150.425,
+      "error": 0.008
+    },
+    {
+      "event_id": "ferndale2022",
+      "hour": 23,
+      "stage": "replan",
+      "predicted_score": 3.285,
+      "realised_score": 6.912,
+      "error": 0.0707
     }
   ],
-  "confidence": "medium",
-  "sequences": 1
+  "confidence": "high",
+  "sequences": 2
 }
