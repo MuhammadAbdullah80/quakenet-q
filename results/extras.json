@@ -1,0 +1,487 @@
+{
+ "noise": {
+  "instance": {
+   "n": 6,
+   "k": 2,
+   "layers": 1,
+   "event_id": "ridgecrest2019",
+   "sites": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    7
+   ]
+  },
+  "points": [
+   {
+    "gate_error": 0.0,
+    "p_best": 0.5224487743705059,
+    "valid": 1.0000000000000044,
+    "p_best_se": 0.0
+   },
+   {
+    "gate_error": 0.0001,
+    "p_best": 0.5136855007592672,
+    "valid": 0.9915000000000025,
+    "p_best_se": 0.004415691056540333
+   },
+   {
+    "gate_error": 0.0003,
+    "p_best": 0.5139619882005096,
+    "valid": 0.9923249579113869,
+    "p_best_se": 0.004344835511127621
+   },
+   {
+    "gate_error": 0.001,
+    "p_best": 0.4868477287767686,
+    "valid": 0.9492263587905677,
+    "p_best_se": 0.009213226938850056
+   },
+   {
+    "gate_error": 0.003,
+    "p_best": 0.40744376882005917,
+    "valid": 0.845079912181161,
+    "p_best_se": 0.014872826916055843
+   },
+   {
+    "gate_error": 0.01,
+    "p_best": 0.23967979471678366,
+    "valid": 0.6095706740912873,
+    "p_best_se": 0.01743916257682502
+   }
+  ],
+  "uniform_p_best": 0.06666666666666667,
+  "note": "Simulated depolarising noise (Monte-Carlo Pauli errors after each sx, x and cx gate; one-qubit error = gate_error / 10; no readout error). Not a hardware run.",
+  "best_network": [
+   1,
+   4
+  ],
+  "trials": 200,
+  "gates": {
+   "one_qubit": 106,
+   "two_qubit": 102
+  },
+  "angles": [
+   0.629002324827081,
+   -4.33672505733925
+  ]
+ },
+ "replay": {
+  "hours": 24,
+  "step_hours": 1,
+  "seconds": 23.4,
+  "plans_made": 3,
+  "moves_total": 3,
+  "final_sites": [
+   1,
+   3,
+   4,
+   7
+  ],
+  "steps": [
+   {
+    "hour": 0,
+    "stage": "first_plan",
+    "sites": [
+     3,
+     7,
+     8,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 0,
+    "synthetic": true,
+    "quantum_agreed": true,
+    "p_opt_per_shot": 0.1002
+   },
+   {
+    "hour": 1,
+    "stage": "replan",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": true,
+    "drift_reason": "centroid moved 7.9 km; score fell 44%",
+    "aftershocks_real": 236,
+    "synthetic": false,
+    "quantum_agreed": true,
+    "p_opt_per_shot": 0.0799
+   },
+   {
+    "hour": 2,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 422,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 3,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 562,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 4,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 664,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 5,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 744,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 6,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 802,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 7,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 868,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 8,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 919,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 9,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 954,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 10,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 986,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 11,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 1028,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 12,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 1056,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 13,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 1089,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 14,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 1111,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 15,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 1129,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 16,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 1154,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 17,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 1173,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 18,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 1190,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 19,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 1198,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 20,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 1209,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 21,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 1224,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 22,
+    "stage": "check",
+    "sites": [
+     2,
+     3,
+     7,
+     9
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 1238,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   },
+   {
+    "hour": 23,
+    "stage": "replan",
+    "sites": [
+     1,
+     3,
+     4,
+     7
+    ],
+    "drift": true,
+    "drift_reason": "centroid moved 5.1 km",
+    "aftershocks_real": 1249,
+    "synthetic": false,
+    "quantum_agreed": true,
+    "p_opt_per_shot": 0.08185
+   },
+   {
+    "hour": 24,
+    "stage": "check",
+    "sites": [
+     1,
+     3,
+     4,
+     7
+    ],
+    "drift": false,
+    "drift_reason": null,
+    "aftershocks_real": 1256,
+    "synthetic": false,
+    "quantum_agreed": null,
+    "p_opt_per_shot": null
+   }
+  ]
+ },
+ "runtime_seconds": 43.9
+}

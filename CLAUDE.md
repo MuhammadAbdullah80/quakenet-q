@@ -41,7 +41,9 @@ speedup is claimed.
 python -m pytest tests -q            # 303 checks, about 45 s
 python run_experiment.py --quick     # proof of concept, under a minute
 python run_experiment.py             # full run, about 45 minutes
-python report/build_report.py        # rebuild the .docx report
+python run_extras.py                 # noise study and agent replay (results/extras.json), about 1 min
+python report/make_diagram.py        # report diagrams
+python report/build_report.py        # rebuild the .docx report (and PDF if Word is installed)
 python docs/specs/build_spec_html.py # rebuild the spec HTML
 ```
 

@@ -16,7 +16,7 @@ Last updated: 2026-11-12
 | Web API v1 + v2 (FastAPI, on the team laptop) | ✅ Built, 303 tests pass |
 | Next.js console with agent pages (Vercel) | ✅ Built: Settings, Live feed, Plan, Monitor, Memory, Noise study |
 | Frontend redesign (`docs/FRONTEND_BRIEF.md`) | ✅ Merged: console restyle, landing scroll story at `/`, guide at `/guide` |
-| Report, README, video script | ✅ Updated with the agent and the benchmarks |
+| Report, README, video script | ✅ Report rebuilt as a formatted 20-page document: cover, contents, idea history, caveats, brief checklist, glossary; PDF copy alongside |
 | Video | ❌ Not recorded |
 | Spec v2 | ✅ "Version 2: what was built" section with a status for every requirement; HTML rebuilt |
 

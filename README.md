@@ -112,6 +112,9 @@ python -m pytest tests -q          # 303 checks, about 45 s
 python run_experiment.py --quick   # 1 seed, p = 1: under a minute
 python run_experiment.py           # full run: about 45 minutes
 python run_benchmarks.py           # five more earthquakes: about 11 minutes
+python run_extras.py               # noise study and 24-hour agent replay: about 1 minute
+python report/make_diagram.py      # report diagrams
+python report/build_report.py      # the .docx report (and a PDF copy if Word is installed)
 ```
 
 Outputs: `results/results.json` and the figures in `figures/` (the quick run writes
