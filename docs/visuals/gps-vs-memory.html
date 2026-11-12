@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memory vs GPS</title>
+<style>
+  body{margin:0;background:#0f1724;color:#f1f5f9;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center;padding:24px 16px}
+  svg{width:100%;max-width:1080px;height:auto}
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1080 760" role="img" aria-label="An AI agent trained on past deployments is like a driver who memorised old routes; our agent is like a GPS that reads today's map and computes the best route with a quantum route-finder.">
+  <text x="540" y="56" text-anchor="middle" font-size="34" font-weight="800">Memorised routes vs. a GPS</text>
+  <text x="540" y="90" text-anchor="middle" font-size="17" fill="#94a3b8">Two ways an agent could choose seismometer sites</text>
+
+  <!-- left panel -->
+  <rect x="40" y="120" width="480" height="470" rx="18" fill="#1e293b"/>
+  <text x="280" y="164" text-anchor="middle" font-size="22" font-weight="700" fill="#fca5a5">AI agent trained on past data</text>
+  <text x="280" y="250" text-anchor="middle" font-size="64">🧑‍✈️📒</text>
+  <text x="280" y="300" text-anchor="middle" font-size="18">Driver who memorised old trips</text>
+  <text x="280" y="352" text-anchor="middle" font-size="15" fill="#cbd5e1">Learns: "last time, sensors went here"</text>
+  <text x="280" y="378" text-anchor="middle" font-size="15" fill="#cbd5e1">Needs many past deployments (few exist)</text>
+  <text x="280" y="404" text-anchor="middle" font-size="15" fill="#cbd5e1">Copies human choices, mistakes included</text>
+  <text x="280" y="430" text-anchor="middle" font-size="15" fill="#cbd5e1">New fault, new terrain → guesses</text>
+  <text x="280" y="520" text-anchor="middle" font-size="44">🚧❓</text>
+
+  <!-- right panel -->
+  <rect x="560" y="120" width="480" height="470" rx="18" fill="#1e293b" stroke="#60a5fa" stroke-width="3"/>
+  <text x="800" y="164" text-anchor="middle" font-size="22" font-weight="700" fill="#93c5fd">QuakeNet-Q (physics + quantum)</text>
+  <text x="800" y="250" text-anchor="middle" font-size="64">🗺️⚛️</text>
+  <text x="800" y="300" text-anchor="middle" font-size="18">GPS reading today's map</text>
+  <text x="800" y="352" text-anchor="middle" font-size="15" fill="#cbd5e1">Map = this quake's data + physics</text>
+  <text x="800" y="378" text-anchor="middle" font-size="15" fill="#cbd5e1">Route-finder = QAOA circuit (Qiskit)</text>
+  <text x="800" y="404" text-anchor="middle" font-size="15" fill="#cbd5e1">Past quakes only tune the GPS settings</text>
+  <text x="800" y="430" text-anchor="middle" font-size="15" fill="#cbd5e1">Works on a quake it has never seen</text>
+  <text x="800" y="520" text-anchor="middle" font-size="44">📍✅</text>
+
+  <!-- callout -->
+  <rect x="140" y="630" width="800" height="96" rx="16" fill="#3b82f6"/>
+  <text x="540" y="670" text-anchor="middle" font-size="22" font-weight="800" fill="#ffffff">The AI agent imitates the past.</text>
+  <text x="540" y="704" text-anchor="middle" font-size="22" font-weight="800" fill="#ffffff">Ours computes the best answer for this quake.</text>
+</svg>
+</body>
+</html>

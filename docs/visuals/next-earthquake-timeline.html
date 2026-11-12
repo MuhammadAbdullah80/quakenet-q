@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Next Earthquake Timeline</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#0f0f0f;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:32px 16px}
+  .wrap{max-width:860px;margin:0 auto}
+  h1{margin:0 0 6px;font-size:28px}
+  .sub{color:#888;margin:0 0 24px;line-height:1.5}
+  .board{background:#161616;border-radius:12px;padding:24px}
+  .phase{color:#888;font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin:18px 0 10px}
+  .phase:first-child{margin-top:0}
+  .step{display:grid;grid-template-columns:92px 1fr;gap:14px;align-items:stretch;margin-bottom:10px}
+  .when{color:#aaa;font-size:13px;font-weight:600;padding-top:16px;text-align:right}
+  .node{border:2px solid;border-radius:12px;padding:14px 16px;cursor:pointer;transition:transform .15s,opacity .2s,box-shadow .15s}
+  .node:hover{transform:scale(1.02)}
+  .node b{font-size:15px}
+  .node .algo{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;background:rgba(255,255,255,.12);color:#e5e5e5}
+  .node span{display:block;color:#cfcfcf;font-size:13px;line-height:1.45;margin-top:4px}
+  .node em{display:block;font-style:normal;color:#8b8b8b;font-size:12px;margin-top:6px}
+  .trigger{background:#1e3a5f;border-color:#3B82F6}.proc{background:#1a3d2e;border-color:#10B981}
+  .tool{background:#3d2e1a;border-color:#F59E0B}.out{background:#3d1a1a;border-color:#EF4444}
+  .store{background:#1a1a2e;border-color:#6366F1}.dec{background:#2e1a3d;border-color:#A855F7}
+  .dim{opacity:.22}.hi{box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:18px;font-size:13px;color:#aaa}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  @media (max-width:560px){.step{grid-template-columns:1fr}.when{text-align:left;padding-top:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>When the next earthquake happens</h1>
+  <p class="sub">What the QuakeNet-Q agent does, in order, and which algorithm runs at each step. Click a step to highlight what it passes data to. Click the background to reset.</p>
+  <div class="board" id="board">
+
+    <div class="phase">Wake up</div>
+    <div class="step"><div class="when">Minute 0</div>
+      <div class="node trigger" data-id="1" data-links="2"><b>Earthquake detected</b><span class="algo">Feed polling</span><span>The agent checks the USGS live feed every minute. A magnitude 6.5+ quake on land starts a run.</span><em>→ passes on: quake id, location, time</em></div></div>
+    <div class="step"><div class="when">Minutes 1–5</div>
+      <div class="node proc" data-id="2" data-links="1 3 10"><b>Gather the facts</b><span class="algo">Data download</span><span>Downloads the aftershocks so far (USGS) and the permanent sensors nearby (EarthScope). Loads what it learned from past earthquakes.</span><em>→ passes on: aftershock list, station list, learned settings</em></div></div>
+
+    <div class="phase">Plan</div>
+    <div class="step"><div class="when">First hours</div>
+      <div class="node proc" data-id="3" data-links="2 4"><b>Lay out candidate sites and score them</b><span class="algo">D-criterion (classical)</span><span>Draws a grid of possible sites around the aftershock zone. For each site: how much it sharpens aftershock locations, how much it duplicates other sites, how risky it is to reach.</span><em>→ passes on: a score for every site, pair, triple and group of four</em></div></div>
+    <div class="step"><div class="when"></div>
+      <div class="node tool" data-id="4" data-links="3 5 10"><b>Quantum circuit chooses 4 sites</b><span class="algo">Dicke state + XY-mixer QAOA (Qiskit)</span><span>Starts with every valid 4-site network at once, then repeatedly marks good networks and shuffles between valid ones. Starts from circuit settings that worked on past earthquakes; an optimiser fine-tunes them.</span><em>→ passes on: about 1,000 measured networks, best ones appearing most often</em></div></div>
+    <div class="step"><div class="when"></div>
+      <div class="node dec" data-id="5" data-links="4 6"><b>Self-check</b><span class="algo">Exact re-scoring + classical search</span><span>Re-scores the measured networks with the full seismology score and compares with a classical search. Agree → publish. Disagree → more circuit layers and more shots, then check again.</span><em>agree → publish · disagree → retry quantum step</em></div></div>
+    <div class="step"><div class="when">Plan ready</div>
+      <div class="node out" data-id="6" data-links="5 7"><b>Publish the site plan</b><span class="algo">Report</span><span>A map with the 4 chosen sites, coordinates, expected accuracy, risk and a confidence level.</span><em>→ passes on: plan to field teams; expected accuracy to the monitor</em></div></div>
+
+    <div class="phase">Watch and improve</div>
+    <div class="step"><div class="when">Every few hours</div>
+      <div class="node proc" data-id="7" data-links="6 8"><b>Watch the new aftershocks</b><span class="algo">Monitoring</span><span>Downloads the newest aftershocks and checks how accurately they are being located, against what the agent predicted.</span><em>→ passes on: predicted vs. actual accuracy, where the aftershocks are now</em></div></div>
+    <div class="step"><div class="when"></div>
+      <div class="node dec" data-id="8" data-links="7 9 10"><b>Has reality drifted from the plan?</b><span class="algo">Deviation test</span><span>If accuracy is much worse than predicted, or the aftershocks have moved, the agent corrects its model and re-plans.</span><em>no → keep watching · yes → re-plan</em></div></div>
+    <div class="step"><div class="when"></div>
+      <div class="node tool" data-id="9" data-links="8 6"><b>Re-plan with a moving cost</b><span class="algo">QAOA again (Qiskit)</span><span>Runs the quantum step on the updated data. Moving a sensor costs something, so it only recommends a move that is worth it.</span><em>→ passes on: "move sensor from site A to site B", or "stay"</em></div></div>
+
+    <div class="phase">Remember</div>
+    <div class="step"><div class="when">After the sequence</div>
+      <div class="node store" data-id="10" data-links="8 2 4"><b>Save what it learned</b><span class="algo">Calibration + angle library</span><span>Stores the corrected wave speed and timing error, the circuit settings that worked, and how good its predictions were. The next earthquake starts from here.</span><em>→ feeds: the next run's facts and quantum step</em></div></div>
+
+  </div>
+  <div class="legend">
+    <span><i style="background:#3B82F6"></i>Trigger</span><span><i style="background:#10B981"></i>Classical processing</span>
+    <span><i style="background:#F59E0B"></i>Quantum (Qiskit)</span><span><i style="background:#A855F7"></i>Decision</span>
+    <span><i style="background:#EF4444"></i>Output</span><span><i style="background:#6366F1"></i>Memory</span>
+  </div>
+</div>
+<script>
+const nodes=[...document.querySelectorAll('.node')];
+function reset(){nodes.forEach(n=>n.classList.remove('dim','hi'));}
+nodes.forEach(n=>n.onclick=e=>{e.stopPropagation();const keep=[n.dataset.id,...n.dataset.links.split(' ')];
+  nodes.forEach(m=>{m.classList.toggle('dim',!keep.includes(m.dataset.id));m.classList.toggle('hi',m===n);});});
+document.getElementById('board').onclick=reset;
+</script>
+</body>
+</html>
