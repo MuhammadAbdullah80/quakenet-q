@@ -149,7 +149,7 @@ async function ScoringContent({ searchParams }: PageProps) {
                       <th scope="row" className="num">
                         {row.rank}
                       </th>
-                      <td>{fmtSites(row.sites)}</td>
+                      <td className="nowrap">{fmtSites(row.sites)}</td>
                       <td className="num">{fmt(row.objective, 1)}</td>
                       <td className="num">{fmt(row.risk)}</td>
                       <td className="num">{fmt(row.blur_km)}</td>

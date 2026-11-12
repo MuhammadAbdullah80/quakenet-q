@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { BarChart } from "@/components/BarChart";
 import { EventBar } from "@/components/EventBar";
 import { NoEvent } from "@/components/NoEvent";
 import { Empty, Loading, OfflineBanner, Problem } from "@/components/States";
@@ -82,7 +83,7 @@ async function SelfCheckContent({ searchParams }: PageProps) {
                           {method.name}{" "}
                           {same ? <span className="tag tag-ok">same as quantum</span> : null}
                         </th>
-                        <td>{fmtSites(method.sites)}</td>
+                        <td className="nowrap">{fmtSites(method.sites)}</td>
                         <td className="num">{method.rank}</td>
                         <td className="num">{fmt(method.risk)}</td>
                         <td className="num">{fmt(method.blur_km)}</td>
@@ -101,6 +102,22 @@ async function SelfCheckContent({ searchParams }: PageProps) {
                 </tbody>
               </table>
             </div>
+          ) : null}
+          {data ? (
+            <BarChart
+              title="Location error by method"
+              note="Mean error locating the later aftershocks, in km. Lower is better."
+              unit="km"
+              items={[
+                { label: "No new sensors", value: data.no_new_sensors.loc_error_mean_km },
+                ...data.methods.map((method) => ({
+                  label: method.name,
+                  value: method.loc_error_mean_km,
+                  highlight: result ? sameSites(method.sites, result.final.sites) : false,
+                })),
+              ]}
+              highlightLabel={result ? "Same sites as the quantum pick" : undefined}
+            />
           ) : null}
         </section>
 
