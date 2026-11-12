@@ -17,6 +17,7 @@ const PAGES = [
   { href: "/noise", label: "Noise study" },
   { href: "/settings", label: "Settings" },
   { href: "/system", label: "System" },
+  { href: "/guide", label: "Guide" },
 ] as const;
 
 const EVENT_ID = /^[A-Za-z0-9_-]{1,64}$/;
