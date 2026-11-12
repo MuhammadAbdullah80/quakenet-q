@@ -59,6 +59,22 @@ export function JobResultView({
             reps {result.reps}, seed {result.seed}, shots {result.shots}, lam {result.lam}
           </dd>
         </div>
+        {result.objective ? (
+          <div>
+            <dt>Optimiser target</dt>
+            <dd>
+              {result.objective === "cvar"
+                ? "best part of the outcomes (CVaR)"
+                : "average of all outcomes"}
+            </dd>
+          </div>
+        ) : null}
+        {typeof result.warm_start === "boolean" ? (
+          <div>
+            <dt>Started from remembered angles</dt>
+            <dd>{result.warm_start ? "yes" : "no"}</dd>
+          </div>
+        ) : null}
         <div>
           <dt>Circuit</dt>
           <dd>

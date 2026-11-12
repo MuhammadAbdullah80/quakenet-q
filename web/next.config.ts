@@ -29,6 +29,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Optional separate build folder, so a check build does not overwrite a running server's .next.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,

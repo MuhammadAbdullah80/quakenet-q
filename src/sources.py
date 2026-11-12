@@ -158,28 +158,53 @@ def _throttle(host: str) -> None:
     _last_request[host] = time.monotonic()
 
 
-def http_get(url: str) -> bytes:
+def cache_age_s(url: str) -> float | None:
+    """Seconds since a cached URL was retrieved (from its sidecar), or None if it is not cached."""
+    info = cache_info(url)
+    if not info or not cache_paths(url)[0].exists():
+        return None
+    try:
+        got = datetime.strptime(info["retrieved_utc"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    except (KeyError, ValueError):
+        return math.inf          # unreadable sidecar: treat the copy as infinitely old
+    return max(0.0, (datetime.now(timezone.utc) - got).total_seconds())
+
+
+def http_get(url: str, *, max_age_s: float | None = None, retries: int | None = None,
+             timeout_s: float | None = None) -> bytes:
     """GET a URL through the outbound gateway and return the response body.
 
     Order of checks: allowlist, cache, offline mode, network. Raises QuakeNetError with code
     HOST_NOT_ALLOWED, CACHE_MISS (offline and not cached) or FEED_UNAVAILABLE (network failed
     after all retries, or the server refused the request).
+
+    Optional (the defaults keep the original behaviour):
+      * max_age_s: a cached copy older than this many seconds is fetched again. If the fetch
+        fails the error is raised (the caller may then read the stale copy with max_age_s=None).
+        In offline mode the cached copy is served whatever its age, because offline mode never
+        touches the network.
+      * retries: retries after the first attempt (default RETRIES = 3).
+      * timeout_s: per-attempt timeout (default TIMEOUT_S = 30 s).
     """
     host = _check_host(url)
     body_path, meta_path = cache_paths(url)
     if body_path.exists() and meta_path.exists():
-        return gzip.decompress(body_path.read_bytes())
+        age = cache_age_s(url) if max_age_s is not None else None
+        if max_age_s is None or is_offline() or (age is not None and age <= max_age_s):
+            return gzip.decompress(body_path.read_bytes())
     if is_offline():
         raise QuakeNetError("CACHE_MISS", f"offline mode (QUAKENET_OFFLINE=1) and no cached copy of {url} "
                             f"in {cache_dir()}")
 
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept-Encoding": "gzip"})
     last_error = "no attempt made"
-    for attempt in range(RETRIES + 1):
+    n_retries = RETRIES if retries is None else max(0, int(retries))
+    timeout = TIMEOUT_S if timeout_s is None else float(timeout_s)
+    for attempt in range(n_retries + 1):
         wait = BACKOFF_BASE_S * 2 ** attempt + random.uniform(0.0, BACKOFF_BASE_S)
         _throttle(host)
         try:
-            with _urlopen(req, timeout=TIMEOUT_S) as resp:
+            with _urlopen(req, timeout=timeout) as resp:
                 body = resp.read()
                 if (resp.headers.get("Content-Encoding") or "").lower() == "gzip":
                     body = gzip.decompress(body)
@@ -197,9 +222,9 @@ def http_get(url: str) -> bytes:
                 raise QuakeNetError("FEED_UNAVAILABLE", f"{host} answered HTTP {err.code} for {url}") from err
         except (urllib.error.URLError, http.client.HTTPException, OSError) as err:
             last_error = f"{type(err).__name__}: {err}"
-        if attempt < RETRIES:
+        if attempt < n_retries:
             _sleep(wait)
-    raise QuakeNetError("FEED_UNAVAILABLE", f"{host} failed after {RETRIES + 1} attempts ({last_error}): {url}")
+    raise QuakeNetError("FEED_UNAVAILABLE", f"{host} failed after {n_retries + 1} attempts ({last_error}): {url}")
 
 
 # ------------------------------------------------------------------------ projection

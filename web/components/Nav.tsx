@@ -6,6 +6,7 @@ import { Suspense } from "react";
 
 const PAGES = [
   { href: "/events", label: "Events" },
+  { href: "/feed", label: "Live feed" },
   { href: "/candidates", label: "Candidates" },
   { href: "/scoring", label: "Scoring" },
   { href: "/quantum", label: "Quantum" },
@@ -13,6 +14,8 @@ const PAGES = [
   { href: "/plan", label: "Plan" },
   { href: "/monitor", label: "Monitor" },
   { href: "/memory", label: "Memory" },
+  { href: "/noise", label: "Noise study" },
+  { href: "/settings", label: "Settings" },
   { href: "/system", label: "System" },
 ] as const;
 

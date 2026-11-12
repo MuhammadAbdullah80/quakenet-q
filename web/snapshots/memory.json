@@ -1,0 +1,61 @@
+{
+  "angles": [
+    {
+      "key": "10-4-3",
+      "sensors": 4,
+      "candidates": 10,
+      "layers": 3,
+      "count": 3,
+      "median": [
+        0.099,
+        -0.6699,
+        -0.3822,
+        -0.838,
+        2.225,
+        2.1933
+      ]
+    }
+  ],
+  "model_weights": [
+    {
+      "name": "uniform 5.5 km/s",
+      "weight": 0.3333
+    },
+    {
+      "name": "uniform 6.0 km/s",
+      "weight": 0.3333
+    },
+    {
+      "name": "uniform 6.5 km/s",
+      "weight": 0.3333
+    }
+  ],
+  "track_record": [
+    {
+      "event_id": "ridgecrest2019",
+      "hour": 0,
+      "stage": "first_plan",
+      "predicted_score": 69.063,
+      "realised_score": 18.595,
+      "error": 0.4414
+    },
+    {
+      "event_id": "ridgecrest2019",
+      "hour": 1,
+      "stage": "replan",
+      "predicted_score": -3.706,
+      "realised_score": 32.919,
+      "error": 0.4638
+    },
+    {
+      "event_id": "ridgecrest2019",
+      "hour": 23,
+      "stage": "replan",
+      "predicted_score": 753.033,
+      "realised_score": 875.038,
+      "error": 0.1135
+    }
+  ],
+  "confidence": "medium",
+  "sequences": 1
+}

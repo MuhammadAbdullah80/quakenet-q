@@ -18,26 +18,62 @@ Browser ──► this app (pages and /api routes, server code) ──► Python
   as `X-Client-IP`, gives up after 10 s, and turns the API's error contract into typed results.
 - Every backend response is checked against the shapes in `lib/schemas.ts` before it is shown. All
   backend data is rendered as text (no raw HTML, and URLs from the backend are not turned into links).
-- **Reading needs no passcode. Starting a run does.** The browser posts to this app's own route
+- **Reading needs no passcode. Starting a run, starting the agent and saving settings do.** The browser posts to this app's own route
   handlers:
 
 | Route | Purpose |
 |---|---|
 | `POST /api/passcode` | Checks the team passcode (constant-time) and sets an `httpOnly`, `Secure`, `SameSite=Strict` cookie for 12 hours. `DELETE` forgets it. |
-| `POST /api/events/{id}/jobs` | Starts a QAOA run. Needs the cookie (otherwise `401`), validates the body with zod against the limits in `docs/API.md`, then calls the backend. |
-| `GET /api/jobs/{id}` | Job status, polled every 2 s by the Quantum page. |
+| `POST /api/events/{id}/jobs` | Starts a QAOA run (`kind: "qaoa"`) or a replay (`kind: "sequence"`, optional `hours` 6 to 168 and `step_hours` 1 to 12). Needs the cookie (otherwise `401`), validates the body with zod against the limits in `docs/API.md`, then calls the backend. |
+| `GET /api/jobs/{id}` | Job status of any kind, polled every 2 s by the Quantum and Monitor pages. |
+| `PUT /api/settings` | Saves agent settings. Needs the cookie, checks same-origin, validates the body with zod (known keys only, documented ranges), forwards it and returns the saved settings. |
+| `POST /api/feed/{usgsId}/trigger` | Starts the agent on a real earthquake from the feed. Needs the cookie; the ID must match `^[a-z0-9]{4,20}# QuakeNet-Q test console (`web/`)
+
+A plain, server-rendered Next.js app with one page per module of QuakeNet-Q. It consumes the Python
+API described in [`docs/API.md`](../docs/API.md) and follows the hosting and security rules in
+[`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) (sections 4 to 6).
+
+- Next.js 16 (App Router, TypeScript, Cache Components), React 19, zod. No other runtime dependencies.
+- No AI features, no analytics, no external map tiles, fonts or CDNs.
+
+## How it talks to the backend
+
+```
+Browser ──► this app (pages and /api routes, server code) ──► Python API  (BACKEND_URL + /api/v1)
+```
+
+- **The browser never calls the Python API.** Only server code does, through `lib/backend.ts`
+  (marked `server-only`). It adds `Authorization: Bearer <BACKEND_TOKEN>`, forwards the visitor's IP
+  as `X-Client-IP`, gives up after 10 s, and turns the API's error contract into typed results.
+- Every backend response is checked against the shapes in `lib/schemas.ts` before it is shown. All
+  backend data is rendered as text (no raw HTML, and URLs from the backend are not turned into links).
+- **Reading needs no passcode. Starting a run, starting the agent and saving settings do.** The browser posts to this app's own route
+  handlers:
+
+| Route | Purpose |
+|---|---|
+| `POST /api/passcode` | Checks the team passcode (constant-time) and sets an `httpOnly`, `Secure`, `SameSite=Strict` cookie for 12 hours. `DELETE` forgets it. |
+. |
 
 ## Pages
 
 | Page | Backend calls |
 |---|---|
-| `/events` | `GET /events` |
+| `/events` | `GET /events` (shows kind and location when the backend sends them) |
+| `/feed` | `GET /feed`; start the agent on a qualifying earthquake |
 | `/candidates` | `GET /events/{id}/instance` (SVG map in km, plus tables) |
 | `/scoring` | `GET /events/{id}/scoring?lam=` |
 | `/quantum` | `GET /jobs`, `GET /jobs/{id}`; start a run and poll it |
 | `/self-check` | `GET /events/{id}/baselines?lam=` next to the latest quantum result |
-| `/plan`, `/monitor`, `/memory` | `GET /events/{id}/plan`, `/events/{id}/replay`, `/memory`; shows "Not built yet" on `501 NOT_BUILT` |
+| `/plan` | `GET /events/{id}/plan` (map from `GET /events/{id}/sequence`) |
+| `/monitor` | `GET /events/{id}/sequence`, `GET /settings`, `GET /jobs`; start a replay, poll it, step through it hour by hour |
+| `/memory` | `GET /memory` |
+| `/noise` | `GET /noise` (a simulation, not a hardware run) |
+| `/settings` | `GET /settings`; save with the passcode |
 | `/system` | `GET /health`, `GET /system`, `GET /jobs` |
+
+Every page shows "Not built yet" when the backend answers `501 NOT_BUILT`; Plan and Monitor say
+that no agent run exists yet on `404 NOT_FOUND`.
 
 The earthquake is chosen with `?event=<id>`; without it the first available one is used.
 
@@ -85,17 +121,19 @@ When the backend is not configured, cannot be reached, does not answer within 10
 answers 502/503/504 without the API's error body:
 
 - pages render from the saved API responses in `snapshots/` (`events`, `instance`, `scoring`,
-  `baselines`, and one finished `job`);
+  `baselines`, one finished `job`, and for version 2 `settings`, `feed`, `sequence`, `plan`,
+  `memory`, `noise`);
 - a banner says **"Offline: showing saved results"**;
-- starting runs and the `lam` control are disabled;
-- `/plan`, `/monitor`, `/memory` and `/system` have no snapshot and say so.
+- starting runs, starting the agent, saving settings and the `lam` control are disabled;
+- `/system` has no snapshot and says so.
 
 After a failed connection the app does not retry for 15 s, so an offline page loads at once instead
 of waiting 10 s for every call.
 
-### The snapshots are placeholders until you capture real ones
+### Placeholder snapshots
 
-The files shipped here are marked `"mock": true`. They were built from the examples in
+Files marked `"mock": true` are placeholders (today: the six version 2 files, `settings`, `feed`,
+`sequence`, `plan`, `memory` and `noise`). They were built from the examples in
 `docs/API.md` plus invented filler, and **are not real results**; the banner says so whenever one is
 shown. Replace them with real responses from a running backend:
 
@@ -106,7 +144,9 @@ node --env-file=.env.local scripts/capture-snapshots.mjs ridgecrest2019 150
 ```
 
 The script only sends `GET` requests (`/events`, `/events/{id}/instance`, `/scoring`, `/baselines`,
-`/jobs`, `/jobs/{id}`) and overwrites the five files without the mock marker. It needs one finished
+`/jobs`, `/jobs/{id}`, and the version 2 endpoints `/settings`, `/feed`, `/memory`, `/noise`,
+`/events/{id}/sequence`, `/events/{id}/plan`) and overwrites the files without the mock marker. A
+version 2 endpoint that answers 404 or 501 is skipped and its placeholder is kept. It needs one finished
 QAOA job on the backend for `job.json`; if there is none it warns and leaves that file alone.
 Snapshots are compiled into the build, so rebuild (or redeploy) after capturing.
 

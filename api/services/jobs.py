@@ -18,6 +18,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
+from src.agent.sequence import AgentSkip
+
 from ..errors import JobRunning, NotFound, RateLimited
 
 log = logging.getLogger("quakenet.api")
@@ -41,7 +43,7 @@ def _timestamp(iso: str) -> float:
 
 
 class JobService:
-    def __init__(self, jobs_dir: Path, execute: Callable[[str, dict], dict], hourly_cap: int,
+    def __init__(self, jobs_dir: Path, execute: Callable[[str, str, dict], dict], hourly_cap: int,
                  clock: Callable[[], float] = time.time):
         self._dir, self._execute, self._cap, self._clock = Path(jobs_dir), execute, hourly_cap, clock
         self._lock = threading.Lock()
@@ -104,9 +106,14 @@ class JobService:
                 return
             try:
                 job = self._update(job_id, status="running")
-                result = self._execute(job["event_id"], dict(job["params"]))
-                json.dumps(result)                # a result that cannot be stored is a failure
-                self._update(job_id, status="done", result=result, finished_utc=_iso(self._clock()))
+                result = self._execute(job["kind"], job["event_id"], dict(job["params"]))
+                json.dumps(result, allow_nan=False)   # a result that cannot be stored is a failure
+                event_id = result.get("event_id") if isinstance(result.get("event_id"), str) else job["event_id"]
+                self._update(job_id, status="done", result=result, event_id=event_id,
+                             finished_utc=_iso(self._clock()))
+            except AgentSkip as skip:              # the agent declined, for a reason meant for the user
+                log.info("job %s skipped: %s", job_id, skip)
+                self._update(job_id, status="failed", error=f"Skipped: {skip}", finished_utc=_iso(self._clock()))
             except Exception:                     # full detail to the log, generic text to the client
                 log.exception("job %s failed", job_id)
                 try:

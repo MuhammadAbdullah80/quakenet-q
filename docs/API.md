@@ -151,6 +151,12 @@ Start the agent by hand on a real earthquake from the feed, exactly as live mode
 `202` with `{"job_id": "...", "status": "queued"}`, or `422 INVALID_INPUT` with the skip reason.
 Job creation limits apply.
 
+As built: the "no permanent station in range" check runs inside the job, because it needs the
+station data. The first trigger is accepted with `202` and its job fails with
+`"Skipped: no permanent station within 100 km"`; the feed row then shows `skipped`, and later
+triggers return `422` with that reason. When the USGS feed cannot be read and no earlier copy is
+cached, `GET /feed` and the trigger return `503 FEED_UNAVAILABLE`.
+
 ### Sequences: the agent's run on one earthquake
 A sequence is a first plan at hour 0 (from simulated aftershocks when too few real ones exist),
 then a check every `monitor_interval_hours`, with a re-plan when drift is detected.
@@ -162,7 +168,13 @@ then a check every `monitor_interval_hours`, with a re-plan when drift is detect
   `{"event_id": "...", "steps": 49}`.
 - **Live**: when `live_enabled` is true, the backend starts a sequence for each new feed earthquake
   at or above `trigger_magnitude` that has a permanent station within `station_radius_km`, at
-  most `max_plans_per_hour` per hour. Live sequences advance in real time.
+  most `max_plans_per_hour` per hour. Live sequences advance in real time. A live sequence's
+  first plan is at the current hour since the mainshock (rounded down), not at hour 0.
+- A sequence interrupted by a server restart is marked `failed`; it is not resumed.
+- **Scores.** A plan's score is the information gain on its aftershocks, scaled to the number of
+  planning aftershocks, minus the risk cost. The score drop used for drift and the error in the
+  track record are relative to the predicted information gain, not the net score, so they stay
+  meaningful when the net score is close to zero.
 
 ### `GET /events/{id}/sequence`
 `404 NOT_FOUND` when no sequence has been run for this event.

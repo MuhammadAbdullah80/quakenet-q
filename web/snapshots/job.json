@@ -1,17 +1,17 @@
 {
-  "job_id": "2be1bb",
+  "job_id": "93c07b",
   "kind": "qaoa",
   "event_id": "ridgecrest2019",
   "status": "done",
-  "created_utc": "2026-11-12T14:32:56Z",
-  "finished_utc": "2026-11-12T14:34:07Z",
+  "created_utc": "2026-11-12T15:06:13Z",
+  "finished_utc": "2026-11-12T15:07:19Z",
   "error": null,
   "result": {
     "reps": 1,
     "seed": 0,
     "shots": 1024,
     "lam": 150,
-    "seconds": 71.4,
+    "seconds": 65.7,
     "ratio": 0.735004352389712,
     "p_opt": 0.0505146197281683,
     "uniform_p_opt": 0.004761904761904762,
@@ -147,6 +147,8 @@
       "objective": 643.8816376845998,
       "rank": 1
     },
-    "quantum_agreed": true
+    "quantum_agreed": true,
+    "objective": "mean",
+    "warm_start": false
   }
 }

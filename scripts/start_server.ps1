@@ -1,9 +1,14 @@
-# Starts the QuakeNet-Q API on this machine only (127.0.0.1:8000).
+# Starts the QuakeNet-Q API on this machine only (127.0.0.1:8000 by default).
 # The tunnel agent forwards to this address; the API is never bound to 0.0.0.0.
+# The agent's scheduler (live sequences and, when live mode is switched on, the USGS feed
+# watcher) starts with the server.
 #
 #   powershell -ExecutionPolicy Bypass -File scripts\start_server.ps1
+#   powershell -ExecutionPolicy Bypass -File scripts\start_server.ps1 -Port 8011   # a second, test server
 #
 # Reads KEY=VALUE lines from .env in the repo root if the file exists (values are not printed).
+
+param([ValidateRange(1024, 65535)][int]$Port = 8000)
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
@@ -27,5 +32,5 @@ if (-not $env:QUAKENET_TOKEN -or $env:QUAKENET_TOKEN.Length -lt 32) {
     exit 1
 }
 
-python -m uvicorn api.main:create_app --factory --host 127.0.0.1 --port 8000
+python -m uvicorn api.main:create_app --factory --host 127.0.0.1 --port $Port
 exit $LASTEXITCODE

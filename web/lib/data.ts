@@ -6,13 +6,19 @@ import { clientIpFrom } from "@/lib/client-ip";
 import {
   baselinesSchema,
   eventsSchema,
+  feedSchema,
   healthSchema,
   ID_PATTERN,
   instanceSchema,
   jobSchema,
   jobsSchema,
   LIMITS,
+  memorySchema,
+  noiseSchema,
+  planSchema,
   scoringSchema,
+  sequenceSchema,
+  settingsSchema,
   systemSchema,
   type EventSummary,
   type Events,
@@ -99,10 +105,36 @@ export const loadHealth = () => load("/health", healthSchema);
 export const loadSystem = () => load("/system", systemSchema);
 export const loadJobs = () => load("/jobs", jobsSchema);
 
-/** Endpoints whose response shape is not in the contract yet (plan, replay, memory). */
-export const loadUnspecified = (path: string) => load(path, z.unknown());
-export const planPath = (eventId: string) => `${eventPath(eventId)}/plan`;
-export const replayPath = (eventId: string) => `${eventPath(eventId)}/replay`;
+// ---- Version 2: the agent ----
+
+export const loadSettings = () => load("/settings", settingsSchema, snapshots.settings);
+export const loadFeed = () => load("/feed", feedSchema, snapshots.feed);
+export const loadMemory = () => load("/memory", memorySchema, snapshots.memory);
+export const loadNoise = () => load("/noise", noiseSchema, snapshots.noise);
+
+export const loadSequence = (eventId: string) =>
+  load(`${eventPath(eventId)}/sequence`, sequenceSchema, () => snapshots.sequence(eventId));
+
+export const loadPlan = (eventId: string) =>
+  load(`${eventPath(eventId)}/plan`, planSchema, () => snapshots.plan(eventId));
+
+/** True when the backend answered 404 NOT_FOUND (for example: no sequence run yet). */
+export function isNotFound(result: Loaded<unknown>): boolean {
+  return result.state === "error" && result.code === "NOT_FOUND";
+}
+
+/** ID of a job of this kind for the event that is still queued or running, if any. */
+export async function loadActiveJobId(eventId: string, kind: string): Promise<string | null> {
+  const jobs = await loadJobs();
+  if (jobs.state !== "live") return null;
+  const active = jobs.data.jobs.find(
+    (job) =>
+      job.event_id === eventId &&
+      job.kind === kind &&
+      (job.status === "queued" || job.status === "running"),
+  );
+  return active && ID_PATTERN.test(active.job_id) ? active.job_id : null;
+}
 
 export type LatestJob = {
   /** Newest finished QAOA job for the event (with its result), if any. */

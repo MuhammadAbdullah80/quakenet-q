@@ -1,0 +1,97 @@
+{
+  "event_id": "ridgecrest2019",
+  "stage": "replan",
+  "hour": 23,
+  "created_utc": "2026-11-12T16:23:25Z",
+  "sites": [
+    {
+      "id": 1,
+      "x": 4.512,
+      "y": -5.559,
+      "lat": 35.7,
+      "lon": -117.5,
+      "risk": 0.8763,
+      "single_gain": 222.5,
+      "reason": "Single-site gain ranks 2nd of the 10 candidates; about 12% of what it records is also covered by the other chosen sites; 0.7 km from the nearest aftershock.",
+      "backups": []
+    },
+    {
+      "id": 3,
+      "x": 13.536,
+      "y": 5.559,
+      "lat": 35.8,
+      "lon": -117.4,
+      "risk": 0.1326,
+      "single_gain": 160.3,
+      "reason": "Single-site gain ranks 3rd of the 10 candidates; about 28% of what it records is also covered by the other chosen sites; already in place, so keeping it avoids a move; 10.1 km from the nearest aftershock.",
+      "backups": [
+        {
+          "lat": 35.78749,
+          "lon": -117.37765
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "x": -13.536,
+      "y": 16.678,
+      "lat": 35.9,
+      "lon": -117.7,
+      "risk": 0.9678,
+      "single_gain": 312,
+      "reason": "Largest gain of any single site; little overlap with the other chosen sites; 0.2 km from the nearest aftershock.",
+      "backups": [
+        {
+          "lat": 35.89541,
+          "lon": -117.71018
+        },
+        {
+          "lat": 35.89541,
+          "lon": -117.68801
+        },
+        {
+          "lat": 35.9134,
+          "lon": -117.71018
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "x": 13.536,
+      "y": 16.678,
+      "lat": 35.9,
+      "lon": -117.4,
+      "risk": 0.1673,
+      "single_gain": 128.3,
+      "reason": "Single-site gain ranks 5th of the 10 candidates; about 20% of what it records is also covered by the other chosen sites; already in place, so keeping it avoids a move; 8.9 km from the nearest aftershock.",
+      "backups": [
+        {
+          "lat": 35.89541,
+          "lon": -117.39981
+        },
+        {
+          "lat": 35.89541,
+          "lon": -117.42198
+        }
+      ]
+    }
+  ],
+  "moves": [
+    {
+      "from": 2,
+      "to": 1
+    },
+    {
+      "from": 9,
+      "to": 4
+    }
+  ],
+  "objective": 673.033,
+  "exact_rank": 1,
+  "quantum_agreed": true,
+  "p_opt_per_shot": 0.08185,
+  "expected_error_km": 4.375,
+  "expert_rule_error_km": 4.514,
+  "confidence": "medium",
+  "feasibility_checked": true
+}

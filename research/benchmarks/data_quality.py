@@ -69,13 +69,16 @@ def check(key: str, b: dict) -> dict:
 
     # No mapped rupture trace is available from these sources, so the only "rupture point"
     # here is the mainshock epicentre. The agent will pass the early aftershock cloud instead.
+    # The road query box uses the registry's 4-decimal epicentre, as src/instances.py does, so the
+    # cached Overpass answer is found whatever ComCat's 5th decimal says (about 10 m).
     pool = candidates.build_candidate_pool(main["lat"], main["lon"], radius, permanent,
-                                           [(main["lat"], main["lon"])])
+                                           [(main["lat"], main["lon"])],
+                                           road_bbox=candidates.bounding_box(b["lat"], b["lon"], radius))
     out.update(pool_size=len(pool), funnel=pool.funnel, feasibility_checked=pool.feasibility_checked,
                roads_checked=pool.roads_checked, terrain_checked=pool.terrain_checked,
                pool_warnings=list(pool.warnings))
     if pool.roads_checked:
-        info = sources.cache_info(candidates.overpass_url(candidates.bounding_box(main["lat"], main["lon"], radius)))
+        info = sources.cache_info(candidates.overpass_url(candidates.bounding_box(b["lat"], b["lon"], radius)))
         out["overpass_bytes"] = info["bytes"] if info else None
     out["verdict"], out["reasons"] = verdict(out)
     return out

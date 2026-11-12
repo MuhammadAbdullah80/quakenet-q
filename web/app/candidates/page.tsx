@@ -32,6 +32,8 @@ async function CandidatesContent({ searchParams }: PageProps) {
   const { events, event } = resolved;
   const instance = await loadInstance(event.id);
   const data = instance.state === "live" || instance.state === "snapshot" ? instance.data : null;
+  const showLatLon =
+    data?.candidates.some((c) => typeof c.lat === "number" && typeof c.lon === "number") ?? false;
 
   return (
     <>
@@ -44,6 +46,11 @@ async function CandidatesContent({ searchParams }: PageProps) {
       <Problem result={instance} what="the candidate sites" />
       {data ? (
         <>
+          {data.feasibility_checked === false ? (
+            <p className="notice notice-warn">
+              The road check was unavailable, so these sites were not checked for access.
+            </p>
+          ) : null}
           <dl className="facts">
             <div>
               <dt>Candidate sites (n)</dt>
@@ -97,6 +104,7 @@ async function CandidatesContent({ searchParams }: PageProps) {
                         <th scope="col" className="num">
                           Risk
                         </th>
+                        {showLatLon ? <th scope="col">Lat, lon</th> : null}
                       </tr>
                     </thead>
                     <tbody>
@@ -108,6 +116,13 @@ async function CandidatesContent({ searchParams }: PageProps) {
                           <td className="num">{fmt(c.x, 1)}</td>
                           <td className="num">{fmt(c.y, 1)}</td>
                           <td className="num">{fmt(c.risk)}</td>
+                          {showLatLon ? (
+                            <td>
+                              {typeof c.lat === "number" && typeof c.lon === "number"
+                                ? `${c.lat.toFixed(4)}, ${c.lon.toFixed(4)}`
+                                : "n/a"}
+                            </td>
+                          ) : null}
                         </tr>
                       ))}
                     </tbody>

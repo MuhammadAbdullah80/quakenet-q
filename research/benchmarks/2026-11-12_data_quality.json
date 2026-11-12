@@ -30,24 +30,22 @@
    "7Q": 27,
    "GS": 10
   },
-  "pool_size": 7174,
+  "pool_size": 2110,
   "funnel": {
    "grid": 9917,
    "on_land": 9691,
    "slope": 8391,
-   "station_gap": 7177,
-   "rupture_gap": 7174
+   "near_road": 2716,
+   "station_gap": 2113,
+   "rupture_gap": 2110
   },
-  "feasibility_checked": false,
-  "roads_checked": false,
+  "feasibility_checked": true,
+  "roads_checked": true,
   "terrain_checked": true,
-  "pool_warnings": [
-   "Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (HTTP 502): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2834.7603%2C-118.8431%2C36.7787%2C-116.3556%29%3Bout%20geom%20qt%3B"
-  ],
-  "verdict": "usable with caveats",
-  "reasons": [
-   "road or terrain check did not run, pool is not feasibility-checked"
-  ]
+  "pool_warnings": [],
+  "overpass_bytes": 13247022,
+  "verdict": "usable",
+  "reasons": []
  },
  {
   "key": "southnapa2014",
@@ -80,25 +78,24 @@
    "GS": 6,
    "NC": 12
   },
-  "pool_size": 506,
+  "pool_size": 335,
   "funnel": {
    "grid": 1961,
    "on_land": 1687,
    "slope": 1630,
-   "station_gap": 507,
-   "rupture_gap": 506
+   "near_road": 1298,
+   "station_gap": 336,
+   "rupture_gap": 335
   },
-  "feasibility_checked": false,
-  "roads_checked": false,
+  "feasibility_checked": true,
+  "roads_checked": true,
   "terrain_checked": true,
-  "pool_warnings": [
-   "Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (TimeoutError: The read operation timed out): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2837.7655%2C-122.8847%2C38.6648%2C-121.7400%29%3Bout%20geom%20qt%3B"
-  ],
+  "pool_warnings": [],
+  "overpass_bytes": 42724893,
   "verdict": "usable with caveats",
   "reasons": [
    "only 5 aftershocks in the first 12 h (under 30: the plan must blend in synthetic events, EC-3)",
-   "only 9 later aftershocks to validate on (under 100)",
-   "road or terrain check did not run, pool is not feasibility-checked"
+   "only 9 later aftershocks to validate on (under 100)"
   ]
  },
  {
@@ -129,24 +126,22 @@
    "GS": 1,
    "NN": 7
   },
-  "pool_size": 1678,
+  "pool_size": 657,
   "funnel": {
    "grid": 1961,
    "on_land": 1961,
    "slope": 1891,
-   "station_gap": 1685,
-   "rupture_gap": 1678
+   "near_road": 725,
+   "station_gap": 661,
+   "rupture_gap": 657
   },
-  "feasibility_checked": false,
-  "roads_checked": false,
+  "feasibility_checked": true,
+  "roads_checked": true,
   "terrain_checked": true,
-  "pool_warnings": [
-   "Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (TimeoutError: The read operation timed out): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2837.7192%2C-118.4217%2C38.6186%2C-117.2777%29%3Bout%20geom%20qt%3B"
-  ],
-  "verdict": "usable with caveats",
-  "reasons": [
-   "road or terrain check did not run, pool is not feasibility-checked"
-  ]
+  "pool_warnings": [],
+  "overpass_bytes": 1493257,
+  "verdict": "usable",
+  "reasons": []
  },
  {
   "key": "anchorage2018",
@@ -222,24 +217,23 @@
   "temporary_networks": {
    "NC": 1
   },
-  "pool_size": 252,
+  "pool_size": 141,
   "funnel": {
    "grid": 1961,
    "on_land": 681,
    "slope": 547,
-   "station_gap": 252,
-   "rupture_gap": 252
+   "near_road": 319,
+   "station_gap": 141,
+   "rupture_gap": 141
   },
-  "feasibility_checked": false,
-  "roads_checked": false,
+  "feasibility_checked": true,
+  "roads_checked": true,
   "terrain_checked": true,
-  "pool_warnings": [
-   "Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (TimeoutError: The read operation timed out): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2840.0753%2C-125.0146%2C40.9747%2C-123.8314%29%3Bout%20geom%20qt%3B"
-  ],
+  "pool_warnings": [],
+  "overpass_bytes": 4186775,
   "verdict": "usable with caveats",
   "reasons": [
-   "only 20 later aftershocks to validate on (under 100)",
-   "road or terrain check did not run, pool is not feasibility-checked"
+   "only 20 later aftershocks to validate on (under 100)"
   ]
  },
  {
@@ -267,23 +261,21 @@
    "GS": 6,
    "PR": 3
   },
-  "pool_size": 552,
+  "pool_size": 532,
   "funnel": {
    "grid": 1961,
    "on_land": 932,
    "slope": 853,
-   "station_gap": 556,
-   "rupture_gap": 552
+   "near_road": 807,
+   "station_gap": 534,
+   "rupture_gap": 532
   },
-  "feasibility_checked": false,
-  "roads_checked": false,
+  "feasibility_checked": true,
+  "roads_checked": true,
   "terrain_checked": true,
-  "pool_warnings": [
-   "Overpass unavailable, road filter skipped (grid and terrain only): FEED_UNAVAILABLE: overpass-api.de failed after 4 attempts (HTTP 502): https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3Bway%5B%22highway%22~%22%5E%28motorway%7Ctrunk%7Cprimary%7Csecondary%7Ctertiary%7Cunclassified%29%24%22%5D%2817.5081%2C-67.2840%2C18.4075%2C-66.3386%29%3Bout%20geom%20qt%3B"
-  ],
-  "verdict": "usable with caveats",
-  "reasons": [
-   "road or terrain check did not run, pool is not feasibility-checked"
-  ]
+  "pool_warnings": [],
+  "overpass_bytes": 12026519,
+  "verdict": "usable",
+  "reasons": []
  }
 ]

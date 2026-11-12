@@ -238,6 +238,57 @@ para(f"Ignoring risk (λ = 0), the best network is {{0, 1, 4, 7}} with a blur of
      "Larger λ pushes sensors away from the rupture and accuracy degrades quickly.")
 figure("tradeoff.png", "Figure 6. Exact optimum for different risk weights λ.", 3.8)
 
+# ------------------------------------------------------------------ 5.5 agent, 5.6 benchmarks
+BENCH = json.loads((ROOT / "results" / "benchmarks.json").read_text())
+doc.add_heading("5.5 The agent", 2)
+para("The experiment above is one decision. The agent makes that decision automatically and keeps it up to date. "
+     "It is an automated program, not AI. It runs on the team laptop behind a web API, and a web console "
+     "(hosted on Vercel) lets anyone test each part by hand.")
+bullets([
+    "Trigger: it reads the USGS live feed. An earthquake at or above the trigger magnitude, with a permanent station within range, starts a run. A scientist can change the trigger magnitude (for example to 4.0) and the other settings in the console; the change takes effect on the next feed check.",
+    "First plan within minutes: when few real aftershocks exist yet, it simulates them along the expected rupture (length from Wells & Coppersmith 1994, magnitudes from a Gutenberg-Richter law) and plans on those.",
+    "Hourly checks: it compares the plan with the aftershocks recorded since. If the activity moved more than 5 km or the plan's score fell more than 20%, it re-plans, with a cost for every sensor that must be moved.",
+    "Every plan uses the quantum circuit, trained on CVaR (the mean of the best 10% of outcomes) and warm-started from remembered angles, and is checked by exact search. After two failed retries the exact answer is published and flagged.",
+    "Memory: circuit angles that worked, the track record of predicted against realised scores (which sets a confidence level), and weights for three wave-speed models.",
+    "Replay: a past earthquake can be played forward hour by hour with a simulated clock that never uses later data. A 24-hour Ridgecrest replay takes about 20 seconds; the agent re-planned at hours 1 and 23 and ended on sites {1, 3, 4, 7}.",
+])
+
+doc.add_heading("5.6 Five more earthquakes", 2)
+para("To check that the method is not tuned to one earthquake, we repeated the test on five more, with 12 hours of real "
+     "aftershocks, road-checked candidate sites, 3 circuit layers and 3 seeds per variant.")
+rows = []
+for e in BENCH["events"]:
+    if e.get("skipped"):
+        continue
+    v = e["variants"]
+    g = e["gain_over_expert"]["exact"]
+    rows.append([e["name"], e["valid_events"],
+                 f"{100*v['mean-cold']['p_best_mean']:.1f}%", f"{100*v['cvar-cold']['p_best_mean']:.1f}%",
+                 f"{100*v['cvar-warm']['p_best_mean']:.1f}%",
+                 f"{v['cvar-cold']['final_exact']}/{v['cvar-cold']['runs']}",
+                 f"{g['plain_pct']:+.1f}%", f"{g['hearing_pct']:+.1f}%"])
+table(["Earthquake", "Test aftershocks", "P(best) mean", "P(best) CVaR", "P(best) CVaR warm", "Exact, CVaR",
+       "Gain over expert", "Gain, hearing range"], rows)
+skipped = [e for e in BENCH["events"] if e.get("skipped")]
+fe = {k: sum(e["variants"][k]["final_exact"] for e in BENCH["events"] if not e.get("skipped")) for k in ("mean-cold", "cvar-cold")}
+nr = sum(e["variants"]["cvar-cold"]["runs"] for e in BENCH["events"] if not e.get("skipped"))
+wins = sum(1 for e in BENCH["events"] if not e.get("skipped") and e["gain_over_expert"]["exact"]["plain_pct"] > 0)
+para(f"CVaR training made the final pick exact in {fe['cvar-cold']} of {nr} runs, against {fe['mean-cold']} of {nr} with the "
+     "usual mean-energy training, and it raised the chance per measurement on every earthquake. The 20% target was missed "
+     f"in every run. In the simulated location test, the best-scoring network beat the expert rule on {wins} of {len(rows)} "
+     "earthquakes; on Puerto Rico it was clearly worse. The D-optimality score does not always predict location error, "
+     "so better placement on these earthquakes needs a better score, not a better search. "
+     + (f"{skipped[0]['name']} was skipped: {skipped[0]['skipped']}." if skipped else ""))
+para("Hearing range (gain columns on the right): a station whose simulated signal-to-noise ratio is under 5 gives no reading, "
+     "and weak readings are noisier. It uses the Hutton & Boore (1987) attenuation law with an assumed noise level, so it "
+     "is a simplification.")
+
+doc.add_heading("5.7 Simulated gate noise", 2)
+para("Real quantum hardware makes errors. Without hardware access we simulated depolarising gate errors on a smaller "
+     "version (6 sites, choose 2, one layer) with a Monte-Carlo Pauli-error method in qiskit.quantum_info. At a gate "
+     "error of 1%, the chance of the best network fell from 52% to 24% and the share of valid answers from 100% to 61% "
+     "(random guessing: 6.7%). This is a classical simulation, not a hardware result.")
+
 # ------------------------------------------------------------------ 6
 doc.add_heading("6. Limitations and reflection", 1)
 bullets([
@@ -249,7 +300,9 @@ bullets([
     "Simplified physics: uniform velocity, P arrivals only, a fixed picking error, no station noise or site effects. The error values are relative indicators, not operational location errors.",
     "Synthetic inputs: candidate sites and access risk follow rules we wrote, and λ is a judgement call that a response team would need to set.",
     "Evidence limits: our statement that siting is mostly manual rests on published deployment reports, not interviews, and “no earlier quantum formulation” means only that our literature searches found none.",
-    "What we would do next: a layered velocity model, real access data, larger instances (20–30 sites) where enumeration stops being trivial, and noisy simulation.",
+    "The agent's live mode has been tested with a recorded feed only, not during a real qualifying earthquake. A sequence cut off by a restart is not resumed.",
+    "During CVaR training the circuit's output is computed by our own exact simulator of the same circuit (checked against Qiskit's Statevector in the tests), because CVaR needs the full distribution at every step. The final measurements run the Qiskit circuit on Qiskit's sampler.",
+    "What we would do next: a score that predicts location error better than the D-criterion (Section 5.6), a layered velocity model, larger instances (20–30 sites) where enumeration stops being trivial, and a run on real hardware.",
 ])
 
 # ------------------------------------------------------------------ refs

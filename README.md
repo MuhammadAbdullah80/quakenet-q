@@ -60,15 +60,58 @@ the valid networks. Our penalty-based ablation confirms the difference: it produ
 
 ![Architecture](figures/architecture.png)
 
+## The agent
+
+"Agent" here means an automated program, not AI. It runs on the team laptop behind the web API and
+does what a response team would otherwise do by hand:
+
+1. **Trigger.** It reads the USGS live feed (updated every minute). An earthquake at or above the
+   trigger magnitude, with a permanent station within range, starts a run. The trigger magnitude
+   and every other setting can be changed on the Settings page (for example 4.0 instead of 6.5).
+   Live mode is off by default; any listed earthquake can also be started by hand.
+2. **First plan within minutes.** If too few real aftershocks exist yet, it simulates them along the
+   expected rupture (rupture length from Wells & Coppersmith 1994, magnitudes from a
+   Gutenberg-Richter law) and plans on those.
+3. **Hourly checks.** It compares the plan with the aftershocks recorded since. If the activity has
+   moved more than 5 km or the plan's score fell by more than 20%, it re-plans, with a cost for each
+   sensor that has to be moved.
+4. **Memory.** It keeps the circuit angles that worked (the next run starts from them), how well its
+   past plans predicted their own score (which sets a confidence level), and weights for three
+   wave-speed models.
+
+Every plan uses the quantum circuit, trained with CVaR (the average of the best 10% of outcomes),
+and is checked against an exact search; if they disagree after two retries, the exact answer is
+published and flagged. Past earthquakes can be replayed hour by hour on the Monitor page; a 24-hour
+Ridgecrest replay takes about 20 seconds.
+
+## Other earthquakes
+
+`python run_benchmarks.py` repeats the test on five earthquakes (South Napa 2014 was skipped: only 9
+later aftershocks to test on). Full tables: `research/benchmarks/2026-11-12_benchmark_results.md`.
+
+| Earthquake | Best network per measurement, mean / CVaR training | Our optimum against the expert rule |
+|---|---|---|
+| Ridgecrest 2019 | 3.8% / 9.6% | 2.4% lower location error |
+| Monte Cristo Range 2020 | 1.2% / 7.3% | 0.1% higher |
+| Anchorage 2018 | 0.4% / 1.6% | 0.7% higher |
+| Ferndale 2022 | 6.0% / 7.0% | 2.9% higher |
+| Puerto Rico 2020 | 6.2% / 8.2% | 15.8% higher |
+
+CVaR training made the final pick exact in 14 of 15 runs, against 8 of 15 with the usual training.
+**The optimised network beat the field rule on only one of five earthquakes** in the simulated
+location test: the D-optimality score does not always predict location error. We report that as it
+is; finding a score that does is the most useful next step.
+
 ## Run it
 
 Requires Python 3.10+.
 
 ```bash
 pip install -r requirements.txt
-python -m pytest tests -q          # 163 checks, about 25 s
+python -m pytest tests -q          # 303 checks, about 45 s
 python run_experiment.py --quick   # 1 seed, p = 1: under a minute
 python run_experiment.py           # full run: about 45 minutes
+python run_benchmarks.py           # five more earthquakes: about 11 minutes
 ```
 
 Outputs: `results/results.json` and the figures in `figures/` (the quick run writes
@@ -86,6 +129,8 @@ no internet is needed. `python data/fetch_data.py` re-downloads it from USGS and
 | `src/sources.py`, `src/candidates.py` | Outbound data gateway; candidate sites from roads and terrain |
 | `src/qaoa_solver.py` | Dicke state, XY mixer, QAOA circuits, COBYLA loop, sampling |
 | `src/baselines.py` | Brute force, greedy, backward elimination, simulated annealing, expert rule, random |
+| `src/instances.py`, `src/noise.py` | Any earthquake as an instance; simulated gate-noise study |
+| `src/agent/` | The agent: settings, planner, hourly sequence, feed watcher, memory |
 | `api/` | FastAPI backend (runs on the team laptop) |
 | `web/` | Next.js test console, deployed on Vercel |
 | `docs/` | Architecture, API contract, decisions, design spec |
@@ -99,7 +144,10 @@ no internet is needed. `python data/fetch_data.py` re-downloads it from USGS and
 
 - **No quantum advantage.** 210 networks can be enumerated instantly and simple classical heuristics find the optimum.
 - **The exact objective does not scale.** It needs 385 terms for 4 of 10 sites, and the count grows fast with more sensors.
-- **Below our success target.** The best network comes up in 5–11% of measurements, not the 20% we aimed for.
+- **Below our success target.** The best network comes up in 2–11% of measurements, not the 20% we aimed for.
+- **The score does not always beat a field rule.** On four of five benchmark earthquakes the expert rule's network located aftershocks as well or better in simulation.
+- **Hearing range uses assumed constants** (noise level, attenuation law), and the noise study is a classical simulation of gate errors, not a hardware run.
+- **Live mode** has only been tested with a recorded feed, not during a real qualifying earthquake.
 - **The location test is simulated** with the same simple physics (different wave speed, added noise), not real recordings.
 - **Simplified physics:** uniform 6 km/s velocity, P arrivals only, 0.1 s picking error, flat earth.
 - **Synthetic parts:** candidate sites come from a grid rule and access risk from a distance-to-rupture rule (`exp(−d / 5 km)`). Real deployments would use road, permit and safety data.

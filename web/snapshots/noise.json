@@ -1,0 +1,42 @@
+{
+  "instance": {
+    "n": 6,
+    "k": 2,
+    "layers": 1,
+    "event_id": "ridgecrest2019"
+  },
+  "points": [
+    {
+      "gate_error": 0,
+      "p_best": 0.5224487743705059,
+      "valid": 1.0000000000000044
+    },
+    {
+      "gate_error": 0.0001,
+      "p_best": 0.5136855007592672,
+      "valid": 0.9915000000000025
+    },
+    {
+      "gate_error": 0.0003,
+      "p_best": 0.5139619882005096,
+      "valid": 0.9923249579113869
+    },
+    {
+      "gate_error": 0.001,
+      "p_best": 0.4868477287767686,
+      "valid": 0.9492263587905677
+    },
+    {
+      "gate_error": 0.003,
+      "p_best": 0.40744376882005917,
+      "valid": 0.845079912181161
+    },
+    {
+      "gate_error": 0.01,
+      "p_best": 0.23967979471678366,
+      "valid": 0.6095706740912873
+    }
+  ],
+  "uniform_p_best": 0.06666666666666667,
+  "note": "Simulated depolarising noise (Monte-Carlo Pauli errors after each sx, x and cx gate; one-qubit error = gate_error / 10; no readout error). Not a hardware run."
+}
