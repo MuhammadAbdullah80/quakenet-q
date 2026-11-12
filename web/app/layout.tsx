@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <header className="site-header">
           <div className="site-header-inner">
             <p className="brand">
-              <Link href="/events">
+              <Link href="/">
                 <span className="brand-mark" aria-hidden="true" />
                 QuakeNet-Q
               </Link>
@@ -54,9 +54,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <main id="main">{children}</main>
         <footer className="site-footer">
           <div className="site-footer-inner">
-            <p>
-              Proof of concept. The quantum circuit runs on a simulator and claims no speedup.
-            </p>
+            <p>Proof of concept. The quantum circuit runs on a simulator and claims no speedup.</p>
             <p>
               Earthquake data: U.S. Geological Survey. Station data: EarthScope. Elevation: Mapzen
               Terrain Tiles on AWS, data courtesy of the U.S. Geological Survey.

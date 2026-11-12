@@ -5,7 +5,10 @@ import { fmt } from "@/lib/format";
 // Works in both server and client components (no hooks, no browser APIs).
 
 /** What the map needs. An Instance fits; so does a sequence step (risk may be unknown). */
-export type MapData = Pick<Instance, "mainshock" | "design_events" | "valid_events" | "stations"> & {
+export type MapData = Pick<
+  Instance,
+  "mainshock" | "design_events" | "valid_events" | "stations"
+> & {
   /** Picks the relief image when one exists for this event's local grid. */
   event_id?: string;
   candidates: { id: number; x: number; y: number; risk?: number | null }[];
@@ -123,7 +126,8 @@ export function SiteMap({
   const hasRisk = risks.length > 0;
   const riskMin = hasRisk ? Math.min(...risks) : 0;
   const riskMax = hasRisk ? Math.max(...risks) : 0;
-  const riskT = (risk: number) => (riskMax > riskMin ? (risk - riskMin) / (riskMax - riskMin) : 0.5);
+  const riskT = (risk: number) =>
+    riskMax > riskMin ? (risk - riskMin) / (riskMax - riskMin) : 0.5;
   const fillFor = (risk: number | null | undefined) =>
     typeof risk === "number" ? riskColour(riskT(risk)) : NEUTRAL;
 

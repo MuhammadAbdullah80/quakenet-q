@@ -45,7 +45,10 @@ export function BarChart({ title, note, unit, items, digits = 2, max, highlightL
           <span />
           <span className="bar-ticks">
             {shown.map((tick) => (
-              <span key={tick} style={{ left: `${layout.max > 0 ? (tick / layout.max) * 100 : 0}%` }}>
+              <span
+                key={tick}
+                style={{ left: `${layout.max > 0 ? (tick / layout.max) * 100 : 0}%` }}
+              >
                 {Number(tick.toFixed(digits))}
               </span>
             ))}

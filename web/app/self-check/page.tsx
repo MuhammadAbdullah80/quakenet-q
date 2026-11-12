@@ -16,8 +16,7 @@ export default function SelfCheckPage({ searchParams }: PageProps) {
       <h1>Self-check</h1>
       <p className="lede">
         The quantum choice next to the exact optimum and the classical methods. Rank 1 is the best
-        possible network. Location error is the mean error, in km, when locating later
-        aftershocks.
+        possible network. Location error is the mean error, in km, when locating later aftershocks.
       </p>
       <Suspense fallback={<Loading label="Loading the comparison" />}>
         <SelfCheckContent searchParams={searchParams} />
@@ -165,8 +164,8 @@ async function SelfCheckContent({ searchParams }: PageProps) {
               </dl>
               {data && data.lam !== result.lam ? (
                 <p className="notice notice-warn">
-                  The baselines use risk weight {data.lam} but the quantum run used {result.lam},
-                  so the two sides are not directly comparable.
+                  The baselines use risk weight {data.lam} but the quantum run used {result.lam}, so
+                  the two sides are not directly comparable.
                 </p>
               ) : null}
             </>
