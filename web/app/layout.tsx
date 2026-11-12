@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { HeaderScroll } from "@/components/HeaderScroll";
 import { Nav } from "@/components/Nav";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import "./globals.css";
 
 // next/font self-hosts these files, so the CSP's font-src 'self' still holds.
@@ -32,7 +33,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${plexHead.variable} ${plexBody.variable} ${plexMono.variable}`}>
+    <html
+      lang="en"
+      data-theme="dark"
+      suppressHydrationWarning
+      className={`${plexHead.variable} ${plexBody.variable} ${plexMono.variable}`}
+    >
       <body>
         <a className="skip-link" href="#main">
           Skip to content
@@ -46,6 +52,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               </Link>
             </p>
             <Nav />
+            <ThemeToggle />
           </div>
           <HeaderScroll />
         </header>
