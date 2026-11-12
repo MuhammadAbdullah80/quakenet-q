@@ -45,10 +45,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 QuakeNet-Q
               </Link>
             </p>
-            <p className="tagline">
-              Where should 4 portable seismometers go, out of 10 candidate sites? One page per
-              module.
-            </p>
             <Nav />
           </div>
           <HeaderScroll />

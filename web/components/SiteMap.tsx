@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { Instance } from "@/lib/schemas";
 import { fmt } from "@/lib/format";
 
@@ -27,6 +28,12 @@ type Props = {
   designLabel?: string;
   /** Legend text for the open dots (default: later aftershocks). */
   validLabel?: string;
+  /** For maps that change step by step: no entrance sequence, new dots pop in at once. */
+  live?: boolean;
+  /** Sensor moves to draw as arrows from the old site to the new one. */
+  moves?: readonly { from: number; to: number }[];
+  /** Changing this replays the chosen rings' draw, for example on each replay step. */
+  ringKey?: string | number;
 };
 
 // Real shaded relief drawn in the page palette (scripts/build_web_assets.py). Square, north up,
@@ -37,20 +44,20 @@ const RELIEF: Record<string, { href: string; extent: number }> = {
 
 const NEUTRAL = { fill: "#dde3df", text: "#10291a" };
 
-const RAMP: [number, number, number][] = [
-  [255, 243, 214],
-  [240, 138, 60],
-  [143, 29, 29],
+// Access risk, low to high, in five steps from pale sand to rust: one warm hue family, so lime
+// stays free for chosen sites. Steps rather than a smooth ramp, because a smooth ramp passes a
+// middle tone where neither ink nor white labels reach 4.5:1; every step here is above 5.5:1.
+const RISK_STEPS: { fill: string; text: string }[] = [
+  { fill: "#f4ead6", text: "#10291a" },
+  { fill: "#e6c79a", text: "#10291a" },
+  { fill: "#d49a58", text: "#10291a" },
+  { fill: "#9e5530", text: "#ffffff" },
+  { fill: "#6f2a14", text: "#ffffff" },
 ];
 
 function riskColour(t: number): { fill: string; text: string } {
   const clamped = Math.min(1, Math.max(0, t));
-  const scaled = clamped * (RAMP.length - 1);
-  const i = Math.min(RAMP.length - 2, Math.floor(scaled));
-  const f = scaled - i;
-  const rgb = RAMP[i].map((c, k) => Math.round(c + (RAMP[i + 1][k] - c) * f));
-  const luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
-  return { fill: `rgb(${rgb.join(",")})`, text: luminance > 0.55 ? "#10291a" : "#ffffff" };
+  return RISK_STEPS[Math.min(RISK_STEPS.length - 1, Math.floor(clamped * RISK_STEPS.length))];
 }
 
 function niceStep(span: number): number {
@@ -83,19 +90,23 @@ export function SiteMap({
   title,
   designLabel = "Aftershock used to plan",
   validLabel = "Later aftershock",
+  live = false,
+  moves = [],
+  ringKey = 0,
 }: Props) {
   const xs = [
     instance.mainshock.x,
     ...instance.design_events.map((e) => e[0]),
     ...instance.valid_events.map((e) => e[0]),
-    ...instance.stations.map((s) => s.x),
+    // Live maps frame the activity; far stations are clipped at the edge.
+    ...(live ? [] : instance.stations.map((s) => s.x)),
     ...instance.candidates.map((c) => c.x),
   ];
   const ys = [
     instance.mainshock.y,
     ...instance.design_events.map((e) => e[1]),
     ...instance.valid_events.map((e) => e[1]),
-    ...instance.stations.map((s) => s.y),
+    ...(live ? [] : instance.stations.map((s) => s.y)),
     ...instance.candidates.map((c) => c.y),
   ];
   const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys), 1);
@@ -131,6 +142,8 @@ export function SiteMap({
   const fillFor = (risk: number | null | undefined) =>
     typeof risk === "number" ? riskColour(riskT(risk)) : NEUTRAL;
 
+  const nDesign = Math.max(1, instance.design_events.length);
+  const nValid = Math.max(1, instance.valid_events.length);
   const chosenSet = new Set(chosen);
   const secondarySet = new Set(secondary);
   const showSecondary = secondary.length > 0;
@@ -143,13 +156,11 @@ export function SiteMap({
     (showChosen ? ` ${chosenLabel}: sites ${[...chosen].join(", ")}.` : "");
 
   const relief = instance.event_id ? RELIEF[instance.event_id] : undefined;
-  const low = riskColour(0);
-  const high = riskColour(1);
 
   return (
     <figure className="map-figure">
       <svg
-        className="map-svg"
+        className={live ? "map-svg is-live" : "map-svg"}
         viewBox={`${minX} ${-maxY} ${size} ${size}`}
         role="img"
         aria-label={description}
@@ -191,12 +202,24 @@ export function SiteMap({
 
         <g className="map-design">
           {instance.design_events.map((e, i) => (
-            <circle key={i} cx={X(e[0])} cy={Y(e[1])} r={u * 0.6} />
+            <circle
+              key={i}
+              cx={X(e[0])}
+              cy={Y(e[1])}
+              r={u * 0.6}
+              style={{ "--i": (i / nDesign).toFixed(3) } as CSSProperties}
+            />
           ))}
         </g>
         <g className="map-valid" strokeWidth={u * 0.3}>
           {instance.valid_events.map((e, i) => (
-            <circle key={i} cx={X(e[0])} cy={Y(e[1])} r={u * 0.75} />
+            <circle
+              key={i}
+              cx={X(e[0])}
+              cy={Y(e[1])}
+              r={u * 0.75}
+              style={{ "--i": (i / nValid).toFixed(3) } as CSSProperties}
+            />
           ))}
         </g>
 
@@ -231,11 +254,48 @@ export function SiteMap({
           <title>{`Mainshock, depth ${fmt(instance.mainshock.depth, 1)} km`}</title>
         </polygon>
 
+        {moves.length > 0 ? (
+          <g className="map-moves" key={`moves-${ringKey}`}>
+            <defs>
+              <marker
+                id="map-arrow"
+                viewBox="0 0 10 10"
+                refX="8"
+                refY="5"
+                markerWidth="5"
+                markerHeight="5"
+                orient="auto-start-reverse"
+              >
+                <path d="M0,0 L10,5 L0,10 z" className="map-move-head" />
+              </marker>
+            </defs>
+            {moves.map((m) => {
+              const a = instance.candidates.find((c) => c.id === m.from);
+              const b = instance.candidates.find((c) => c.id === m.to);
+              if (!a || !b) return null;
+              // Stop short of both circles so the arrow reads as "from here to there".
+              const dx = X(b.x) - X(a.x);
+              const dy = Y(b.y) - Y(a.y);
+              const len = Math.hypot(dx, dy) || 1;
+              const pad = u * 4.6;
+              return (
+                <path
+                  key={`${m.from}-${m.to}`}
+                  className="map-move"
+                  d={`M${X(a.x) + (dx / len) * pad},${Y(a.y) + (dy / len) * pad} L${X(b.x) - (dx / len) * pad},${Y(b.y) - (dy / len) * pad}`}
+                  strokeWidth={u * 0.7}
+                  markerEnd="url(#map-arrow)"
+                  pathLength={1}
+                />
+              );
+            })}
+          </g>
+        ) : null}
         <g>
-          {instance.candidates.map((c) => {
+          {instance.candidates.map((c, k) => {
             const colour = fillFor(c.risk);
             return (
-              <g key={c.id}>
+              <g key={c.id} className="map-site" style={{ "--k": k } as CSSProperties}>
                 {secondarySet.has(c.id) ? (
                   <circle
                     className="map-secondary"
@@ -247,7 +307,7 @@ export function SiteMap({
                   />
                 ) : null}
                 {chosenSet.has(c.id) ? (
-                  <g>
+                  <g key={`ring-${ringKey}`}>
                     <circle
                       className="map-chosen-halo"
                       cx={X(c.x)}
@@ -261,6 +321,14 @@ export function SiteMap({
                       cy={Y(c.y)}
                       r={u * 4.1}
                       strokeWidth={u * 1}
+                      pathLength={1}
+                    />
+                    <circle
+                      className="map-chosen-pulse"
+                      cx={X(c.x)}
+                      cy={Y(c.y)}
+                      r={u * 4.1}
+                      strokeWidth={u * 0.6}
                     />
                   </g>
                 ) : null}
@@ -327,20 +395,17 @@ export function SiteMap({
             Permanent station
           </li>
           {hasRisk ? (
-            <>
-              <li>
-                <svg viewBox="0 0 20 20" aria-hidden="true">
-                  <circle className="map-candidate" cx="10" cy="10" r="8" fill={low.fill} />
-                </svg>
-                Candidate, lowest risk ({fmt(riskMin)})
-              </li>
-              <li>
-                <svg viewBox="0 0 20 20" aria-hidden="true">
-                  <circle className="map-candidate" cx="10" cy="10" r="8" fill={high.fill} />
-                </svg>
-                Candidate, highest risk ({fmt(riskMax)})
-              </li>
-            </>
+            <li className="risk-scale">
+              <span>Candidate access risk</span>
+              <span className="risk-steps" aria-hidden="true">
+                {RISK_STEPS.map((step) => (
+                  <span key={step.fill} style={{ background: step.fill }} />
+                ))}
+              </span>
+              <span className="risk-ends">
+                {fmt(riskMin)} lowest to {fmt(riskMax)} highest
+              </span>
+            </li>
           ) : (
             <li>
               <svg viewBox="0 0 20 20" aria-hidden="true">

@@ -5,6 +5,7 @@ import { backendConfigured } from "@/lib/backend";
 import { loadHealth, loadJobs, loadSystem } from "@/lib/data";
 import { fmtTime } from "@/lib/format";
 import { passcodeConfigured } from "@/lib/passcode";
+import { TableFold } from "@/components/TableFold";
 
 export const metadata: Metadata = { title: "System" };
 
@@ -114,7 +115,9 @@ async function SystemContent() {
                         <td>{source.cached ? "yes" : "no"}</td>
                         <td>{fmtTime(source.retrieved_utc)}</td>
                         {/* Shown as text on purpose: backend data is never turned into a link. */}
-                        <td>{source.url ?? "n/a"}</td>
+                        <td className="clip" title={source.url ?? undefined}>
+                          {source.url ?? "n/a"}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -132,35 +135,37 @@ async function SystemContent() {
           <Empty>No jobs have been run yet.</Empty>
         ) : null}
         {jobs.state === "live" && jobs.data.jobs.length > 0 ? (
-          <div className="table-wrap">
-            <table>
-              <caption>Newest first, at most 50</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Job</th>
-                  <th scope="col">Kind</th>
-                  <th scope="col">Earthquake</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Created</th>
-                  <th scope="col">Finished</th>
-                  <th scope="col">Error</th>
-                </tr>
-              </thead>
-              <tbody>
-                {jobs.data.jobs.map((job) => (
-                  <tr key={job.job_id}>
-                    <th scope="row">{job.job_id}</th>
-                    <td>{job.kind}</td>
-                    <td>{job.event_id}</td>
-                    <td>{statusTag(job.status)}</td>
-                    <td>{fmtTime(job.created_utc)}</td>
-                    <td>{fmtTime(job.finished_utc)}</td>
-                    <td>{job.error ?? ""}</td>
+          <TableFold total={jobs.data.jobs.length} limit={6} noun="jobs">
+            <div className="table-wrap">
+              <table>
+                <caption>Newest first, at most 50</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Job</th>
+                    <th scope="col">Kind</th>
+                    <th scope="col">Earthquake</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Created</th>
+                    <th scope="col">Finished</th>
+                    <th scope="col">Error</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {jobs.data.jobs.map((job) => (
+                    <tr key={job.job_id}>
+                      <th scope="row">{job.job_id}</th>
+                      <td>{job.kind}</td>
+                      <td>{job.event_id}</td>
+                      <td>{statusTag(job.status)}</td>
+                      <td>{fmtTime(job.created_utc)}</td>
+                      <td>{fmtTime(job.finished_utc)}</td>
+                      <td>{job.error ?? ""}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </TableFold>
         ) : null}
       </section>
     </>

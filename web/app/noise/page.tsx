@@ -43,9 +43,7 @@ async function NoiseContent() {
             <div>
               <dt>Problem size</dt>
               <dd>
-                {data.instance
-                  ? `${data.instance.n} sites, choose ${data.instance.k}`
-                  : "n/a"}
+                {data.instance ? `${data.instance.n} sites, choose ${data.instance.k}` : "n/a"}
               </dd>
             </div>
             <div>
@@ -96,7 +94,9 @@ function NoiseChart({ points, uniform }: { points: Point[]; uniform: number }) {
   const yTicks: number[] = [];
   for (let v = 0; v <= yMax + 1e-9; v += yStep) yTicks.push(Number(v.toFixed(6)));
   const xTicks = points.map((p) => p.gate_error);
-  const path = points.map((p, i) => `${i === 0 ? "M" : "L"}${x(p.gate_error)},${y(p.p_best)}`).join(" ");
+  const path = points
+    .map((p, i) => `${i === 0 ? "M" : "L"}${x(p.gate_error)},${y(p.p_best)}`)
+    .join(" ");
   const first = points[0];
   const last = points[points.length - 1];
   const label =
@@ -154,9 +154,15 @@ function NoiseChart({ points, uniform }: { points: Point[]; uniform: number }) {
         >
           Random pick ({fmtPercent(uniform, 2)})
         </text>
-        <path className="chart-line" d={path} />
+        <path className="chart-line" d={path} pathLength={1} />
         {points.map((p) => (
-          <circle key={p.gate_error} className="chart-point" cx={x(p.gate_error)} cy={y(p.p_best)} r={5}>
+          <circle
+            key={p.gate_error}
+            className="chart-point"
+            cx={x(p.gate_error)}
+            cy={y(p.p_best)}
+            r={5}
+          >
             <title>{`Gate error ${fmtPercent(p.gate_error, 2)}: best network ${fmtPercent(p.p_best, 1)}`}</title>
           </circle>
         ))}
@@ -198,7 +204,9 @@ function NoiseTable({ points, uniform }: { points: Point[]; uniform: number }) {
               </th>
               <td className="num">{fmtPercent(p.p_best, 1)}</td>
               <td className="num">{uniform > 0 ? `${fmt(p.p_best / uniform, 1)} times` : "n/a"}</td>
-              <td className="num">{typeof p.valid === "number" ? fmtPercent(p.valid, 0) : "n/a"}</td>
+              <td className="num">
+                {typeof p.valid === "number" ? fmtPercent(p.valid, 0) : "n/a"}
+              </td>
             </tr>
           ))}
         </tbody>

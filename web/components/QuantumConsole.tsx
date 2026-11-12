@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { CircuitSim } from "@/components/CircuitSim";
 import { JobResultView } from "@/components/JobResultView";
 import { ID_PATTERN, LIMITS } from "@/lib/limits";
 import type { Instance, Job } from "@/lib/schemas";
@@ -66,6 +67,11 @@ export function QuantumConsole({
   const [job, setJob] = useState<Job | null>(initialJob);
   const [message, setMessage] = useState<Message | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // Settings of the run in progress, for the circuit view.
+  const [runSettings, setRunSettings] = useState<{ reps: number; shots: number }>({
+    reps: LIMITS.reps.default,
+    shots: LIMITS.shots.default,
+  });
 
   // Poll the job every 2 s until it is done or failed.
   useEffect(() => {
@@ -143,6 +149,7 @@ export function QuantumConsole({
       const jobId = (body as { job_id?: unknown } | null)?.job_id;
       if (response.status === 202 && typeof jobId === "string" && ID_PATTERN.test(jobId)) {
         setActiveStatus("queued");
+        setRunSettings({ reps: payload.reps, shots: payload.shots });
         setActiveJobId(jobId);
       } else {
         if (response.status === 401) setUnlocked(false);
@@ -173,7 +180,10 @@ export function QuantumConsole({
       if (response.ok) {
         setUnlocked(true);
         formElement.reset();
-        setMessage({ tone: "info", text: "Passcode accepted. You can start runs from this browser." });
+        setMessage({
+          tone: "info",
+          text: "Passcode accepted. You can start runs from this browser.",
+        });
       } else {
         const body = await readJson(response);
         setMessage({
@@ -328,9 +338,16 @@ export function QuantumConsole({
 
         <div aria-live="polite">
           {running ? (
-            <p className="loading">
-              Run {activeJobId} is {activeStatus}. Checking every 2 seconds
-            </p>
+            <>
+              <CircuitSim
+                layers={runSettings.reps}
+                shots={runSettings.shots}
+                status={activeStatus}
+              />
+              <p className="loading">
+                Run {activeJobId} is {activeStatus}. Checking every 2 seconds
+              </p>
+            </>
           ) : null}
           {message ? (
             <p className={`notice ${message.tone === "error" ? "notice-error" : "notice-info"}`}>
