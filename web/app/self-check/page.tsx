@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { BarChart } from "@/components/BarChart";
 import { EventBar } from "@/components/EventBar";
 import { NoEvent } from "@/components/NoEvent";
 import { Empty, Loading, OfflineBanner, Problem } from "@/components/States";
@@ -15,8 +16,7 @@ export default function SelfCheckPage({ searchParams }: PageProps) {
       <h1>Self-check</h1>
       <p className="lede">
         The quantum choice next to the exact optimum and the classical methods. Rank 1 is the best
-        possible network. Location error is the mean error, in km, when locating later
-        aftershocks.
+        possible network. Location error is the mean error, in km, when locating later aftershocks.
       </p>
       <Suspense fallback={<Loading label="Loading the comparison" />}>
         <SelfCheckContent searchParams={searchParams} />
@@ -82,7 +82,7 @@ async function SelfCheckContent({ searchParams }: PageProps) {
                           {method.name}{" "}
                           {same ? <span className="tag tag-ok">same as quantum</span> : null}
                         </th>
-                        <td>{fmtSites(method.sites)}</td>
+                        <td className="nowrap">{fmtSites(method.sites)}</td>
                         <td className="num">{method.rank}</td>
                         <td className="num">{fmt(method.risk)}</td>
                         <td className="num">{fmt(method.blur_km)}</td>
@@ -101,6 +101,22 @@ async function SelfCheckContent({ searchParams }: PageProps) {
                 </tbody>
               </table>
             </div>
+          ) : null}
+          {data ? (
+            <BarChart
+              title="Location error by method"
+              note="Mean error locating the later aftershocks, in km. Lower is better."
+              unit="km"
+              items={[
+                { label: "No new sensors", value: data.no_new_sensors.loc_error_mean_km },
+                ...data.methods.map((method) => ({
+                  label: method.name,
+                  value: method.loc_error_mean_km,
+                  highlight: result ? sameSites(method.sites, result.final.sites) : false,
+                })),
+              ]}
+              highlightLabel={result ? "Same sites as the quantum pick" : undefined}
+            />
           ) : null}
         </section>
 
@@ -148,8 +164,8 @@ async function SelfCheckContent({ searchParams }: PageProps) {
               </dl>
               {data && data.lam !== result.lam ? (
                 <p className="notice notice-warn">
-                  The baselines use risk weight {data.lam} but the quantum run used {result.lam},
-                  so the two sides are not directly comparable.
+                  The baselines use risk weight {data.lam} but the quantum run used {result.lam}, so
+                  the two sides are not directly comparable.
                 </p>
               ) : null}
             </>

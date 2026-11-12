@@ -6,6 +6,7 @@ import type { Sequence } from "@/lib/schemas";
 /** Map of a sequence showing only the real aftershocks that had happened by `hour`. */
 export function sequenceMapData(sequence: Sequence, hour: number): MapData {
   return {
+    event_id: sequence.event_id,
     mainshock: sequence.mainshock,
     stations: sequence.stations,
     candidates: sequence.candidates.map((c) => ({ id: c.id, x: c.x, y: c.y, risk: null })),

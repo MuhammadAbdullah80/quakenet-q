@@ -10,7 +10,7 @@ const REASONS: Record<string, string> = {
 
 export function Loading({ label }: { label: string }) {
   return (
-    <p className="loading" role="status">
+    <p className="loading" role="status" aria-live="polite">
       {label}…
     </p>
   );
@@ -33,7 +33,7 @@ export function OfflineBanner({ results }: { results: Loaded<unknown>[] }) {
   if (!down || (down.state !== "snapshot" && down.state !== "offline")) return null;
   const mock = results.some((r) => r.state === "snapshot" && r.mock);
   return (
-    <div className="notice notice-offline" role="status">
+    <div className="notice notice-offline" role="status" aria-live="polite">
       <p className="notice-title">Offline: showing saved results</p>
       <p>
         {REASONS[down.reason]} Pages show snapshots saved with the site, and starting new runs is
@@ -78,7 +78,7 @@ export function Problem({ result, what }: { result: Loaded<unknown>; what: strin
       return <NotBuilt what={what} />;
     case "error":
       return (
-        <div className="notice notice-error" role="alert">
+        <div className="notice notice-error" role="alert" aria-live="assertive">
           <p className="notice-title">Could not load {what}</p>
           <p>
             {errorText(result.code)} <span className="muted">({result.status} {result.code})</span>

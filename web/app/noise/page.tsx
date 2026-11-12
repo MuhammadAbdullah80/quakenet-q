@@ -84,11 +84,14 @@ function NoiseChart({ points, uniform }: { points: Point[]; uniform: number }) {
   const m = { top: 20, right: 24, bottom: 52, left: 64 };
   const iw = W - m.left - m.right;
   const ih = H - m.top - m.bottom;
-  const xMax = Math.max(...points.map((p) => p.gate_error), 0) || 1;
+  // Gate errors span 0 to 1% in roughly log steps, so a linear axis piles the small ones on top
+  // of each other. log10(1 + v / 0.0001) keeps 0 at the origin and spreads the rest evenly.
+  const xs = (v: number) => Math.log10(1 + v / 0.0001);
+  const xMax = Math.max(...points.map((p) => xs(p.gate_error)), 0) || 1;
   const yTop = Math.max(...points.map((p) => p.p_best), uniform, 0.01);
   const yStep = yTop > 0.5 ? 0.1 : yTop > 0.2 ? 0.05 : yTop > 0.1 ? 0.02 : 0.01;
   const yMax = Math.ceil((yTop * 1.05) / yStep) * yStep;
-  const x = (v: number) => m.left + (v / xMax) * iw;
+  const x = (v: number) => m.left + (xs(v) / xMax) * iw;
   const y = (v: number) => m.top + ih - (v / yMax) * ih;
   const yTicks: number[] = [];
   for (let v = 0; v <= yMax + 1e-9; v += yStep) yTicks.push(Number(v.toFixed(6)));
@@ -118,11 +121,11 @@ function NoiseChart({ points, uniform }: { points: Point[]; uniform: number }) {
           ))}
           {xTicks.map((v) => (
             <text key={`tx${v}`} x={x(v)} y={m.top + ih + 18} textAnchor="middle">
-              {fmtPercent(v, 1)}
+              {fmtPercent(v, v > 0 && v < 0.001 ? 2 : 1)}
             </text>
           ))}
           <text x={m.left + iw / 2} y={H - 8} textAnchor="middle">
-            Gate error (chance a gate goes wrong)
+            Gate error, chance a gate goes wrong (log scale)
           </text>
           <text
             x={14}

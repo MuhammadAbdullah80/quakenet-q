@@ -5,7 +5,12 @@ import { fmt } from "@/lib/format";
 // Works in both server and client components (no hooks, no browser APIs).
 
 /** What the map needs. An Instance fits; so does a sequence step (risk may be unknown). */
-export type MapData = Pick<Instance, "mainshock" | "design_events" | "valid_events" | "stations"> & {
+export type MapData = Pick<
+  Instance,
+  "mainshock" | "design_events" | "valid_events" | "stations"
+> & {
+  /** Picks the relief image when one exists for this event's local grid. */
+  event_id?: string;
   candidates: { id: number; x: number; y: number; risk?: number | null }[];
 };
 
@@ -24,7 +29,13 @@ type Props = {
   validLabel?: string;
 };
 
-const NEUTRAL = { fill: "#e3e8ee", text: "#16202b" };
+// Real shaded relief drawn in the page palette (scripts/build_web_assets.py). Square, north up,
+// covering -extent..+extent km of the event's local grid on both axes.
+const RELIEF: Record<string, { href: string; extent: number }> = {
+  ridgecrest2019: { href: "/relief/ridgecrest-900.webp", extent: 64 },
+};
+
+const NEUTRAL = { fill: "#dde3df", text: "#10291a" };
 
 const RAMP: [number, number, number][] = [
   [255, 243, 214],
@@ -39,7 +50,7 @@ function riskColour(t: number): { fill: string; text: string } {
   const f = scaled - i;
   const rgb = RAMP[i].map((c, k) => Math.round(c + (RAMP[i + 1][k] - c) * f));
   const luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
-  return { fill: `rgb(${rgb.join(",")})`, text: luminance > 0.55 ? "#16202b" : "#ffffff" };
+  return { fill: `rgb(${rgb.join(",")})`, text: luminance > 0.55 ? "#10291a" : "#ffffff" };
 }
 
 function niceStep(span: number): number {
@@ -115,7 +126,8 @@ export function SiteMap({
   const hasRisk = risks.length > 0;
   const riskMin = hasRisk ? Math.min(...risks) : 0;
   const riskMax = hasRisk ? Math.max(...risks) : 0;
-  const riskT = (risk: number) => (riskMax > riskMin ? (risk - riskMin) / (riskMax - riskMin) : 0.5);
+  const riskT = (risk: number) =>
+    riskMax > riskMin ? (risk - riskMin) / (riskMax - riskMin) : 0.5;
   const fillFor = (risk: number | null | undefined) =>
     typeof risk === "number" ? riskColour(riskT(risk)) : NEUTRAL;
 
@@ -130,6 +142,7 @@ export function SiteMap({
     `Aftershocks: ${instance.design_events.length} marked "${designLabel.toLowerCase()}", ${instance.valid_events.length} marked "${validLabel.toLowerCase()}".` +
     (showChosen ? ` ${chosenLabel}: sites ${[...chosen].join(", ")}.` : "");
 
+  const relief = instance.event_id ? RELIEF[instance.event_id] : undefined;
   const low = riskColour(0);
   const high = riskColour(1);
 
@@ -141,6 +154,17 @@ export function SiteMap({
         role="img"
         aria-label={description}
       >
+        {relief ? (
+          <image
+            className="map-relief"
+            href={relief.href}
+            x={-relief.extent}
+            y={-relief.extent}
+            width={2 * relief.extent}
+            height={2 * relief.extent}
+            preserveAspectRatio="none"
+          />
+        ) : null}
         <g className="map-grid" strokeWidth={u * 0.15}>
           {ticksX.map((v) => (
             <line key={`gx${v}`} x1={X(v)} x2={X(v)} y1={Y(minY)} y2={Y(maxY)} />
@@ -223,13 +247,22 @@ export function SiteMap({
                   />
                 ) : null}
                 {chosenSet.has(c.id) ? (
-                  <circle
-                    className="map-chosen"
-                    cx={X(c.x)}
-                    cy={Y(c.y)}
-                    r={u * 4}
-                    strokeWidth={u * 0.9}
-                  />
+                  <g>
+                    <circle
+                      className="map-chosen-halo"
+                      cx={X(c.x)}
+                      cy={Y(c.y)}
+                      r={u * 4.1}
+                      strokeWidth={u * 1.7}
+                    />
+                    <circle
+                      className="map-chosen"
+                      cx={X(c.x)}
+                      cy={Y(c.y)}
+                      r={u * 4.1}
+                      strokeWidth={u * 1}
+                    />
+                  </g>
                 ) : null}
                 <circle
                   className="map-candidate"
@@ -319,7 +352,8 @@ export function SiteMap({
           {showChosen ? (
             <li>
               <svg viewBox="0 0 20 20" aria-hidden="true">
-                <circle className="map-chosen" cx="10" cy="10" r="7.5" strokeWidth="3" />
+                <circle className="map-chosen-halo" cx="10" cy="10" r="7" strokeWidth="5" />
+                <circle className="map-chosen" cx="10" cy="10" r="7" strokeWidth="3" />
               </svg>
               {chosenLabel}
             </li>

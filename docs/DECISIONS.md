@@ -4,6 +4,8 @@ Newest first. "Status" says whether the decision is reflected in the spec or cod
 
 | # | Date | Decision | Why | Status |
 |---|---|---|---|---|
+| 32 | 2026-11-12 | Frontend unit tests use Node's built-in test runner (`npm test` in `web/`), not Jest or Vitest | Node 24 runs TypeScript directly, so pure helpers can be tested with no new dependency | In code |
+| 31 | 2026-11-12 | Accent text colour is `#3d6e0c`, not the brief's `#4f8a12` | `#4f8a12` is 3.51:1 on the mist background and fails WCAG AA for normal text; `#3d6e0c` is 5.08:1. Lime `#c6f35c` stays for marks and fills | In code |
 | 30 | 2026-11-12 | Drift and the track-record error are measured relative to the predicted information gain, not the net score | The net score (information minus risk cost) can be near zero, which made one error read 988% and could trigger false re-plans; the risk cost is the same on both sides, so the information gain is the right scale | In code |
 | 29 | 2026-11-12 | While tuning with CVaR, compute the circuit's output with our own exact simulator (`XYQaoaSimulator`); final measurements still run the Qiskit circuit on StatevectorSampler | CVaR needs the full distribution at every step; the simulator is the same circuit, checked against Qiskit's Statevector in the tests, and makes a plan take seconds instead of minutes | In code |
 | 28 | 2026-11-12 | In the benchmark, rescale the energies of the allowed networks to span 3 units before tuning | At the objective's own scale the useful angles were near 10, which random starts never reached; a constant factor changes only the angle scale | In code (benchmark) |

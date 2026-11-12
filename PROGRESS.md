@@ -15,7 +15,7 @@ Last updated: 2026-11-12
 | Live mode (watching the USGS feed) | ✅ Built, off by default; tested with a fake feed only |
 | Web API v1 + v2 (FastAPI, on the team laptop) | ✅ Built, 303 tests pass |
 | Next.js console with agent pages (Vercel) | ✅ Built: Settings, Live feed, Plan, Monitor, Memory, Noise study |
-| Frontend look, landing and guide page | Frontend developer's work (`docs/FRONTEND_BRIEF.md`) |
+| Frontend redesign (`docs/FRONTEND_BRIEF.md`) | ✅ Merged: console restyle, landing scroll story at `/`, guide at `/guide` |
 | Report, README, video script | ✅ Updated with the agent and the benchmarks |
 | Video | ❌ Not recorded |
 | Spec v2 | ✅ "Version 2: what was built" section with a status for every requirement; HTML rebuilt |

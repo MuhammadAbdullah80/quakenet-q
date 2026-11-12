@@ -1,5 +1,6 @@
 import type { Instance, Job } from "@/lib/schemas";
 import { fmt, fmtPercent, fmtSites, fmtTime, sameSites } from "@/lib/format";
+import { BarChart } from "@/components/BarChart";
 import { SiteMap } from "@/components/SiteMap";
 
 // Shows one finished QAOA job. Used on the Quantum page (server-rendered and
@@ -97,6 +98,19 @@ export function JobResultView({
         </div>
       </dl>
 
+      <BarChart
+        title="Times each network was measured"
+        note={`Out of ${result.shots} measurements. The best network should come up far more often than a random pick would.`}
+        unit="times"
+        digits={0}
+        items={result.top_counts.map((row) => ({
+          label: fmtSites(row.sites),
+          value: row.count,
+          highlight: sameSites(row.sites, result.exact_optimum),
+        }))}
+        highlightLabel={`Exact optimum: sites ${fmtSites(result.exact_optimum)}`}
+      />
+
       <div className="columns">
         <div className="table-wrap">
           <table>
@@ -122,7 +136,7 @@ export function JobResultView({
                 const isOptimum = sameSites(row.sites, result.exact_optimum);
                 return (
                   <tr key={row.sites.join("-")} className={isFinal ? "is-highlight" : undefined}>
-                    <td>{fmtSites(row.sites)}</td>
+                    <td className="nowrap">{fmtSites(row.sites)}</td>
                     <td className="num">{row.count}</td>
                     <td className="num">{fmt(row.objective, 1)}</td>
                     <td className="num">{row.rank}</td>
