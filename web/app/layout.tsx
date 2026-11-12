@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, IBM_Plex_Sans_Condensed } from "next/font/google";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { Nav } from "@/components/Nav";
 import "./globals.css";
@@ -36,16 +37,31 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           Skip to content
         </a>
         <header className="site-header">
-          <p className="brand">QuakeNet-Q test console</p>
-          <p className="tagline">
-            Where should 4 portable seismometers go, out of 10 candidate sites? One page per module.
-          </p>
-          <Nav />
+          <div className="site-header-inner">
+            <p className="brand">
+              <Link href="/events">
+                <span className="brand-mark" aria-hidden="true" />
+                QuakeNet-Q
+              </Link>
+            </p>
+            <p className="tagline">
+              Where should 4 portable seismometers go, out of 10 candidate sites? One page per
+              module.
+            </p>
+            <Nav />
+          </div>
         </header>
         <main id="main">{children}</main>
         <footer className="site-footer">
-          Proof of concept. No quantum speedup is claimed. The quantum circuit is run by the Python
-          API on the team laptop.
+          <div className="site-footer-inner">
+            <p>
+              Proof of concept. The quantum circuit runs on a simulator and claims no speedup.
+            </p>
+            <p>
+              Earthquake data: U.S. Geological Survey. Station data: EarthScope. Elevation: Mapzen
+              Terrain Tiles on AWS, data courtesy of the U.S. Geological Survey.
+            </p>
+          </div>
         </footer>
       </body>
     </html>
