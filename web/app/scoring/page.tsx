@@ -8,6 +8,7 @@ import { loadScoring, parseLam, resolveEvent } from "@/lib/data";
 import { fmt, fmtSites, sameSites } from "@/lib/format";
 import type { PageProps } from "@/lib/page-types";
 import { TableFold } from "@/components/TableFold";
+import { CellBar } from "@/components/CellBar";
 
 export const metadata: Metadata = { title: "Scoring" };
 
@@ -34,6 +35,9 @@ async function ScoringContent({ searchParams }: PageProps) {
   const requestedLam = parseLam(params.lam);
   const scoring = await loadScoring(event.id, requestedLam);
   const data = scoring.state === "live" || scoring.state === "snapshot" ? scoring.data : null;
+  const objectives = data ? data.top_networks.map((n) => n.objective) : [];
+  const objMin = Math.min(...objectives);
+  const objMax = Math.max(...objectives);
   const offline = scoring.state === "snapshot" || scoring.state === "offline";
 
   return (
@@ -153,7 +157,11 @@ async function ScoringContent({ searchParams }: PageProps) {
                           {row.rank}
                         </th>
                         <td className="nowrap">{fmtSites(row.sites)}</td>
-                        <td className="num">{fmt(row.objective, 1)}</td>
+                        <td className="num">
+                          <CellBar value={row.objective} min={objMin} max={objMax}>
+                            {fmt(row.objective, 1)}
+                          </CellBar>
+                        </td>
                         <td className="num">{fmt(row.risk)}</td>
                         <td className="num">{fmt(row.blur_km)}</td>
                       </tr>

@@ -7,6 +7,7 @@ import { loadEvents } from "@/lib/data";
 import { fmt, fmtTime } from "@/lib/format";
 import { ID_PATTERN } from "@/lib/limits";
 import { Coord } from "@/components/Coord";
+import { CellBar } from "@/components/CellBar";
 
 export const metadata: Metadata = { title: "Events" };
 
@@ -28,6 +29,9 @@ export default function EventsPage() {
 async function EventsContent() {
   const events = await loadEvents();
   const list = events.state === "live" || events.state === "snapshot" ? events.data.events : null;
+  const mags = list ? list.map((e) => e.magnitude) : [];
+  const magMin = Math.min(...mags) - 0.5;
+  const magMax = Math.max(...mags);
   const showKind = list?.some((e) => e.kind) ?? false;
   const showLocation =
     list?.some((e) => typeof e.lat === "number" && typeof e.lon === "number") ?? false;
@@ -62,39 +66,37 @@ async function EventsContent() {
             <caption>Earthquakes ({list.length})</caption>
             <thead>
               <tr>
-                <th scope="col">Name</th>
-                <th scope="col">ID</th>
+                <th scope="col">Earthquake</th>
                 <th scope="col" className="num">
                   Magnitude
                 </th>
-                <th scope="col">Time</th>
-                <th scope="col">Region</th>
+                <th scope="col">Date</th>
                 {showKind ? <th scope="col">Kind</th> : null}
                 {showLocation ? <th scope="col">Location</th> : null}
-                <th scope="col">Data</th>
-                <th scope="col">Open</th>
+                <th scope="col">
+                  <span className="visually-hidden">Open</span>
+                </th>
               </tr>
             </thead>
             <tbody>
               {list.map((event) => (
-                <tr key={event.id}>
+                <tr key={event.id} title={event.usgs_id ? `USGS event ${event.usgs_id}` : event.id}>
                   <th scope="row">{event.name}</th>
-                  <td>
-                    {event.id}
-                    {event.usgs_id ? (
-                      <span className="muted small"> (USGS {event.usgs_id})</span>
-                    ) : null}
+                  <td className="num">
+                    <CellBar value={event.magnitude} min={magMin} max={magMax}>
+                      {fmt(event.magnitude, 1)}
+                    </CellBar>
                   </td>
-                  <td className="num">{fmt(event.magnitude, 1)}</td>
-                  <td>{fmtTime(event.time_utc)}</td>
-                  <td>{event.region}</td>
+                  <td className="nowrap">{fmtTime(event.time_utc).slice(0, 10)}</td>
                   {showKind ? (
                     <td>
-                      {event.kind === "live"
-                        ? "live"
-                        : event.kind === "benchmark"
-                          ? "benchmark"
-                          : "n/a"}
+                      {event.kind === "live" ? (
+                        <span className="tag tag-ok">live</span>
+                      ) : event.kind === "benchmark" ? (
+                        <span className="tag">benchmark</span>
+                      ) : (
+                        "n/a"
+                      )}
                     </td>
                   ) : null}
                   {showLocation ? (
@@ -102,20 +104,14 @@ async function EventsContent() {
                       <Coord lat={event.lat} lon={event.lon} />
                     </td>
                   ) : null}
-                  <td>
-                    {event.available ? (
-                      <span className="tag tag-ok">available</span>
-                    ) : (
-                      <span className="tag tag-warn">not available</span>
-                    )}
-                  </td>
-                  <td>
+                  <td className="nowrap">
                     {event.available && ID_PATTERN.test(event.id) ? (
-                      <Link href={`/candidates?event=${event.id}`}>
-                        Candidate sites<span className="muted"> for {event.name}</span>
+                      <Link href={`/candidates?event=${event.id}`} className="row-open">
+                        Open sites<span className="visually-hidden"> for {event.name}</span>
+                        <span aria-hidden="true"> →</span>
                       </Link>
                     ) : (
-                      <span className="muted">n/a</span>
+                      <span className="tag tag-warn">no data yet</span>
                     )}
                   </td>
                 </tr>

@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { layoutBars, type BarInput } from "@/lib/bars";
 import { Expand, type Explain } from "@/components/Expand";
 
@@ -41,7 +42,16 @@ export function BarChart({
         <span className="bar-chart-title">{title}</span>
         <span className="bar-chart-note">{note}</span>
       </figcaption>
-      <div className="bar-chart-body" role="img" aria-label={summary}>
+      <div
+        className="bar-chart-body"
+        role="img"
+        aria-label={summary}
+        style={
+          {
+            "--gstep": `${layout.max > 0 && layout.ticks.length > 1 ? (layout.ticks[1] / layout.max) * 100 : 100}%`,
+          } as CSSProperties
+        }
+      >
         {layout.bars.map((bar) => (
           <div key={bar.label} className={bar.highlight ? "bar-row is-highlight" : "bar-row"}>
             <span className="bar-label">{bar.label}</span>
