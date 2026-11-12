@@ -16,7 +16,8 @@ import {
 import { fmt, fmtPercent, fmtTime } from "@/lib/format";
 import type { PageProps } from "@/lib/page-types";
 import type { Plan } from "@/lib/schemas";
-import { fmtLatLon, sequenceMapData, stageLabel } from "@/lib/sequence";
+import { sequenceMapData, stageLabel } from "@/lib/sequence";
+import { Coord } from "@/components/Coord";
 
 export const metadata: Metadata = { title: "Plan" };
 
@@ -137,35 +138,17 @@ function PlanView({
         </p>
       ) : null}
 
-      <dl className="facts">
-        <div>
-          <dt>Stage</dt>
-          <dd>{stageLabel(plan.stage)}</dd>
-        </div>
-        <div>
-          <dt>Hour after the mainshock</dt>
-          <dd>{typeof plan.hour === "number" ? fmt(plan.hour, 0) : "n/a"}</dd>
-        </div>
-        <div>
-          <dt>Made</dt>
-          <dd>{fmtTime(plan.created_utc)}</dd>
-        </div>
+      <dl className="kpis">
         <div>
           <dt>Confidence</dt>
           <dd>{plan.confidence ? (CONFIDENCE[plan.confidence] ?? plan.confidence) : "n/a"}</dd>
         </div>
         <div>
-          <dt>Objective (score)</dt>
-          <dd>{typeof plan.objective === "number" ? fmt(plan.objective, 1) : "n/a"}</dd>
-        </div>
-        <div>
-          <dt>Chance one measurement gives the best network</dt>
-          <dd>{typeof plan.p_opt_per_shot === "number" ? fmtPercent(plan.p_opt_per_shot, 1) : "n/a"}</dd>
-        </div>
-        <div>
           <dt>Expected location error, this plan</dt>
           <dd>
-            {typeof plan.expected_error_km === "number" ? `${fmt(plan.expected_error_km)} km` : "n/a"}
+            {typeof plan.expected_error_km === "number"
+              ? `${fmt(plan.expected_error_km)} km`
+              : "n/a"}
           </dd>
         </div>
         <div>
@@ -177,6 +160,33 @@ function PlanView({
           </dd>
         </div>
       </dl>
+      <details className="more">
+        <summary>More detail</summary>
+        <dl className="facts">
+          <div>
+            <dt>Stage</dt>
+            <dd>{stageLabel(plan.stage)}</dd>
+          </div>
+          <div>
+            <dt>Hour after the mainshock</dt>
+            <dd>{typeof plan.hour === "number" ? fmt(plan.hour, 0) : "n/a"}</dd>
+          </div>
+          <div>
+            <dt>Made</dt>
+            <dd>{fmtTime(plan.created_utc)}</dd>
+          </div>
+          <div>
+            <dt>Objective (score)</dt>
+            <dd>{typeof plan.objective === "number" ? fmt(plan.objective, 1) : "n/a"}</dd>
+          </div>
+          <div>
+            <dt>Chance one measurement gives the best network</dt>
+            <dd>
+              {typeof plan.p_opt_per_shot === "number" ? fmtPercent(plan.p_opt_per_shot, 1) : "n/a"}
+            </dd>
+          </div>
+        </dl>
+      </details>
 
       <h2>Moves</h2>
       {moves.length === 0 ? (
@@ -205,8 +215,10 @@ function PlanView({
                 <dd>{typeof site.risk === "number" ? fmt(site.risk) : "n/a"}</dd>
                 <dt>Gain if it were the only new site</dt>
                 <dd>{typeof site.single_gain === "number" ? fmt(site.single_gain, 1) : "n/a"}</dd>
-                <dt>Latitude, longitude</dt>
-                <dd>{fmtLatLon(site.lat, site.lon)}</dd>
+                <dt>Location</dt>
+                <dd>
+                  <Coord lat={site.lat} lon={site.lon} />
+                </dd>
                 <dt>Local grid</dt>
                 <dd>
                   x {fmt(site.x, 1)} km, y {fmt(site.y, 1)} km
@@ -214,7 +226,7 @@ function PlanView({
                 <dt>Backup spots</dt>
                 <dd>
                   {site.backups && site.backups.length > 0
-                    ? site.backups.map((b) => fmtLatLon(b.lat, b.lon)).join("; ")
+                    ? site.backups.map((b, i) => <Coord key={i} lat={b.lat} lon={b.lon} />)
                     : "none"}
                 </dd>
               </dl>

@@ -141,16 +141,14 @@ export function PageTrace() {
     };
   }, [t0, t1]);
 
-  if (path === "/" || path === "") return null;
+  if (path === "/" || path === "" || path === "/demo") return null;
   return (
-    <div className="page-trace" aria-hidden="true">
+    <div
+      className="page-trace"
+      aria-hidden="true"
+      title={`Ridgecrest 2019, hours ${hhmm(t0)} to ${hhmm(t1)} after the mainshock: ${count} aftershocks. The trace is drawn from their times and sizes.`}
+    >
       <canvas ref={canvasRef} />
-      <span className="page-trace-label">
-        <span>
-          Ridgecrest 2019, hours {hhmm(t0)} to {hhmm(t1)} after the mainshock
-        </span>
-        <span>{count} aftershocks; trace drawn from their times and sizes</span>
-      </span>
     </div>
   );
 }

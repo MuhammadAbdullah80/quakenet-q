@@ -33,10 +33,13 @@ export function CircuitSim({
   layers,
   shots,
   status,
+  demo = false,
 }: {
   layers: number;
   shots: number;
   status: string;
+  /** Explaining how a run works (demo), rather than watching one in progress. */
+  demo?: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -216,15 +219,20 @@ export function CircuitSim({
       <div className="circuit-head">
         <span className="circuit-status">
           <span className="circuit-dot" aria-hidden="true" />
-          {status === "queued" ? "Waiting for the backend" : "Running on the simulator"}
+          {demo
+            ? "How one run works"
+            : status === "queued"
+              ? "Waiting for the backend"
+              : "Running on the simulator"}
         </span>
-        <span className="circuit-time">{Math.floor(elapsed)} s</span>
+        {demo ? null : <span className="circuit-time">{Math.floor(elapsed)} s</span>}
       </div>
       <canvas ref={canvasRef} aria-hidden="true" />
       <figcaption>
-        The steps of this run: prepare every network of 4 sites at once, then {layers}{" "}
-        {layers === 1 ? "layer" : "layers"} of score and mix, then {shots} measurements. A run takes
-        about a minute. This shows the order of the work, not the circuit&apos;s live state.
+        {demo ? "The steps of a run:" : "The steps of this run:"} prepare every network of 4 sites
+        at once, then {layers} {layers === 1 ? "layer" : "layers"} of score and mix, then {shots}{" "}
+        measurements. A run takes about a minute. This shows the order of the work, not the
+        circuit&apos;s live state.
       </figcaption>
     </figure>
   );

@@ -10,9 +10,16 @@ const REASONS: Record<string, string> = {
 
 export function Loading({ label }: { label: string }) {
   return (
-    <p className="loading" role="status" aria-live="polite">
-      {label}…
-    </p>
+    <div className="skeleton" role="status" aria-live="polite">
+      <span className="visually-hidden">{label}</span>
+      <span className="sk sk-bar" aria-hidden="true" />
+      <span className="sk-row" aria-hidden="true">
+        <span className="sk sk-tile" />
+        <span className="sk sk-tile" />
+        <span className="sk sk-tile" />
+      </span>
+      <span className="sk sk-block" aria-hidden="true" />
+    </div>
   );
 }
 
@@ -54,8 +61,8 @@ export function NotBuilt({ what }: { what: string }) {
     <div className="notice notice-info">
       <p className="notice-title">Not built yet</p>
       <p>
-        {what} is designed but not built: the backend answered <code>501 NOT_BUILT</code>. This
-        page will fill in when the backend module exists.
+        {what} is designed but not built: the backend answered <code>501 NOT_BUILT</code>. This page
+        will fill in when the backend module exists.
       </p>
     </div>
   );
@@ -81,7 +88,10 @@ export function Problem({ result, what }: { result: Loaded<unknown>; what: strin
         <div className="notice notice-error" role="alert" aria-live="assertive">
           <p className="notice-title">Could not load {what}</p>
           <p>
-            {errorText(result.code)} <span className="muted">({result.status} {result.code})</span>
+            {errorText(result.code)}{" "}
+            <span className="muted">
+              ({result.status} {result.code})
+            </span>
           </p>
           {result.retryAfterSeconds ? <p>Try again in {result.retryAfterSeconds} s.</p> : null}
         </div>

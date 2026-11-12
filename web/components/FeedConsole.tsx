@@ -8,6 +8,7 @@ import { fmt, fmtTime } from "@/lib/format";
 import { ID_PATTERN, USGS_ID_PATTERN } from "@/lib/limits";
 import type { FeedQuake } from "@/lib/schemas";
 import { TableFold } from "@/components/TableFold";
+import { Coord } from "@/components/Coord";
 
 type Props = {
   quakes: FeedQuake[];
@@ -128,9 +129,7 @@ export function FeedConsole({ quakes, backendOnline, passcodeSet, initiallyUnloc
                       {typeof quake.depth_km === "number" ? fmt(quake.depth_km, 1) : "n/a"}
                     </td>
                     <td>
-                      {typeof quake.lat === "number" && typeof quake.lon === "number"
-                        ? `${fmt(quake.lat, 2)}, ${fmt(quake.lon, 2)}`
-                        : "n/a"}
+                      <Coord lat={quake.lat} lon={quake.lon} />
                     </td>
                     <td>
                       <span className={`tag ${status.tone}`}>{status.label}</span>

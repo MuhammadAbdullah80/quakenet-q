@@ -69,50 +69,52 @@ async function ScoringContent({ searchParams }: PageProps) {
             </div>
           </dl>
 
-          <h2>Fidelity of the simplified objective</h2>
           {data.fidelity.length === 0 ? (
             <Empty>No fidelity rows were returned.</Empty>
           ) : (
-            <div className="table-wrap">
-              <table>
-                <caption>
-                  Order is the largest group of sites whose joint effect is kept. Rank agreement is
-                  the Spearman correlation with the exact objective (1 is perfect).
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col" className="num">
-                      Order
-                    </th>
-                    <th scope="col" className="num">
-                      Terms
-                    </th>
-                    <th scope="col" className="num">
-                      Rank agreement (Spearman)
-                    </th>
-                    <th scope="col" className="num">
-                      Largest error
-                    </th>
-                    <th scope="col" className="num">
-                      True rank of its best network
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.fidelity.map((row) => (
-                    <tr key={row.order}>
-                      <th scope="row" className="num">
-                        {row.order}
+            <details className="more">
+              <summary>How close the simplified scores are to the exact one</summary>
+              <div className="table-wrap">
+                <table>
+                  <caption>
+                    Order is the largest group of sites whose joint effect is kept. Rank agreement
+                    is the Spearman correlation with the exact objective (1 is perfect).
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="num">
+                        Order
                       </th>
-                      <td className="num">{row.terms}</td>
-                      <td className="num">{fmt(row.spearman, 3)}</td>
-                      <td className="num">{fmt(row.max_abs_error, 1)}</td>
-                      <td className="num">{row.rank_of_its_optimum}</td>
+                      <th scope="col" className="num">
+                        Terms
+                      </th>
+                      <th scope="col" className="num">
+                        Rank agreement (Spearman)
+                      </th>
+                      <th scope="col" className="num">
+                        Largest error
+                      </th>
+                      <th scope="col" className="num">
+                        True rank of its best network
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {data.fidelity.map((row) => (
+                      <tr key={row.order}>
+                        <th scope="row" className="num">
+                          {row.order}
+                        </th>
+                        <td className="num">{row.terms}</td>
+                        <td className="num">{fmt(row.spearman, 3)}</td>
+                        <td className="num">{fmt(row.max_abs_error, 1)}</td>
+                        <td className="num">{row.rank_of_its_optimum}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
           )}
 
           <h2>Top networks</h2>

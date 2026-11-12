@@ -41,29 +41,32 @@ async function FeedContent() {
       <Problem result={feed} what="the live feed" />
       {data ? (
         <>
-          <dl className="facts">
-            <div>
-              <dt>Trigger magnitude</dt>
-              <dd>{fmt(data.threshold, 1)} or larger</dd>
-            </div>
-            <div>
-              <dt>Live mode</dt>
-              <dd>
-                {data.live_enabled
-                  ? "on: the agent starts by itself"
-                  : "off: the agent starts only by hand"}
-              </dd>
-            </div>
-            <div>
-              <dt>Feed retrieved</dt>
-              <dd>{fmtTime(data.retrieved_utc)}</dd>
-            </div>
-            <div>
-              <dt>Source</dt>
-              {/* Shown as text on purpose: backend data is never turned into a link. */}
-              <dd>{data.source_url ?? "n/a"}</dd>
-            </div>
-          </dl>
+          <details className="more">
+            <summary>About this feed</summary>
+            <dl className="facts">
+              <div>
+                <dt>Trigger magnitude</dt>
+                <dd>{fmt(data.threshold, 1)} or larger</dd>
+              </div>
+              <div>
+                <dt>Live mode</dt>
+                <dd>
+                  {data.live_enabled
+                    ? "on: the agent starts by itself"
+                    : "off: the agent starts only by hand"}
+                </dd>
+              </div>
+              <div>
+                <dt>Feed retrieved</dt>
+                <dd>{fmtTime(data.retrieved_utc)}</dd>
+              </div>
+              <div>
+                <dt>Source</dt>
+                {/* Shown as text on purpose: backend data is never turned into a link. */}
+                <dd>{data.source_url ?? "n/a"}</dd>
+              </div>
+            </dl>
+          </details>
           <p className="small muted">
             Status: <strong>below trigger</strong> is smaller than the trigger magnitude;{" "}
             <strong>pending</strong> is large enough but not handled yet (or live mode is off);{" "}

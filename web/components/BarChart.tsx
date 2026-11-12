@@ -1,4 +1,5 @@
 import { layoutBars, type BarInput } from "@/lib/bars";
+import { Expand, type Explain } from "@/components/Expand";
 
 // Horizontal bar chart built from plain elements, so labels stay real text and wrap on phones.
 // Works in server and client components. The table next to each chart holds the same data.
@@ -13,9 +14,20 @@ type Props = {
   max?: number;
   /** Text for the highlighted bars in the legend. */
   highlightLabel?: string;
+  /** Shown beside the chart when it is expanded. */
+  explain?: Explain;
 };
 
-export function BarChart({ title, note, unit, items, digits = 2, max, highlightLabel }: Props) {
+export function BarChart({
+  title,
+  note,
+  unit,
+  items,
+  digits = 2,
+  max,
+  highlightLabel,
+  explain,
+}: Props) {
   const layout = layoutBars(items, { max });
   const shown = layout.ticks.length > 6 ? layout.ticks.filter((_, i) => i % 2 === 0) : layout.ticks;
   const summary =
@@ -23,7 +35,7 @@ export function BarChart({ title, note, unit, items, digits = 2, max, highlightL
     layout.bars.map((bar) => `${bar.label}: ${bar.value.toFixed(digits)} ${unit}`).join("; ") +
     ".";
 
-  return (
+  const figure = (
     <figure className="bar-chart">
       <figcaption>
         <span className="bar-chart-title">{title}</span>
@@ -62,5 +74,23 @@ export function BarChart({ title, note, unit, items, digits = 2, max, highlightL
         </p>
       ) : null}
     </figure>
+  );
+  return (
+    <Expand
+      title={title}
+      explain={
+        explain ?? {
+          what: note,
+          read: [
+            "Each bar is one item; its length is the value, with the number at the end.",
+            highlightLabel
+              ? `Lime bars: ${highlightLabel.toLowerCase()}.`
+              : "Hover a bar for its value.",
+          ],
+        }
+      }
+    >
+      {figure}
+    </Expand>
   );
 }
