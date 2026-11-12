@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { GuideToc } from "@/components/GuideToc";
 import type { ReactNode } from "react";
 import { LIMITS, SEQUENCE_LIMITS } from "@/lib/limits";
 import savedJob from "@/snapshots/job.json";
@@ -227,13 +228,7 @@ export default function GuidePage() {
         <p id="toc-heading" className="guide-toc-title">
           On this page
         </p>
-        <ol>
-          {SECTIONS.map((s) => (
-            <li key={s.id}>
-              <a href={`#${s.id}`}>{s.title}</a>
-            </li>
-          ))}
-        </ol>
+        <GuideToc sections={SECTIONS} />
       </aside>
 
       <article className="guide-body">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, IBM_Plex_Sans_Condensed } from "next/font/google";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { HeaderScroll } from "@/components/HeaderScroll";
 import { Nav } from "@/components/Nav";
 import "./globals.css";
 
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </p>
             <Nav />
           </div>
+          <HeaderScroll />
         </header>
         <main id="main">{children}</main>
         <footer className="site-footer">

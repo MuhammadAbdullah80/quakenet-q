@@ -24,6 +24,12 @@
   --step-3: 2.25rem;
   --step-4: clamp(2.5rem, 6vw, 4rem);
 
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
+  --dur-1: 150ms;
+  --dur-2: 240ms;
+  --dur-3: 380ms;
+
   /* Older names, kept so every existing rule maps onto the new palette. */
   --bg: var(--mist);
   --surface: var(--paper);
@@ -62,10 +68,16 @@ body {
 a {
   color: var(--ink);
   text-decoration-thickness: 1px;
+  text-decoration-color: rgba(16, 41, 26, 0.45);
   text-underline-offset: 0.18em;
+  transition:
+    text-decoration-color var(--dur-1) ease-out,
+    text-underline-offset var(--dur-1) ease-out;
 }
 a:hover {
   text-decoration-thickness: 2px;
+  text-decoration-color: var(--ink);
+  text-underline-offset: 0.24em;
 }
 
 h1,
@@ -127,8 +139,36 @@ dl.facts dd {
 
 /* Header and navigation */
 .site-header {
-  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(246, 247, 244, 0.92);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--rule);
+  transition:
+    transform var(--dur-3) var(--ease-out),
+    box-shadow var(--dur-2) ease-out;
+}
+.site-header[data-scrolled="true"] {
+  box-shadow: 0 6px 24px rgba(16, 41, 26, 0.08);
+}
+.site-header[data-hidden="true"] {
+  transform: translateY(-100%);
+  transition-timing-function: var(--ease-in);
+  transition-duration: var(--dur-2);
+}
+/* The home page's story pins its own stage, so the header scrolls away with the page there. */
+body:has(.story) .site-header {
+  position: relative;
+  transform: none;
+  box-shadow: none;
+}
+/* Brand dot sends out one seismic ring on hover. */
+.site-header .brand a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 .site-header-inner {
   max-width: 72rem;
@@ -147,6 +187,32 @@ dl.facts dd {
 }
 .site-header .brand a {
   text-decoration: none;
+}
+.site-header .brand-mark {
+  position: relative;
+}
+.site-header .brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid var(--lime-text);
+  opacity: 0;
+  pointer-events: none;
+}
+.site-header .brand a:hover .brand-mark::after,
+.site-header .brand a:focus-visible .brand-mark::after {
+  animation: seismic-ring 900ms var(--ease-out);
+}
+@keyframes seismic-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(3.2);
+  }
 }
 .site-header .brand-mark {
   display: inline-block;
@@ -168,16 +234,72 @@ dl.facts dd {
   margin-top: 0.6rem;
 }
 .nav ul {
+  position: relative;
   list-style: none;
   display: flex;
   gap: 0.25rem;
   margin: 0;
   padding: 0;
   overflow-x: auto;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+}
+.nav ul::-webkit-scrollbar {
+  display: none;
+}
+/* Fade the edge that has more links beyond it (phones). */
+.nav ul[data-start="false"] {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 2.5rem);
+  mask-image: linear-gradient(90deg, transparent 0, #000 2.5rem);
+}
+.nav ul[data-end="false"] {
+  -webkit-mask-image: linear-gradient(270deg, transparent 0, #000 2.5rem);
+  mask-image: linear-gradient(270deg, transparent 0, #000 2.5rem);
+}
+.nav ul[data-start="false"][data-end="false"] {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 2.5rem, #000 calc(100% - 2.5rem), transparent);
+  mask-image: linear-gradient(90deg, transparent 0, #000 2.5rem, #000 calc(100% - 2.5rem), transparent);
+}
+/* Highlight that follows the pointer or keyboard focus. */
+.nav ul::before,
+.nav ul::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  pointer-events: none;
+  transform: translateX(var(--x, 0));
+  width: var(--w, 0);
+}
+.nav ul::before {
+  --x: var(--hov-x);
+  --w: var(--hov-w);
+  top: 0.3rem;
+  bottom: 0.35rem;
+  border-radius: 3px;
+  background: rgba(16, 41, 26, 0.07);
+  opacity: var(--hov-o);
+  transition:
+    transform var(--dur-2) var(--ease-out),
+    width var(--dur-2) var(--ease-out),
+    opacity var(--dur-1) ease-out;
+}
+/* One indicator that glides to the current page. */
+.nav ul::after {
+  --x: var(--ind-x);
+  --w: var(--ind-w);
+  bottom: 0;
+  height: 2px;
+  background: var(--ink);
+  opacity: var(--ind-o);
+  transition:
+    transform var(--dur-3) var(--ease-out),
+    width var(--dur-3) var(--ease-out);
 }
 .nav a {
-  display: block;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   padding: 0.7rem 0.6rem 0.6rem;
   min-height: 44px;
   font-family: var(--font-mono), monospace;
@@ -188,15 +310,52 @@ dl.facts dd {
   text-decoration: none;
   color: var(--ink2);
   border-bottom: 2px solid transparent;
+  transition: color var(--dur-1) ease-out;
 }
-.nav a:hover {
+.nav a:hover,
+.nav a:focus-visible {
   color: var(--ink);
-  border-bottom-color: var(--rule);
 }
 .nav a[aria-current="page"] {
   color: var(--ink);
   font-weight: 500;
+}
+/* Before the script runs, the current page still gets its underline. */
+.nav ul:not([data-ready]) a[aria-current="page"] {
   border-bottom-color: var(--ink);
+}
+.nav a:focus-visible {
+  box-shadow: none;
+  outline-offset: -2px;
+}
+.nav-pending {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.15rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 0 1px var(--ink);
+  opacity: 0;
+  transform: scale(0.4);
+  pointer-events: none;
+  transition:
+    opacity var(--dur-1) ease-out,
+    transform var(--dur-1) ease-out;
+}
+.nav-pending.is-on {
+  opacity: 1;
+  transform: scale(1);
+  animation: sensor-pulse 900ms var(--ease-out) infinite;
+}
+@keyframes sensor-pulse {
+  0% {
+    box-shadow: 0 0 0 1px var(--ink), 0 0 0 0 rgba(198, 243, 92, 0.9);
+  }
+  100% {
+    box-shadow: 0 0 0 1px var(--ink), 0 0 0 7px rgba(198, 243, 92, 0);
+  }
 }
 
 main {
@@ -416,10 +575,16 @@ button {
   font-weight: 500;
   cursor: pointer;
   touch-action: manipulation;
-  transition: background-color 150ms ease-out, color 150ms ease-out;
+  transition:
+    background-color var(--dur-1) ease-out,
+    color var(--dur-1) ease-out,
+    transform 90ms ease-out;
 }
 button:hover {
   background: var(--ink2);
+}
+button:active:not(:disabled) {
+  transform: scale(0.97);
 }
 button.secondary {
   background: transparent;
@@ -1395,5 +1560,158 @@ main:has(> .story-static) {
   }
   .guide-pages > div {
     grid-template-columns: 9rem minmax(0, 1fr);
+  }
+}
+
+/* Page transitions (app/template.tsx). Later pipeline steps come in from the right. */
+::view-transition-old(.page-fade) {
+  animation: var(--dur-1) var(--ease-in) both vt-fade-out;
+}
+::view-transition-new(.page-fade) {
+  animation: var(--dur-2) var(--ease-out) 60ms both vt-rise;
+}
+::view-transition-old(.nav-forward) {
+  --slide: -36px;
+  animation:
+    var(--dur-1) var(--ease-in) both vt-fade-out,
+    var(--dur-3) var(--ease-out) both vt-slide-out;
+}
+::view-transition-new(.nav-forward) {
+  --slide: 36px;
+  animation:
+    var(--dur-2) var(--ease-out) 90ms both vt-fade-in,
+    var(--dur-3) var(--ease-out) both vt-slide-in;
+}
+::view-transition-old(.nav-back) {
+  --slide: 36px;
+  animation:
+    var(--dur-1) var(--ease-in) both vt-fade-out,
+    var(--dur-3) var(--ease-out) both vt-slide-out;
+}
+::view-transition-new(.nav-back) {
+  --slide: -36px;
+  animation:
+    var(--dur-2) var(--ease-out) 90ms both vt-fade-in,
+    var(--dur-3) var(--ease-out) both vt-slide-in;
+}
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vt-rise {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+}
+@keyframes vt-slide-out {
+  to {
+    translate: var(--slide) 0;
+  }
+}
+@keyframes vt-slide-in {
+  from {
+    translate: var(--slide) 0;
+  }
+}
+
+/* Hover details */
+.run-card-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.run-card-go::after {
+  content: "";
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width var(--dur-2) var(--ease-out);
+}
+.run-card:hover .run-card-go::after,
+.run-card:focus-visible .run-card-go::after {
+  width: 1.5rem;
+}
+.run-card:active {
+  transform: translateY(-1px) scale(0.99);
+}
+.story-pipeline a {
+  position: relative;
+  transition:
+    background-color var(--dur-1) ease-out,
+    padding-left var(--dur-2) var(--ease-out);
+}
+.story-pipeline a::after {
+  content: "→";
+  margin-left: auto;
+  font-family: var(--font-mono), monospace;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    opacity var(--dur-1) ease-out,
+    transform var(--dur-2) var(--ease-out);
+}
+.story-pipeline a:hover,
+.story-pipeline a:focus-visible {
+  padding-left: 0.6rem;
+}
+.story-pipeline a:hover::after,
+.story-pipeline a:focus-visible::after {
+  opacity: 1;
+  transform: none;
+}
+.story-pipeline a:hover .row-num {
+  color: var(--ink);
+}
+.guide-pages dt a,
+.guide-toc a {
+  transition:
+    color var(--dur-1) ease-out,
+    border-color var(--dur-2) var(--ease-out);
+}
+.guide-toc a[aria-current="location"] {
+  color: var(--ink);
+  font-weight: 500;
+  border-left-color: var(--lime-text);
+}
+tbody tr > * {
+  transition: background-color var(--dur-1) ease-out;
+}
+.map-candidate {
+  transition: stroke-width var(--dur-1) ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav ul::before,
+  .nav ul::after,
+  .site-header,
+  .nav-pending,
+  a,
+  button,
+  .run-card,
+  .run-card-go::after,
+  .story-pipeline a,
+  .story-pipeline a::after,
+  .guide-toc a,
+  tbody tr > * {
+    transition: none !important;
+  }
+  .nav-pending.is-on,
+  .site-header .brand a:hover .brand-mark::after {
+    animation: none;
+  }
+  .site-header[data-hidden="true"] {
+    transform: none;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
