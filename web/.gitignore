@@ -42,3 +42,5 @@ next-env.d.ts
 
 # keep the placeholder env file
 !.env.example
+
+.vercel
