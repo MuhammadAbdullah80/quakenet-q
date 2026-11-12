@@ -15,6 +15,7 @@ A working proof of concept exists and is pushed. Everything after it is design a
 | Spec v2 (technique changes + web system) | ⏳ Not written; needs your answers in `docs/OPEN_QUESTIONS.md` |
 | Agent build | ❌ Not started |
 | Web API and Next.js test frontend | ❌ Not started |
+| Frontend redesign (`docs/FRONTEND_BRIEF.md`) | ⏳ Branch `frontend-improved`: console restyle done (palette, Plex type, relief map, two charts). Landing page, guide page and agent pages not started |
 | Report, README, video for the final version | ❌ Current ones describe the proof of concept only |
 
 ## What exists today

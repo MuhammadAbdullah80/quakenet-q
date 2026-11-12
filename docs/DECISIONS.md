@@ -4,6 +4,8 @@ Newest first. "Status" says whether the decision is reflected in the spec or cod
 
 | # | Date | Decision | Why | Status |
 |---|---|---|---|---|
+| 27 | 2026-11-12 | Frontend unit tests use Node's built-in test runner (`npm test` in `web/`), not Jest or Vitest | Node 24 runs TypeScript directly, so pure helpers can be tested with no new dependency | In code |
+| 26 | 2026-11-12 | Accent text colour is `#3d6e0c`, not the brief's `#4f8a12` | `#4f8a12` is 3.51:1 on the mist background and fails WCAG AA for normal text; `#3d6e0c` is 5.08:1. Lime `#c6f35c` stays for marks and fills | In code |
 | 25 | 2026-11-12 | Frontend on Vercel; backend on the team laptop, reached through a secure tunnel with a shared secret. Replaces decision 24 | Team decision. Avoids Vercel's limits on run time, scheduling and storage for Qiskit; costs nothing; the laptop already has Tailscale. Cost: live features need the laptop on | In `ARCHITECTURE.md`; not in spec |
 | 24 | 2026-11-12 | ~~Host on Vercel if its limits allow~~; otherwise frontend on Vercel and the Python API elsewhere | Team preference; Qiskit run time, scheduling and storage limits are still to verify | In `ARCHITECTURE.md`; not in spec |
 | 23 | 2026-11-12 | No AI or LLM features anywhere in the app | Team decision: this is a quantum optimisation project, not a chatbot. The AI-layer design written earlier the same day is withdrawn | Docs updated |
