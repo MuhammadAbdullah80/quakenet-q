@@ -3671,7 +3671,7 @@ body:has(.demo) .site-footer {
   color: var(--forest);
 }
 .steps-now {
-  margin: 0.75rem 0 0;
+  margin: 1.25rem 0 0;
   padding: 0.7rem 1rem;
   border-left: 4px solid var(--forest);
   border-radius: 0 6px 6px 0;
@@ -3690,7 +3690,7 @@ body:has(.demo) .site-footer {
 }
 /* The trace band moves below the strip on wide screens. */
 @media (min-width: 64rem) {
-  .page:has(> .steps) .page-trace {
-    top: 9.5rem;
+  .page:has(> .steps-now) .page-trace {
+    top: 6rem;
   }
 }
