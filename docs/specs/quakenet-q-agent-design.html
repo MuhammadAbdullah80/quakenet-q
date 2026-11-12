@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuakeNet-Q Agent Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f4f6f5;      /* seismograph drum paper */
+  --sheet: #ffffff;
+  --ink: #17212b;        /* basalt */
+  --ink-soft: #4d5965;
+  --rule: #d4dbde;
+  --mark: #b3261e;       /* red time-mark ink: requirement IDs only */
+  --survey: #0b6461;     /* geologic-survey teal: links */
+  --must: #17212b; --should: #8a5a00; --may: #4d5965;
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.65 var(--body); }
+a { color: var(--survey); text-underline-offset: 2px; }
+a:focus-visible, summary:focus-visible, .table-wrap:focus-visible { outline: 3px solid var(--survey); outline-offset: 2px; border-radius: 2px; }
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: 16px; top: 16px; background: var(--sheet); padding: 8px 12px; z-index: 10; }
+
+/* masthead */
+.mast { background: var(--sheet); border-bottom: 1px solid var(--rule); }
+.mast-inner { max-width: 1240px; margin: 0 auto; padding: 40px 32px 0; }
+.eyebrow { font: 600 13px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 14px; }
+.mast h1 { font: 700 clamp(34px, 5vw, 56px)/1.02 var(--display); letter-spacing: -.01em; margin: 0; }
+.mast .lede { max-width: 720px; color: var(--ink-soft); font-size: 18px; margin: 14px 0 0; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 22px 0 0; padding: 0; list-style: none; font-size: 14px; }
+.meta dt { font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 4px; }
+.meta dd { margin: 0; }
+.status { display: inline-block; font: 600 12px/1 var(--mono); padding: 5px 9px; border: 1.5px solid var(--should); color: var(--should); border-radius: 3px; text-transform: uppercase; letter-spacing: .06em; }
+.trace { display: block; width: 100%; height: 90px; margin-top: 26px; }
+.trace path { fill: none; stroke: var(--ink); stroke-width: 1.2; }
+.trace .tick { stroke: var(--mark); stroke-width: 1; }
+.trace text { font: 600 10px var(--mono); fill: var(--mark); letter-spacing: .06em; }
+
+/* layout */
+.layout { max-width: 1240px; margin: 0 auto; padding: 32px; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 48px; }
+nav.toc { position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow: auto; }
+nav.toc h2 { font: 600 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); margin: 4px 0 12px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--rule); }
+nav.toc li { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+nav.toc a { display: block; padding: 6px 0 6px 14px; margin-left: -1px; border-left: 2px solid transparent; color: var(--ink); text-decoration: none; font-size: 14.5px; line-height: 1.3; }
+nav.toc a:hover, nav.toc a.on { border-left-color: var(--mark); }
+nav.toc .count { font: 12px var(--mono); color: var(--ink-soft); }
+main { background: var(--sheet); border: 1px solid var(--rule); border-radius: 4px; padding: 8px 56px 56px; min-width: 0; }
+main > h2 { font: 700 30px/1.15 var(--display); margin: 56px 0 18px; padding-top: 22px; border-top: 1px solid var(--rule); }
+main > h2:first-child { border-top: 0; margin-top: 28px; }
+main h3 { font: 600 20px/1.3 var(--display); margin: 32px 0 10px; }
+main p, main li { max-width: 76ch; }
+main ul, main ol { padding-left: 22px; }
+main li { margin: 6px 0; }
+code { font: 0.88em var(--mono); background: #eef2f2; padding: 1px 5px; border-radius: 3px; }
+pre { font: 13px/1.5 var(--mono); background: #f7f9f8; border: 1px solid var(--rule); border-left: 3px solid var(--ink);
+       padding: 18px 20px; overflow-x: auto; border-radius: 3px; }
+pre code { background: none; padding: 0; font-size: inherit; }
+.table-wrap { overflow-x: auto; margin: 16px 0 24px; border: 1px solid var(--rule); border-radius: 3px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th { text-align: left; font: 600 12px/1.3 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--ink-soft); background: #f7f9f8; }
+th, td { padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+
+/* requirements */
+li.req { list-style: none; position: relative; margin: 14px 0 14px -22px; padding-left: 78px; scroll-margin-top: 24px; }
+li.req > .rid { position: absolute; left: 0; top: 2px; }
+.rid { font: 600 12.5px/1.6 var(--mono); color: var(--mark); white-space: nowrap; }
+.kw { font: 600 11.5px/1 var(--mono); letter-spacing: .06em; padding: 2px 5px; border-radius: 2px; border: 1px solid currentColor; vertical-align: 1px; }
+.kw-MUST, .kw-MUSTNOT { color: var(--must); }
+.kw-SHOULD, .kw-SHOULDNOT { color: var(--should); }
+.kw-MAY { color: var(--may); border-style: dashed; }
+a.xref { font: 600 0.86em var(--mono); color: var(--survey); text-decoration: none; border-bottom: 1px dotted currentColor; }
+a.xref:hover { border-bottom-style: solid; }
+
+/* acceptance criteria */
+.ac { border: 1px solid var(--rule); border-radius: 4px; margin: 14px 0; scroll-margin-top: 24px; }
+.ac header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 12px 16px; border-bottom: 1px solid var(--rule); background: #f9fbfa; }
+.ac h3 { margin: 0; font: 600 17px/1.3 var(--display); flex: 1 1 260px; }
+.ac .refs { font: 12px var(--mono); color: var(--ink-soft); }
+.gwt { display: grid; grid-template-columns: 74px 1fr; }
+.gwt-k { font: 600 12px/1.6 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); padding: 9px 0 9px 16px; }
+.gwt-v { padding: 8px 16px 8px 0; font-size: 15px; }
+.gwt-k:not(:nth-last-child(2)), .gwt-v:not(:last-child) { border-bottom: 1px dashed var(--rule); }
+
+footer.doc { max-width: 1240px; margin: 0 auto; padding: 0 32px 48px; color: var(--ink-soft); font-size: 13px; }
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1fr); padding: 16px; gap: 16px; }
+  .trace text, .trace .tick { display: none; }
+  nav.toc { position: static; max-height: none; background: var(--sheet); border: 1px solid var(--rule); border-radius: 4px; padding: 14px 16px; }
+  main { padding: 4px 18px 32px; }
+  .mast-inner { padding: 28px 16px 0; }
+  li.req { padding-left: 0; margin-left: -22px; }
+  li.req > .rid { position: static; display: block; }
+  .gwt { grid-template-columns: 1fr; }
+  .gwt-k { padding: 8px 14px 0; border-bottom: 0 !important; }
+  .gwt-v { padding: 0 14px 8px; }
+  footer.doc { padding: 0 16px 32px; }
+}
+@media print {
+  body { background: #fff; font-size: 11pt; }
+  nav.toc, .skip { display: none; }
+  .layout { display: block; padding: 0; }
+  main { border: 0; padding: 0; }
+  .ac, pre, table { break-inside: avoid; }
+  a.xref { border: 0; color: var(--ink); }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="mast">
+  <div class="mast-inner">
+    <p class="eyebrow">Design specification · Disaster Response · Qiskit</p>
+    <h1>QuakeNet-Q Agent: Design Specification</h1>
+    <p class="lede">An autonomous agent that decides where the first portable seismometers go after a major earthquake, with a quantum optimisation algorithm as its decision step.</p>
+    <dl class="meta">
+      <div><dt>Status</dt><dd><span class="status">Draft, awaiting team approval</span></dd></div>
+      <div><dt>Date</dt><dd>2026-11-12</dd></div>
+      <div><dt>Author</dt><dd>QuakeNet-Q team (drafted with Claude Code)</dd></div>
+      <div><dt>Reviewers</dt><dd>All team members</dd></div>
+      <div><dt>Supersedes</dt><dd>The single-run proof of concept in commit <code>d34e328</code></dd></div>
+    </dl>
+  </div>
+  <svg class="trace" viewBox="0 0 1200 90" preserveAspectRatio="none" role="img" aria-label="Seismogram trace: a quiet background, a large mainshock, then smaller decaying aftershocks">
+    <line class="tick" x1="216" y1="4" x2="216" y2="18"/><text x="222" y="14">MAINSHOCK</text>
+    <line class="tick" x1="504" y1="4" x2="504" y2="18"/><text x="510" y="14">T0 PLAN</text>
+    <line class="tick" x1="792" y1="4" x2="792" y2="18"/><text x="798" y="14">RE-PLAN</text>
+    <path d="M0,44.8 L3,45.2 L6,44.3 L9,45.9 L12,44.3 L15,45.3 L18,44.6 L21,44.7 L24,45.3 L27,44.4 L30,45.5 L33,44.2 L36,45.4 L39,44.7 L42,44.7 L45,45.2 L48,44.5 L51,45.8 L54,44.1 L57,45.7 L60,44.6 L63,45.5 L66,45.6 L69,44.3 L72,45.7 L75,44.3 L78,45.9 L81,44.8 L84,44.6 L87,44.9 L90,44.8 L93,45.8 L96,44.1 L99,46.2 L102,44.4 L105,44.7 L108,45.0 L111,44.8 L114,46.0 L117,44.2 L120,45.6 L123,44.8 L126,44.9 L129,45.3 L132,44.2 L135,45.9 L138,44.0 L141,45.8 L144,44.3 L147,45.6 L150,45.4 L153,44.3 L156,45.6 L159,44.2 L162,45.9 L165,44.0 L168,45.4 L171,44.9 L174,45.0 L177,45.5 L180,44.1 L183,45.8 L186,44.7 L189,45.1 L192,45.1 L195,44.3 L198,45.9 L201,43.9 L204,45.8 L207,44.5 L210,45.3 L213,44.4 L216,44.6 L219,67.8 L222,20.8 L225,65.8 L228,32.7 L231,55.5 L234,42.3 L237,37.7 L240,51.8 L243,28.3 L246,61.9 L249,29.0 L252,50.0 L255,36.1 L258,47.2 L261,49.6 L264,33.2 L267,53.3 L270,40.3 L273,48.9 L276,38.8 L279,48.2 L282,45.9 L285,38.3 L288,50.9 L291,37.0 L294,50.8 L297,41.9 L300,41.0 L303,45.8 L306,41.4 L309,50.5 L312,40.4 L315,49.2 L318,44.0 L321,45.5 L324,47.7 L327,42.9 L330,48.9 L333,41.5 L336,46.9 L339,45.2 L342,46.5 L345,46.6 L348,42.2 L351,46.9 L354,43.1 L357,46.3 L360,44.7 L363,43.8 L366,46.3 L369,43.2 L372,47.4 L375,43.1 L378,46.1 L381,44.4 L384,43.9 L387,46.2 L390,44.1 L393,46.6 L396,43.2 L399,45.7 L402,44.7 L405,45.6 L408,45.5 L411,44.6 L414,46.2 L417,43.5 L420,46.1 L423,44.2 L426,45.5 L429,44.8 L432,44.0 L435,45.7 L438,44.0 L441,45.5 L444,44.9 L447,45.7 L450,45.8 L453,44.5 L456,45.9 L459,43.7 L462,45.9 L465,43.8 L468,44.8 L471,45.2 L474,44.2 L477,45.6 L480,44.0 L483,45.5 L486,44.2 L489,44.7 L492,44.8 L495,44.2 L498,46.2 L501,44.2 L504,46.1 L507,37.8 L510,44.3 L513,45.2 L516,42.5 L519,47.0 L522,42.3 L525,47.2 L528,44.4 L531,44.8 L534,45.1 L537,44.4 L540,45.9 L543,44.1 L546,45.7 L549,44.7 L552,45.2 L555,44.7 L558,44.6 L561,45.7 L564,44.3 L567,46.0 L570,44.5 L573,45.7 L576,44.6 L579,44.5 L582,45.8 L585,43.9 L588,46.1 L591,44.0 L594,45.4 L597,45.3 L600,44.2 L603,45.7 L606,43.9 L609,46.0 L612,44.4 L615,45.3 L618,45.3 L621,44.3 L624,45.2 L627,43.8 L630,45.9 L633,44.6 L636,45.5 L639,45.2 L642,44.4 L645,45.8 L648,44.3 L651,45.8 L654,44.1 L657,45.9 L660,44.5 L663,43.2 L666,45.2 L669,42.3 L672,47.8 L675,42.7 L678,46.8 L681,45.2 L684,44.8 L687,45.3 L690,43.9 L693,46.2 L696,44.4 L699,45.3 L702,45.2 L705,45.0 L708,45.4 L711,44.4 L714,46.0 L717,44.1 L720,45.6 L723,44.5 L726,44.5 L729,45.2 L732,44.3 L735,45.9 L738,44.0 L741,45.9 L744,44.6 L747,44.7 L750,45.1 L753,44.5 L756,45.8 L759,43.9 L762,45.8 L765,44.5 L768,45.0 L771,44.9 L774,44.7 L777,45.9 L780,43.8 L783,45.7 L786,44.8 L789,44.8 L792,45.7 L795,43.6 L798,49.0 L801,40.8 L804,47.4 L807,44.0 L810,44.1 L813,45.5 L816,43.7 L819,46.5 L822,43.9 L825,45.9 L828,43.9 L831,45.6 L834,45.4 L837,44.9 L840,45.9 L843,44.3 L846,45.7 L849,44.5 L852,45.0 L855,45.1 L858,44.2 L861,45.6 L864,43.9 L867,46.0 L870,44.4 L873,45.5 L876,44.8 L879,44.4 L882,45.4 L885,44.1 L888,45.9 L891,44.2 L894,45.4 L897,45.0 L900,44.4 L903,46.1 L906,44.2 L909,46.2 L912,44.4 L915,45.0 L918,45.2 L921,44.4 L924,45.9 L927,44.2 L930,45.9 L933,44.4 L936,44.9 L939,43.1 L942,43.5 L945,46.0 L948,43.1 L951,46.7 L954,43.2 L957,45.9 L960,45.7 L963,45.1 L966,45.5 L969,43.7 L972,46.2 L975,44.1 L978,45.1 L981,44.9 L984,45.2 L987,45.6 L990,44.1 L993,45.9 L996,44.2 L999,45.6 L1002,45.2 L1005,44.9 L1008,45.7 L1011,44.1 L1014,45.8 L1017,44.3 L1020,45.4 L1023,44.3 L1026,45.2 L1029,45.7 L1032,44.4 L1035,45.7 L1038,44.0 L1041,45.5 L1044,44.5 L1047,44.6 L1050,45.7 L1053,44.4 L1056,46.0 L1059,41.1 L1062,48.3 L1065,43.4 L1068,43.8 L1071,46.7 L1074,43.8 L1077,46.4 L1080,43.4 L1083,45.4 L1086,45.0 L1089,44.6 L1092,45.9 L1095,44.4 L1098,46.1 L1101,44.1 L1104,45.6 L1107,44.5 L1110,45.2 L1113,45.5 L1116,44.3 L1119,45.9 L1122,44.3 L1125,45.8 L1128,44.7 L1131,45.4 L1134,45.8 L1137,44.0 L1140,45.9 L1143,44.3 L1146,45.8 L1149,44.5 L1152,44.7 L1155,44.9 L1158,44.4 L1161,45.8 L1164,44.1 L1167,45.7 L1170,44.7 L1173,44.5 L1176,44.8 L1179,44.8 L1182,45.9 L1185,44.0 L1188,45.7 L1191,44.5 L1194,45.5 L1197,44.9 L1200,44.7"/>
+  </svg>
+</header>
+<div class="layout">
+  <nav class="toc" aria-label="Contents">
+    <h2>Contents</h2>
+    <ol>
+<li><a href="#context">Context</a></li>
+<li><a href="#system-overview">System Overview</a></li>
+<li><a href="#functional-requirements">Functional Requirements</a><span class="count">29</span></li>
+<li><a href="#non-functional-requirements">Non-Functional Requirements</a><span class="count">8</span></li>
+<li><a href="#acceptance-criteria">Acceptance Criteria</a><span class="count">21</span></li>
+<li><a href="#edge-cases">Edge Cases</a><span class="count">11</span></li>
+<li><a href="#api-contracts">API Contracts</a></li>
+<li><a href="#data-models">Data Models</a></li>
+<li><a href="#evaluation-plan">Evaluation Plan</a></li>
+<li><a href="#out-of-scope">Out of Scope</a><span class="count">7</span></li>
+<li><a href="#architecture">Architecture</a></li>
+<li><a href="#risks-and-open-checks">Risks and Open Checks</a><span class="count">6</span></li>
+<li><a href="#references">References</a></li>
+    </ol>
+  </nav>
+  <main id="content">
+<h2 id="context">Context</h2>
+<h3 id="the-problem">The problem</h3>
+<p>After a large earthquake, response teams install portable
+seismometers to record the aftershocks. In the first hours, the
+instruments that matter most are the <strong>few that send data in real
+time</strong>. Thousands of cheap nodal sensors may follow later, but
+those typically record to internal memory and are collected weeks
+afterwards. Where the first real-time instruments go decides how sharply
+aftershocks can be located while the emergency is still unfolding.</p>
+<p>Methods for choosing optimal station sites have been published since
+the 1970s–90s:</p>
+<ul>
+<li>Kijko (1977), early optimal network planning;</li>
+<li>Rabinowitz &amp; Steinberg (1990), the D-optimality criterion;</li>
+<li>Hardt &amp; Scherbaum (1994), aftershock networks designed from the
+mainshock alone.</li>
+</ul>
+<p>Published accounts of real deployments still describe siting
+qualitatively. For example, the USGS at Ridgecrest in 2019 aimed to
+"improve azimuthal coverage and provide additional near-field
+observations" (Cochran et al. 2020). We found no tool that recommends
+sites automatically after an earthquake. Existing tools are either for
+designing a network in advance (AuScope Seismic Network Design App) or
+for judging an existing network (SN-CAST). Both claims rest on short
+descriptions and must be re-checked (<a class="xref" href="#r-1">R-1</a>).</p>
+<h3 id="why-the-published-methods-stay-on-paper-and-how-we-respond">Why
+the published methods stay on paper, and how we respond</h3>
+<div class="table-wrap" role="region" tabindex="0" aria-label="Why the published methods stay on paper, and how we respond"><table aria-label="Why the published methods stay on paper, and how we respond">
+<thead>
+<tr>
+<th>Barrier (evidence in <code>research/</code>)</th>
+<th>Response in this design</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Computed ideal spots are often unusable (access, permits, noise,
+safety)</td>
+<td>Candidates are built from reachable places, each with backup spots
+(<a class="xref" href="#fr-6">FR-6</a>, <a class="xref" href="#fr-7">FR-7</a>, <a class="xref" href="#fr-21">FR-21</a>)</td>
+</tr>
+<tr>
+<td>Cheap dense nodes reduce scarcity</td>
+<td>Scope limited to the first few real-time instruments (Out of Scope,
+<a class="xref" href="#os-1">OS-1</a>)</td>
+</tr>
+<tr>
+<td>A sensible human layout may be nearly as good</td>
+<td>An explicit expert-rule baseline, with the gain over it reported
+honestly (<a class="xref" href="#fr-26">FR-26</a>, <a class="xref" href="#ac-16">AC-16</a>)</td>
+</tr>
+<tr>
+<td>Results depend on an assumed Earth model</td>
+<td>Sites are scored across several velocity models (<a class="xref" href="#fr-10">FR-10</a>)</td>
+</tr>
+<tr>
+<td>Teams want more than location accuracy</td>
+<td>Scope stated as location accuracy only (<a class="xref" href="#os-3">OS-3</a>)</td>
+</tr>
+<tr>
+<td>Aftershocks migrate</td>
+<td>Hourly re-planning (<a class="xref" href="#fr-23">FR-23</a> to <a class="xref" href="#fr-25">FR-25</a>)</td>
+</tr>
+<tr>
+<td>No tool and no expert time during a crisis</td>
+<td>The autonomous agent itself (<a class="xref" href="#fr-1">FR-1</a> to <a class="xref" href="#fr-5">FR-5</a>)</td>
+</tr>
+<tr>
+<td>Field teams distrust black boxes</td>
+<td>Every site comes with its reason and score (<a class="xref" href="#fr-21">FR-21</a>)</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="what-the-proof-of-concept-already-showed">What the proof of
+concept already showed</h3>
+<p>On the real Ridgecrest 2019 data (commit <code>d34e328</code>):</p>
+<ul>
+<li>The quantum circuit (Dicke state plus XY-mixer QAOA) found the exact
+optimum in 15 of 15 runs.</li>
+<li>Per-shot success probability was 5.1–10.0%, against 0.48% for a
+random valid network.</li>
+<li>The pairwise score tracked the true score with Spearman ρ =
+0.987.</li>
+<li>Predicted blur on later aftershocks fell from 2.73 km to 1.50
+km.</li>
+</ul>
+<p>Known weaknesses that this design must fix:</p>
+<ul>
+<li>the approximate score,</li>
+<li>grid-only candidate sites,</li>
+<li>a single velocity model,</li>
+<li>no human-style baseline,</li>
+<li>one earthquake only,</li>
+<li>predicted rather than tested accuracy.</li>
+</ul>
+<h3 id="positioning">Positioning</h3>
+<p>This is a <strong>proof of concept</strong>. The full pipeline runs
+end to end on real data, with the quantum step simulated in Qiskit. No
+quantum speedup is claimed: with 210 valid networks, classical search
+finds the same answer instantly. The contribution is an autonomous,
+tested pipeline whose decision step is a quantum optimisation algorithm,
+evaluated honestly against exact and classical references.</p>
+
+<h2 id="system-overview">System Overview</h2>
+<h3 id="what-happens-when-an-earthquake-occurs">What happens when an
+earthquake occurs</h3>
+<pre><code> USGS live feed ──► [1 Trigger] M≥6.5 near stations
+                        │ event id, origin, magnitude, focal mechanism
+                        ▼
+                  [2 Gather] aftershocks so far · permanent stations · memory
+                        │
+                        ▼
+                  [3 Candidates] reachable pool ─► 10 candidates (+ backups)
+                        │
+                        ▼
+                  [4 Score] exact objective over all ≤4-site subsets,
+                        │      averaged over velocity models, minus access risk
+                        ▼
+                  [5 Quantum choose] Dicke(10,4) + XY-mixer QAOA, CVaR objective,
+                        │            warm-started angles, Qiskit primitives
+                        ▼
+                  [6 Self-check] compare with exact optimum ── disagree ──► more layers/shots (max 2 retries)
+                        │ agree (or retries exhausted, flagged)
+                        ▼
+                  [7 Publish] plan.json · map.png · plan.txt (sites, backups, reasons, confidence)
+                        │
+        ┌───────────────┴──────── every 60 min, up to 72 h ────────────────┐
+        ▼                                                                  │
+  [8 Monitor] new aftershocks ─► drift? ── no ─────────────────────────────┘
+        │ yes
+        ▼
+  [9 Re-plan] steps 4–7 with a cost per moved sensor ─► &quot;move A→B&quot; or &quot;stay&quot;
+        │
+        ▼ (sequence ends)
+  [10 Remember] angle library · model-ensemble weights · prediction-error record</code></pre>
+<h3 id="planning-stages-within-one-earthquake">Planning stages within
+one earthquake</h3>
+<div class="table-wrap" role="region" tabindex="0" aria-label="Planning stages within one earthquake"><table aria-label="Planning stages within one earthquake">
+<thead>
+<tr>
+<th>Stage</th>
+<th>When</th>
+<th>Aftershocks used</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>T0 plan</strong></td>
+<td>Within 5 minutes of trigger</td>
+<td>Synthetic, generated from the mainshock (Hardt &amp; Scherbaum
+1994)</td>
+<td>A first answer before real aftershocks accumulate</td>
+</tr>
+<tr>
+<td><strong>Hourly plans</strong></td>
+<td>Every 60 min</td>
+<td>Real catalogue events so far (plus synthetic events while fewer than
+30 real ones exist)</td>
+<td>Refine as data arrives</td>
+</tr>
+<tr>
+<td><strong>Re-plan</strong></td>
+<td>When drift is detected</td>
+<td>Real events</td>
+<td>Recommend moves, priced by a moving cost</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="where-the-quantum-computer-is-used">Where the quantum computer
+is used</h3>
+<p>Only in step 5. It decides which 4 of 10 candidate sites to use, at
+every T0, hourly and re-plan decision. All other steps are classical:
+data, physics, candidate generation, scoring, checking, reporting and
+memory. The quantum step is the decision-maker, and its output is always
+checked against the exact optimum (step 6). How often the quantum step
+alone finds the optimum is logged and reported (<a class="xref" href="#fr-18">FR-18</a>).</p>
+
+<h2 id="functional-requirements">Functional Requirements</h2>
+<h3 id="trigger-and-data">Trigger and data</h3>
+<ul>
+<li class="req" id="fr-1"><span class="rid">FR-1</span> The agent <span class="kw kw-MUST">MUST</span> poll the USGS real-time GeoJSON feed at least
+once per minute in live mode and start a run for each new event with
+magnitude ≥ 6.5 that has at least one permanent station within 100 km of
+its epicentre (in practice, onshore or near-shore events).</li>
+<li class="req" id="fr-2"><span class="rid">FR-2</span> The agent <span class="kw kw-MUST">MUST</span> support a <strong>replay mode</strong> that
+runs any past earthquake as if live, using catalogue data up to a
+simulated clock time and never data after it.</li>
+<li class="req" id="fr-3"><span class="rid">FR-3</span> The agent <span class="kw kw-MUST">MUST</span> download the aftershocks recorded so far (USGS
+ComCat FDSN event service, M ≥ 2.5, within a radius R = max(50 km, 2 ×
+rupture length) of the epicentre).</li>
+<li class="req" id="fr-4"><span class="rid">FR-4</span> The agent <span class="kw kw-MUST">MUST</span> download permanent stations within radius R
+that are operating at the event time (FDSN station service).</li>
+<li class="req" id="fr-5"><span class="rid">FR-5</span> The agent <span class="kw kw-MUST">MUST</span> cache every download with its source URL and
+retrieval time, so that every run can be reproduced offline.</li>
+</ul>
+<h3 id="candidate-sites">Candidate sites</h3>
+<ul>
+<li class="req" id="fr-6"><span class="rid">FR-6</span> The agent <span class="kw kw-MUST">MUST</span> build a pool of reachable candidate points:
+<ul>
+<li>a 2 km grid covering radius R;</li>
+<li>kept only if within 1.5 km of a road (OpenStreetMap via the Overpass
+API);</li>
+<li>not inside water;</li>
+<li>at least 6 km from any permanent station;</li>
+<li>at least 3 km from the mapped rupture trace (crew safety).</li>
+</ul></li>
+<li class="req" id="fr-7"><span class="rid">FR-7</span> For each candidate the agent <span class="kw kw-MUST">MUST</span> keep up to 3 backup points
+from the pool, within 3 km and passing the same filters.</li>
+<li class="req" id="fr-8"><span class="rid">FR-8</span> The agent <span class="kw kw-MUST">MUST</span> select the final N = 10 candidates from the
+pool by greedy spread selection. It repeatedly adds the point with the
+highest single-site score gain, subject to a minimum spacing of 4 km
+between selected candidates. (This pre-selection is classical; its
+effect on the final answer is measured in <a class="xref" href="#ac-17">AC-17</a>.)</li>
+<li class="req" id="fr-9"><span class="rid">FR-9</span> The team <span class="kw kw-MUST">MUST</span> be able to add or exclude candidate points
+through a config file before or during a run.</li>
+</ul>
+<h3 id="scoring">Scoring</h3>
+<ul>
+<li class="req" id="fr-10"><span class="rid">FR-10</span> The score of a network S <span class="kw kw-MUST">MUST</span> be the D-criterion averaged
+over an ensemble of velocity models V (default: uniform 5.5, 6.0 and 6.5
+km/s, plus one regional layered model where available), with weights w_v
+from memory (equal weights on first use):
+<code>D(S) = Σ_v w_v Σ_e log det F_e,v(P ∪ S)</code></li>
+<li class="req" id="fr-11"><span class="rid">FR-11</span> The objective <span class="kw kw-MUST">MUST</span> be
+<code>f(S) = D(S) − D(∅) − λ_risk Σ_{i∈S} c_i − λ_move · moves(S)</code>.
+<ul>
+<li><code>c_i</code> is the access risk of site i: exp(−d_i / 5 km),
+where d_i is the distance to the nearest aftershock.</li>
+<li><code>moves(S)</code> is the number of sensors that change site
+compared with the current plan (0 for a first plan).</li>
+</ul></li>
+<li class="req" id="fr-12"><span class="rid">FR-12</span> The agent <span class="kw kw-MUST">MUST</span> compute the <strong>exact</strong> expansion
+of f over all subsets of up to 4 sites (the Möbius coefficients; 385
+terms for N = 10). Inside the 4-site subspace the resulting Hamiltonian
+then equals f exactly, with no approximation.</li>
+<li class="req" id="fr-13"><span class="rid">FR-13</span> The agent <span class="kw kw-MUST">MUST</span> convert the expansion into a Qiskit
+<code>SparsePauliOp</code> with Z, ZZ, ZZZ and ZZZZ terms, normalised so
+that its largest coefficient has magnitude 1.</li>
+</ul>
+<h3 id="quantum-decision-step">Quantum decision step</h3>
+<ul>
+<li class="req" id="fr-14"><span class="rid">FR-14</span> The agent <span class="kw kw-MUST">MUST</span> choose sites with QAOA in Qiskit:
+<ul>
+<li>initial state: the Dicke state |D(10,4)⟩, prepared with the Bärtschi
+&amp; Eidenbenz (2019) circuit;</li>
+<li>each layer: a cost layer exp(−iγH), then an XY ring mixer of
+XXPlusYYGate in parity order;</li>
+<li>p layers, with p starting at 3.</li>
+</ul></li>
+<li class="req" id="fr-15"><span class="rid">FR-15</span> Parameters <span class="kw kw-MUST">MUST</span> be optimised with COBYLA on the
+<strong>CVaR-α</strong> of the energy distribution (Barkoutsos et al.
+2020; α = 0.1), i.e. the mean energy of the best 10% of outcomes,
+computed exactly from the statevector probabilities. The plain mean
+energy is not used.</li>
+<li class="req" id="fr-16"><span class="rid">FR-16</span> The initial angles <span class="kw kw-MUST">MUST</span> come from the angle library in memory
+(median of the stored optimal angles for the same N, k and p). If memory
+is empty, the agent <span class="kw kw-MUST">MUST</span> use 4 random restarts.</li>
+<li class="req" id="fr-17"><span class="rid">FR-17</span> After optimisation the agent <span class="kw kw-MUST">MUST</span> sample 1,024 shots with
+<code>StatevectorSampler</code>. It then re-scores the 10 most frequent
+networks with f and keeps the best.</li>
+<li class="req" id="fr-18"><span class="rid">FR-18</span> The agent <span class="kw kw-MUST">MUST</span> log, for every quantum decision: p, number of
+evaluations, P(opt) per shot, the rank of the chosen network, and
+runtime.</li>
+<li class="req" id="fr-19"><span class="rid">FR-19</span> The agent <span class="kw kw-MAY">MAY</span> run a reduced instance (N = 6, k = 2) on IBM
+quantum hardware through qiskit-ibm-runtime, as a separate demonstration
+whose results are reported but not used for planning.</li>
+</ul>
+<h3 id="self-check-and-publish">Self-check and publish</h3>
+<ul>
+<li class="req" id="fr-20"><span class="rid">FR-20</span> The agent <span class="kw kw-MUST">MUST</span> compute the exact optimum by enumeration (210
+subsets). If the quantum choice differs from it, the agent <span class="kw kw-MUST">MUST</span> retry
+with p + 2 layers and 4,096 shots, at most twice. If the quantum step
+still disagrees, the agent <span class="kw kw-MUST">MUST</span> publish the exact optimum and flag
+<code>quantum_agreed = false</code> in the plan.</li>
+<li class="req" id="fr-21"><span class="rid">FR-21</span> The agent <span class="kw kw-MUST">MUST</span> publish:
+<ul>
+<li><code>plan.json</code> (API Contracts);</li>
+<li><code>map.png</code>, showing aftershocks, permanent stations,
+candidates, chosen sites and backups;</li>
+<li><code>plan.txt</code>, a plain-language summary. For each site it
+gives coordinates, backups, reason (its single-site gain and redundancy
+with the other chosen sites), risk, and expected location
+improvement.</li>
+</ul></li>
+<li class="req" id="fr-22"><span class="rid">FR-22</span> The plan <span class="kw kw-MUST">MUST</span> include a confidence level computed from the
+agent's prediction-error record (<a class="xref" href="#fr-28">FR-28</a>): the error of a past plan is
+|realised score − predicted score| / predicted score, and the level is
+"high" if the median past error is ≤ 25%, "medium" if ≤ 50%, otherwise
+"low". It is "unrated" when there is no record.</li>
+</ul>
+<h3 id="monitoring-and-re-planning">Monitoring and re-planning</h3>
+<ul>
+<li class="req" id="fr-23"><span class="rid">FR-23</span> After publishing, the agent <span class="kw kw-MUST">MUST</span> re-check every 60 minutes
+for 72 hours.</li>
+<li class="req" id="fr-24"><span class="rid">FR-24</span> The agent <span class="kw kw-MUST">MUST</span> declare drift when either:
+<ul>
+<li>the centroid of aftershocks from the last 6 hours has moved more
+than 5 km from the centroid used for the current plan; or</li>
+<li>the realised score of the current plan on the new aftershocks is
+more than 20% below its predicted score.</li>
+</ul></li>
+<li class="req" id="fr-25"><span class="rid">FR-25</span> On drift, the agent <span class="kw kw-MUST">MUST</span> re-plan (steps 4–7) with λ_move &gt;
+0 and publish either explicit moves ("move sensor from site A to B") or
+"stay".</li>
+</ul>
+<h3 id="learning-across-earthquakes">Learning across earthquakes</h3>
+<ul>
+<li class="req" id="fr-26"><span class="rid">FR-26</span> The agent <span class="kw kw-MUST">MUST</span> compare every plan against four reference
+strategies, all scored with the same objective f:
+<ul>
+<li>exact optimum;</li>
+<li>greedy forward selection;</li>
+<li>simulated annealing (Hardt &amp; Scherbaum 1994 style);</li>
+<li>an <strong>expert rule</strong>: pick sites in turn to minimise the
+largest azimuthal gap around the aftershock centroid, breaking ties by
+distance to the centroid (closer first). This mirrors the published
+qualitative practice.</li>
+</ul></li>
+<li class="req" id="fr-27"><span class="rid">FR-27</span> At the end of a sequence the agent <span class="kw kw-MUST">MUST</span> store, in memory:
+<ul>
+<li>the optimal QAOA angles for (N, k, p);</li>
+<li>the realised performance of each velocity model;</li>
+<li>the predicted and realised plan scores.</li>
+</ul></li>
+<li class="req" id="fr-28"><span class="rid">FR-28</span> The agent <span class="kw kw-MUST">MUST</span> update the velocity-model weights w_v in
+proportion to each model's realised accuracy over all past sequences,
+smoothed by Laplace smoothing with equal priors.</li>
+<li class="req" id="fr-29"><span class="rid">FR-29</span> The agent <span class="kw kw-MUST">MUST</span> expose a <strong>leave-one-out
+evaluation</strong> command. It trains the memory on all benchmark
+earthquakes except one, replays the held-out one, and repeats for every
+earthquake.</li>
+</ul>
+
+<h2 id="non-functional-requirements">Non-Functional Requirements</h2>
+<ul>
+<li class="req" id="nfr-1"><span class="rid">NFR-1</span> Speed: a full plan (steps 2–7, with cached data, N = 10, k =
+4, p = 3) <span class="kw kw-MUST">MUST</span> finish within 5 minutes on the reference laptop (Intel
+i7-1265U, 32 GB RAM).</li>
+<li class="req" id="nfr-2"><span class="rid">NFR-2</span> Reproducibility: with the same cache, config and seed, two
+runs <span class="kw kw-MUST">MUST</span> produce identical plans and metrics.</li>
+<li class="req" id="nfr-3"><span class="rid">NFR-3</span> Resilience: every network call <span class="kw kw-MUST">MUST</span> have a timeout of 30 s
+and 3 retries with exponential backoff. Failures fall back to the cache,
+or to the behaviour listed under Edge Cases.</li>
+<li class="req" id="nfr-4"><span class="rid">NFR-4</span> Correctness of the Hamiltonian: the diagonal of H restricted
+to weight-4 states <span class="kw kw-MUST">MUST</span> equal the normalised f within 1e-9.</li>
+<li class="req" id="nfr-5"><span class="rid">NFR-5</span> Constraint safety: no measurement from the main quantum
+circuit may have Hamming weight other than 4.</li>
+<li class="req" id="nfr-6"><span class="rid">NFR-6</span> Test suite: automated tests <span class="kw kw-MUST">MUST</span> run in under 60 s with
+cached data and no network access.</li>
+<li class="req" id="nfr-7"><span class="rid">NFR-7</span> No secrets: live and replay modes <span class="kw kw-MUST">MUST</span> work without API keys.
+IBM hardware access (<a class="xref" href="#fr-19">FR-19</a>) reads its token from an environment variable
+and is never committed.</li>
+<li class="req" id="nfr-8"><span class="rid">NFR-8</span> Honest reporting: every reported metric <span class="kw kw-MUST">MUST</span> be produced by a
+script in the repository from cached data. No hand-entered numbers.</li>
+</ul>
+
+<h2 id="acceptance-criteria">Acceptance Criteria</h2>
+<article class="ac" id="ac-1"><header><span class="rid">AC-1</span><h3>Trigger fires only for qualifying events</h3><span class="refs"><a class="xref" href="#fr-1">FR-1</a>, <a class="xref" href="#fr-2">FR-2</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">the cached USGS feed for 2019-07-04 to
+2019-07-07</div><div class="gwt-k">When</div><div class="gwt-v">the agent replays it from 2019-07-06 03:00
+UTC</div><div class="gwt-k">Then</div><div class="gwt-v">it starts exactly one run, for the M7.1
+Ridgecrest event, and ignores every event below M6.5.</div></div></article>
+<article class="ac" id="ac-2"><header><span class="rid">AC-2</span><h3>Replay never sees the future</h3><span class="refs"><a class="xref" href="#fr-2">FR-2</a>, <a class="xref" href="#fr-5">FR-5</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">replay mode at simulated time T</div><div class="gwt-k">When</div><div class="gwt-v">aftershocks and stations are loaded</div><div class="gwt-k">Then</div><div class="gwt-v">no event with origin time after T appears in
+any input, and every download is in the cache with its URL and retrieval
+time.</div></div></article>
+<article class="ac" id="ac-3"><header><span class="rid">AC-3</span><h3>Candidates and backups are reachable</h3><span class="refs"><a class="xref" href="#fr-6">FR-6</a>, <a class="xref" href="#fr-7">FR-7</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">a candidate pool built for Ridgecrest</div><div class="gwt-k">When</div><div class="gwt-v">candidates and backups are generated</div><div class="gwt-k">Then</div><div class="gwt-v">every candidate is ≤ 1.5 km from a road, ≥ 6
+km from every permanent station and ≥ 3 km from the rupture trace, and
+every backup is ≤ 3 km from its candidate and passes the same
+filters.</div></div></article>
+<article class="ac" id="ac-4"><header><span class="rid">AC-4</span><h3>Team overrides are respected</h3><span class="refs"><a class="xref" href="#fr-9">FR-9</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">a config that excludes candidate point X and
+adds point Y</div><div class="gwt-k">When</div><div class="gwt-v">candidates are generated</div><div class="gwt-k">Then</div><div class="gwt-v">X never appears and Y is always among the 10
+candidates.</div></div></article>
+<article class="ac" id="ac-5"><header><span class="rid">AC-5</span><h3>Hamiltonian equals the objective exactly</h3><span class="refs"><a class="xref" href="#fr-10">FR-10</a>, <a class="xref" href="#fr-11">FR-11</a>, <a class="xref" href="#fr-12">FR-12</a>, <a class="xref" href="#fr-13">FR-13</a>, <a class="xref" href="#nfr-4">NFR-4</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">any instance, including one with λ_move &gt;
+0 and a current plan</div><div class="gwt-k">When</div><div class="gwt-v">the exact expansion and the SparsePauliOp are
+built</div><div class="gwt-k">Then</div><div class="gwt-v">for all 210 four-site networks the Hamiltonian
+energy equals −f/scale within 1e-9, and the largest coefficient
+magnitude is 1.</div></div></article>
+<article class="ac" id="ac-6"><header><span class="rid">AC-6</span><h3>Circuit never leaves 4-site networks</h3><span class="refs"><a class="xref" href="#fr-14">FR-14</a>, <a class="xref" href="#nfr-5">NFR-5</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">the p = 3 circuit with random angles</div><div class="gwt-k">When</div><div class="gwt-v">its statevector is computed</div><div class="gwt-k">Then</div><div class="gwt-v">the probability mass outside weight-4 states
+is below 1e-12.</div></div></article>
+<article class="ac" id="ac-7"><header><span class="rid">AC-7</span><h3>Higher per-shot success rate</h3><span class="refs"><a class="xref" href="#fr-15">FR-15</a>, <a class="xref" href="#fr-16">FR-16</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">the Ridgecrest instance and an angle library
+trained on the other benchmark earthquakes</div><div class="gwt-k">When</div><div class="gwt-v">QAOA runs with the CVaR objective at p =
+3</div><div class="gwt-k">Then</div><div class="gwt-v">P(opt) per shot is reported. Target: ≥ 20%,
+twice the proof-of-concept value. Missing the target is reported, not
+hidden, and does not fail the build.</div></div></article>
+<article class="ac" id="ac-8"><header><span class="rid">AC-8</span><h3>Sampling and logging</h3><span class="refs"><a class="xref" href="#fr-17">FR-17</a>, <a class="xref" href="#fr-18">FR-18</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">a finished QAOA optimisation</div><div class="gwt-k">When</div><div class="gwt-v">the agent samples and decides</div><div class="gwt-k">Then</div><div class="gwt-v">1,024 shots are drawn, the 10 most frequent
+networks are re-scored with f, and the log records p, evaluations,
+P(opt), chosen rank and runtime.</div></div></article>
+<article class="ac" id="ac-9"><header><span class="rid">AC-9</span><h3>Self-check falls back safely</h3><span class="refs"><a class="xref" href="#fr-20">FR-20</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">a quantum result that differs from the exact
+optimum</div><div class="gwt-k">When</div><div class="gwt-v">the self-check runs</div><div class="gwt-k">Then</div><div class="gwt-v">at most two retries occur (p + 2, then p + 4,
+each with 4,096 shots) and, if they still disagree, the published plan
+is the exact optimum with quantum_agreed = false.</div></div></article>
+<article class="ac" id="ac-10"><header><span class="rid">AC-10</span><h3>Plan outputs are complete</h3><span class="refs"><a class="xref" href="#fr-21">FR-21</a>, <a class="xref" href="#fr-22">FR-22</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">a completed plan</div><div class="gwt-k">When</div><div class="gwt-v">it is published</div><div class="gwt-k">Then</div><div class="gwt-v">plan.json validates against the Data Models
+schema, map.png and plan.txt exist, every site has a reason, risk and
+backups, and the confidence field is one of the four allowed
+values.</div></div></article>
+<article class="ac" id="ac-11"><header><span class="rid">AC-11</span><h3>Monitoring cadence</h3><span class="refs"><a class="xref" href="#fr-23">FR-23</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">a published plan in replay mode</div><div class="gwt-k">When</div><div class="gwt-v">72 simulated hours pass</div><div class="gwt-k">Then</div><div class="gwt-v">exactly 72 monitoring checks run, one per
+hour.</div></div></article>
+<article class="ac" id="ac-12"><header><span class="rid">AC-12</span><h3>Drift triggers a re-plan</h3><span class="refs"><a class="xref" href="#fr-24">FR-24</a>, <a class="xref" href="#fr-25">FR-25</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">a replay where the 6-hour aftershock centroid
+moves 8 km</div><div class="gwt-k">When</div><div class="gwt-v">the next monitoring check runs</div><div class="gwt-k">Then</div><div class="gwt-v">drift is declared and a re-plan is published
+with explicit move or stay instructions, priced with λ_move &gt; 0.</div></div></article>
+<article class="ac" id="ac-13"><header><span class="rid">AC-13</span><h3>T0 plan without real aftershocks</h3><span class="refs"><a class="xref" href="#fr-3">FR-3</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">replay at T0 + 5 min with no real aftershocks
+yet</div><div class="gwt-k">When</div><div class="gwt-v">the agent plans</div><div class="gwt-k">Then</div><div class="gwt-v">a T0 plan built from synthetic aftershocks is
+published.</div></div></article>
+<article class="ac" id="ac-14"><header><span class="rid">AC-14</span><h3>Memory is written and used</h3><span class="refs"><a class="xref" href="#fr-27">FR-27</a>, <a class="xref" href="#fr-28">FR-28</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">a finished replay sequence</div><div class="gwt-k">When</div><div class="gwt-v">the agent closes the sequence and a second
+sequence starts</div><div class="gwt-k">Then</div><div class="gwt-v">angles.json, model_weights.json and
+track_record.json contain the new entries, the weights sum to 1, and the
+second sequence's warm start reads them.</div></div></article>
+<article class="ac" id="ac-15"><header><span class="rid">AC-15</span><h3>Leave-one-out evaluation table</h3><span class="refs"><a class="xref" href="#fr-29">FR-29</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">the benchmark set</div><div class="gwt-k">When</div><div class="gwt-v">leave-one-out evaluation runs</div><div class="gwt-k">Then</div><div class="gwt-v">a table is produced with one row per
+earthquake and method, giving objective, rank among the 210 networks,
+and results of the three robustness tests in the Evaluation Plan.</div></div></article>
+<article class="ac" id="ac-16"><header><span class="rid">AC-16</span><h3>Honest gain over the expert rule</h3><span class="refs"><a class="xref" href="#fr-26">FR-26</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">the leave-one-out results</div><div class="gwt-k">When</div><div class="gwt-v">the evaluation report is generated</div><div class="gwt-k">Then</div><div class="gwt-v">it states the agent's mean gain over the
+expert rule in blur (km and %) with the per-earthquake spread, and a
+negative or negligible gain is reported as such.</div></div></article>
+<article class="ac" id="ac-17"><header><span class="rid">AC-17</span><h3>Cost of pre-selecting 10 candidates is measured</h3><span class="refs"><a class="xref" href="#fr-8">FR-8</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">any instance</div><div class="gwt-k">When</div><div class="gwt-v">the evaluation report is generated</div><div class="gwt-k">Then</div><div class="gwt-v">it states the gap between the best 4-site
+network among the 10 pre-selected candidates and the best over the whole
+pool (computed classically, offline, for this check only).</div></div></article>
+<article class="ac" id="ac-18"><header><span class="rid">AC-18</span><h3>Hardware demo is isolated</h3><span class="refs"><a class="xref" href="#fr-19">FR-19</a>, <a class="xref" href="#nfr-7">NFR-7</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">the IBM token environment variable is
+unset</div><div class="gwt-k">When</div><div class="gwt-v">quakenet hardware-demo runs</div><div class="gwt-k">Then</div><div class="gwt-v">it exits with a clear message, and no planning
+command ever calls the hardware.</div></div></article>
+<article class="ac" id="ac-19"><header><span class="rid">AC-19</span><h3>Plan within 5 minutes</h3><span class="refs"><a class="xref" href="#nfr-1">NFR-1</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">cached Ridgecrest data on the reference
+laptop</div><div class="gwt-k">When</div><div class="gwt-v">a full plan runs</div><div class="gwt-k">Then</div><div class="gwt-v">it completes in under 5 minutes and the timing
+is logged.</div></div></article>
+<article class="ac" id="ac-20"><header><span class="rid">AC-20</span><h3>Runs are reproducible</h3><span class="refs"><a class="xref" href="#nfr-2">NFR-2</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">two runs with the same seed, config and
+cache</div><div class="gwt-k">When</div><div class="gwt-v">both finish</div><div class="gwt-k">Then</div><div class="gwt-v">their plan.json files are identical except for
+timestamps.</div></div></article>
+<article class="ac" id="ac-21"><header><span class="rid">AC-21</span><h3>Tests run offline and fast</h3><span class="refs"><a class="xref" href="#nfr-6">NFR-6</a>, <a class="xref" href="#nfr-3">NFR-3</a></span></header><div class="gwt"><div class="gwt-k">Given</div><div class="gwt-v">network access disabled</div><div class="gwt-k">When</div><div class="gwt-v">the test suite runs</div><div class="gwt-k">Then</div><div class="gwt-v">all tests pass in under 60 s using cached
+data.</div></div></article>
+
+<h2 id="edge-cases">Edge Cases</h2>
+<ul>
+<li class="req" id="ec-1"><span class="rid">EC-1</span> USGS feed unreachable: retry per <a class="xref" href="#nfr-3">NFR-3</a>, log, and keep polling.
+No run starts without a confirmed event.</li>
+<li class="req" id="ec-2"><span class="rid">EC-2</span> No real aftershocks yet: use synthetic aftershocks (T0
+plan).</li>
+<li class="req" id="ec-3"><span class="rid">EC-3</span> Fewer than 30 real aftershocks: blend real and synthetic
+events.</li>
+<li class="req" id="ec-4"><span class="rid">EC-4</span> Epicentre offshore, or fewer than 10 reachable candidates:
+lower N to the number available (minimum 6) and state it in the plan.
+Below 6 candidates, publish "insufficient reachable sites" and
+stop.</li>
+<li class="req" id="ec-5"><span class="rid">EC-5</span> Overpass API unavailable: build candidates from the grid only,
+mark <code>feasibility_checked = false</code> and show a prominent
+warning in <code>plan.txt</code>.</li>
+<li class="req" id="ec-6"><span class="rid">EC-6</span> No focal mechanism available yet: generate synthetic
+aftershocks on both nodal planes. If there is still none, use a circular
+cloud with radius equal to half the rupture length.</li>
+<li class="req" id="ec-7"><span class="rid">EC-7</span> The mainshock magnitude is revised by USGS: if the change is ≥
+0.3, re-run from step 2.</li>
+<li class="req" id="ec-8"><span class="rid">EC-8</span> A second qualifying event within radius R during monitoring:
+merge it into the same sequence and declare drift.</li>
+<li class="req" id="ec-9"><span class="rid">EC-9</span> Quantum step disagrees after retries: handled by <a class="xref" href="#fr-20">FR-20</a>.</li>
+<li class="req" id="ec-10"><span class="rid">EC-10</span> Memory empty (first ever run): random restarts, equal model
+weights, confidence "unrated".</li>
+<li class="req" id="ec-11"><span class="rid">EC-11</span> A requested k ≥ N, or k &lt; 1: reject with a clear error
+message.</li>
+</ul>
+
+<h2 id="api-contracts">API Contracts</h2>
+<p>QuakeNet-Q is a command-line agent, not a web service, so there are
+no HTTP endpoints. Its contracts are the CLI commands, the Python module
+interfaces and the plan file format.</p>
+<h3 id="command-line">Command line</h3>
+<pre><code>quakenet live                         # poll USGS feed, act on qualifying events
+quakenet replay &lt;event_id&gt; [--until ISO_TIME] [--hours 72]
+quakenet plan &lt;event_id&gt; --at ISO_TIME          # single plan, no monitoring
+quakenet evaluate --leave-one-out               # FR-29
+quakenet hardware-demo                          # FR-19, optional</code></pre>
+<h3 id="module-interfaces-python-typed">Module interfaces (Python,
+typed)</h3>
+<pre class="python"><code>class EventSource(Protocol):
+    def new_events(self, since: datetime) -&gt; list[Mainshock]: ...
+    def aftershocks(self, ev: Mainshock, until: datetime) -&gt; list[Hypocentre]: ...
+    def stations(self, ev: Mainshock) -&gt; list[Station]: ...
+
+def build_candidates(ev: Mainshock, quakes: list[Hypocentre], stations: list[Station],
+                     cfg: CandidateConfig) -&gt; list[Candidate]: ...           # FR-6..9
+def objective_terms(cands: list[Candidate], quakes: list[Hypocentre], stations: list[Station],
+                    models: list[VelocityModel], weights: list[float],
+                    current: tuple[int, ...] | None, cfg: ObjectiveConfig) -&gt; Expansion: ...   # FR-10..12
+def to_hamiltonian(exp: Expansion) -&gt; tuple[SparsePauliOp, float]: ...       # FR-13
+def quantum_choose(h: SparsePauliOp, n: int, k: int, warm: AngleSet | None,
+                   cfg: QaoaConfig) -&gt; QuantumResult: ...                     # FR-14..18
+def self_check(exp: Expansion, q: QuantumResult, cfg: QaoaConfig) -&gt; Decision: ...  # FR-20
+def publish(plan: Plan, out_dir: Path) -&gt; None: ...                           # FR-21
+def detect_drift(plan: Plan, new_quakes: list[Hypocentre]) -&gt; DriftReport: ...  # FR-24</code></pre>
+<h3 id="error-contract">Error contract</h3>
+<p>All public functions raise
+<code>QuakeNetError(code: str, message: str)</code>. The codes are:
+<code>FEED_UNAVAILABLE</code>, <code>NO_STATIONS</code>,
+<code>INSUFFICIENT_SITES</code>, <code>INVALID_K</code>,
+<code>CACHE_MISS</code>.</p>
+
+<h2 id="data-models">Data Models</h2>
+<p><strong>Plan</strong> (<code>plan.json</code>)</p>
+<div class="table-wrap" role="region" tabindex="0" aria-label="Plan"><table aria-label="Plan">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Constraint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>event_id</td>
+<td>str</td>
+<td>USGS id</td>
+</tr>
+<tr>
+<td>stage</td>
+<td>str</td>
+<td>"T0", "hourly" or "replan"</td>
+</tr>
+<tr>
+<td>created_utc</td>
+<td>str</td>
+<td>ISO 8601</td>
+</tr>
+<tr>
+<td>sites</td>
+<td>list[Site]</td>
+<td>length = k</td>
+</tr>
+<tr>
+<td>moves</td>
+<td>list[{from: int, to: int}]</td>
+<td>empty unless stage = "replan"</td>
+</tr>
+<tr>
+<td>objective</td>
+<td>float</td>
+<td>value of f</td>
+</tr>
+<tr>
+<td>exact_rank</td>
+<td>int</td>
+<td>1 = optimum</td>
+</tr>
+<tr>
+<td>quantum_agreed</td>
+<td>bool</td>
+<td><a class="xref" href="#fr-20">FR-20</a></td>
+</tr>
+<tr>
+<td>p_opt_per_shot</td>
+<td>float</td>
+<td>0 to 1</td>
+</tr>
+<tr>
+<td>expected_blur_km</td>
+<td>float</td>
+<td>&gt; 0</td>
+</tr>
+<tr>
+<td>expert_rule_blur_km</td>
+<td>float</td>
+<td>&gt; 0</td>
+</tr>
+<tr>
+<td>confidence</td>
+<td>str</td>
+<td>"high", "medium", "low" or "unrated"</td>
+</tr>
+<tr>
+<td>feasibility_checked</td>
+<td>bool</td>
+<td><a class="xref" href="#ec-5">EC-5</a></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Site:</strong> id, lat, lon, reason (str), single_gain
+(float), risk (0–1), backups (list of {lat, lon}).</p>
+<p><strong>Memory</strong> (<code>memory/*.json</code>)</p>
+<div class="table-wrap" role="region" tabindex="0" aria-label="Memory"><table aria-label="Memory">
+<thead>
+<tr>
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>angles.json</td>
+<td>{"N-k-p": list of optimal (γ, β) vectors}</td>
+</tr>
+<tr>
+<td>model_weights.json</td>
+<td>{model_name: weight}, summing to 1</td>
+</tr>
+<tr>
+<td>track_record.json</td>
+<td>list of {event_id, stage, predicted_score, realised_score}</td>
+</tr>
+</tbody>
+</table></div>
+
+<h2 id="evaluation-plan">Evaluation Plan</h2>
+<h3
+id="benchmark-earthquakes-to-be-confirmed-by-a-data-quality-check-r-2">Benchmark
+earthquakes (to be confirmed by a data-quality check, R-2)</h3>
+<div class="table-wrap" role="region" tabindex="0" aria-label="Benchmark earthquakes (to be confirmed by a data-quality check, R-2)"><table aria-label="Benchmark earthquakes (to be confirmed by a data-quality check, R-2)">
+<thead>
+<tr>
+<th>Earthquake</th>
+<th>M</th>
+<th>Region</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ridgecrest 2019</td>
+<td>7.1</td>
+<td>California</td>
+<td>Proof-of-concept case; known USGS rapid deployment</td>
+</tr>
+<tr>
+<td>South Napa 2014</td>
+<td>6.0</td>
+<td>California</td>
+<td>Dense network, different fault style</td>
+</tr>
+<tr>
+<td>Monte Cristo Range 2020</td>
+<td>6.5</td>
+<td>Nevada</td>
+<td>Sparse network, which is where scarcity matters</td>
+</tr>
+<tr>
+<td>Anchorage 2018</td>
+<td>7.1</td>
+<td>Alaska</td>
+<td>Deep event, different geometry</td>
+</tr>
+<tr>
+<td>Ferndale 2022</td>
+<td>6.4</td>
+<td>California</td>
+<td>Near the coast, with limited reachable land</td>
+</tr>
+<tr>
+<td>Puerto Rico 2020</td>
+<td>6.4</td>
+<td>Caribbean</td>
+<td>Island setting, different network</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="robustness-tests-used-in-the-evaluation-ac-15">Robustness tests
+used in the evaluation (AC-15)</h3>
+<ol type="1">
+<li><strong>Held-out aftershocks:</strong> blur measured on aftershocks
+after the planning time.</li>
+<li><strong>Model mismatch:</strong> travel times generated with a
+layered regional model plus 0.1 s noise, then located with the agent's
+ensemble using the chosen network. The measured error is reported in km.
+This is the closest test to "real" error possible for stations that were
+never installed.</li>
+<li><strong>Real deployment comparison</strong> (where station metadata
+exist, <a class="xref" href="#r-3">R-3</a>): the agent's network against the stations the field team
+actually installed, both scored on the same held-out aftershocks.</li>
+</ol>
+
+<h2 id="out-of-scope">Out of Scope</h2>
+<ul>
+<li class="req" id="os-1"><span class="rid">OS-1</span> Placing large nodal arrays (hundreds of sensors). The agent
+targets the first k ≤ 6 real-time instruments.</li>
+<li class="req" id="os-2"><span class="rid">OS-2</span> Processing seismometer data (picking, locating with real
+waveforms). Existing ML pickers do this.</li>
+<li class="req" id="os-3"><span class="rid">OS-3</span> Goals other than location accuracy: fault imaging,
+strong-motion recording, site response.</li>
+<li class="req" id="os-4"><span class="rid">OS-4</span> Field logistics: travel routing, crew scheduling,
+permits.</li>
+<li class="req" id="os-5"><span class="rid">OS-5</span> Claims of quantum speedup, or quantum hardware at planning
+scale. Hardware appears only as the <a class="xref" href="#fr-19">FR-19</a> demonstration.</li>
+<li class="req" id="os-6"><span class="rid">OS-6</span> Notifying real agencies. Outputs are files in this
+repository.</li>
+<li class="req" id="os-7"><span class="rid">OS-7</span> Earthquakes outside regions covered by USGS ComCat at M ≥
+2.5.</li>
+</ul>
+
+<h2 id="architecture">Architecture</h2>
+<p><strong>Style: modular monolith in one Python package
+(<code>quakenet/</code>).</strong> A small team, one runtime and a
+batch-style loop do not justify services. Every module is pure and
+testable except <code>sources</code> (network) and <code>memory</code>
+(files), which sit behind interfaces so replay and tests can substitute
+cached versions.</p>
+<div class="table-wrap" role="region" tabindex="0" aria-label="Style: modular monolith in one Python package (quakenet/)."><table aria-label="Style: modular monolith in one Python package (quakenet/).">
+<thead>
+<tr>
+<th>Module</th>
+<th>Responsibility</th>
+<th>Depends on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sources</code></td>
+<td>USGS feed, ComCat, FDSN stations, Overpass; caching</td>
+<td>network, cache</td>
+</tr>
+<tr>
+<td><code>synthetic</code></td>
+<td>Aftershock generation from the mainshock (Wells &amp; Coppersmith
+1994 rupture length, focal planes)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>candidates</code></td>
+<td>Pool, filters, backups, spread selection</td>
+<td>sources (roads)</td>
+</tr>
+<tr>
+<td><code>physics</code></td>
+<td>Velocity models, Fisher matrices, blur</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>objective</code></td>
+<td>Exact expansion of f</td>
+<td>physics</td>
+</tr>
+<tr>
+<td><code>quantum</code></td>
+<td>Dicke state, XY mixer, cost layer, CVaR-COBYLA, sampling (Qiskit
+only here)</td>
+<td>objective</td>
+</tr>
+<tr>
+<td><code>baselines</code></td>
+<td>Exact, greedy, annealing, expert rule</td>
+<td>objective</td>
+</tr>
+<tr>
+<td><code>agent</code></td>
+<td>Orchestrates stages, self-check, drift, re-plan</td>
+<td>all above</td>
+</tr>
+<tr>
+<td><code>memory</code></td>
+<td>Angle library, model weights, track record</td>
+<td>files</td>
+</tr>
+<tr>
+<td><code>report</code></td>
+<td>plan.json, map.png, plan.txt, evaluation tables</td>
+<td>agent outputs</td>
+</tr>
+<tr>
+<td><code>cli</code></td>
+<td>Commands in API Contracts</td>
+<td>agent</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Boundary conditions.</strong> This design holds while N ≤ 12
+(exact enumeration and exact expansion stay cheap). Above that, the
+exact expansion grows combinatorially, so the objective must fall back
+to second- or third-order terms, and the self-check must use classical
+heuristics instead of enumeration. The <code>objective</code> and
+<code>self_check</code> interfaces are designed to allow that change
+without touching the <code>quantum</code> or <code>agent</code>
+modules.</p>
+<p><strong>Trade-offs accepted.</strong></p>
+<ul>
+<li>Statevector simulation limits N to about 25.</li>
+<li>A deeper cost layer, with 4-body terms, makes hardware execution
+unrealistic.</li>
+<li>The pre-selection to 10 candidates is classical, and its effect is
+measured (<a class="xref" href="#ac-17">AC-17</a>) instead of assumed away.</li>
+</ul>
+
+<h2 id="risks-and-open-checks">Risks and Open Checks</h2>
+<ul>
+<li class="req" id="r-1"><span class="rid">R-1</span> Verify what the AuScope Network Design App and SN-CAST can do
+(inputs, live data, automation) before claiming the gap. This affects
+the problem statement.</li>
+<li class="req" id="r-2"><span class="rid">R-2</span> Confirm that each benchmark earthquake has enough M ≥ 2.5
+aftershocks in the first 12 h and accessible station metadata. Replace
+any that fail.</li>
+<li class="req" id="r-3"><span class="rid">R-3</span> Find station metadata for real temporary deployments (for
+example, the USGS Ridgecrest 2019 network). Without it, robustness test
+3 is dropped and the report says so.</li>
+<li class="req" id="r-4"><span class="rid">R-4</span> Verify that USGS event pages provide focal mechanisms quickly
+enough for T0 plans. Otherwise <a class="xref" href="#ec-6">EC-6</a> applies.</li>
+<li class="req" id="r-5"><span class="rid">R-5</span> Verify the claim that nodal sensors typically do not transmit
+in real time, with sources, before it appears in the pitch.</li>
+<li class="req" id="r-6"><span class="rid">R-6</span> CVaR plus warm start may not reach the 20% P(opt) target. The
+report states whatever is achieved.</li>
+</ul>
+
+<h2 id="references">References</h2>
+<ul>
+<li>Bärtschi &amp; Eidenbenz (2019), deterministic Dicke-state
+preparation, FCT 2019.</li>
+<li>Barkoutsos et al. (2020), "Improving Variational Quantum
+Optimization using CVaR", <em>Quantum</em> 4, 256.</li>
+<li>Cochran et al. (2020), <em>SRL</em> 91, 1952–1960.</li>
+<li>Hadfield et al. (2019), <em>Algorithms</em> 12(2), 34.</li>
+<li>Hardt &amp; Scherbaum (1994), <em>GJI</em> 117(3), 716–726.</li>
+<li>Kijko (1977), <em>Pure Appl. Geophys.</em> 115, 999–1009.</li>
+<li>Rabinowitz &amp; Steinberg (1990), <em>BSSA</em> 80(1),
+187–196.</li>
+<li>Toledo et al. (2020), <em>JVGR</em> 391, 106433.</li>
+<li>Wells &amp; Coppersmith (1994), <em>BSSA</em> 84(4), 974–1002.</li>
+<li>Further sources:
+<code>research/seismo-placement/sources/</code>.</li>
+</ul>
+
+  </main>
+</div>
+<footer class="doc">Generated from <code>2026-11-12-quakenet-q-agent-design.md</code> by <code>docs/specs/build_spec_html.py</code>. The markdown file is the source of truth.</footer>
+<script>
+// highlight the contents entry for the section in view (enhancement only)
+const links = [...document.querySelectorAll('nav.toc a')];
+const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { links.forEach(a => a.classList.remove('on')); map.get(e.target.id)?.classList.add('on'); }
+}), { rootMargin: '0px 0px -75% 0px' });
+document.querySelectorAll('main > h2[id]').forEach(h => io.observe(h));
+</script>
+</body>
+</html>
