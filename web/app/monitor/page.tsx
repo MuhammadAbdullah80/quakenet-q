@@ -20,8 +20,8 @@ export default function MonitorPage({ searchParams }: PageProps) {
     <>
       <h1>Monitor</h1>
       <p className="lede">
-        The agent&apos;s run on one earthquake over time: a first plan, then regular checks as new
-        aftershocks arrive, with a re-plan when they drift away from what the plan expected.
+        Press Play to watch the first day unfold: aftershocks arrive hour by hour, the agent checks
+        its plan, and an arrow shows any sensor it moves.
       </p>
       <Suspense fallback={<Loading label="Loading the monitor" />}>
         <MonitorContent searchParams={searchParams} />

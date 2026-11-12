@@ -16,9 +16,8 @@ export default function ScoringPage({ searchParams }: PageProps) {
     <>
       <h1>Scoring</h1>
       <p className="lede">
-        Every possible network of sites gets an objective: its information score minus the risk
-        weight (lam) times its access risk. Higher is better. The fidelity table shows how closely
-        simplified forms of the objective follow the exact one.
+        Each choice of 4 sites gets one score: how sharply it would locate aftershocks, minus a
+        penalty for risky sites. Higher is better. Below are the best choices.
       </p>
       <Suspense fallback={<Loading label="Loading scores" />}>
         <ScoringContent searchParams={searchParams} />

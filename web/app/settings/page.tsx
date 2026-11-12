@@ -14,8 +14,8 @@ export default function SettingsPage() {
     <>
       <h1>Settings</h1>
       <p className="lede">
-        The values the agent works with. Each field shows the range the backend allows. Saving needs
-        the team passcode; reading does not.
+        The numbers the agent works with, such as the earthquake size that starts it. Anyone can
+        read them; saving changes needs the team passcode.
       </p>
       <Suspense fallback={<Loading label="Loading the settings" />}>
         <SettingsContent />

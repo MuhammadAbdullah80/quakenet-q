@@ -1,5 +1,6 @@
 import { ViewTransition, type ReactNode } from "react";
 import { PageTrace } from "@/components/PageTrace";
+import { StepStrip } from "@/components/StepStrip";
 
 // A template remounts on every navigation, so each page enters and leaves through this boundary.
 // The nav marks a move to a later step as "nav-forward" and an earlier one as "nav-back" (the
@@ -12,6 +13,7 @@ export default function Template({ children }: { children: ReactNode }) {
       default="none"
     >
       <div className="page">
+        <StepStrip />
         <PageTrace />
         {children}
       </div>

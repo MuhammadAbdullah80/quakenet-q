@@ -26,8 +26,8 @@ export default function PlanPage({ searchParams }: PageProps) {
     <>
       <h1>Plan</h1>
       <p className="lede">
-        The agent&apos;s latest plan for an earthquake: where each sensor goes and why, which
-        sensors move, and how far the plan can be trusted.
+        Where each sensor goes, why that spot was chosen, and how far the plan can be trusted.
+        Backup spots are nearby places to use if a site turns out to be blocked.
       </p>
       <Suspense fallback={<Loading label="Loading the plan" />}>
         <PlanContent searchParams={searchParams} />

@@ -15,8 +15,8 @@ export default function SelfCheckPage({ searchParams }: PageProps) {
     <>
       <h1>Self-check</h1>
       <p className="lede">
-        The quantum choice next to the exact optimum and the classical methods. Rank 1 is the best
-        possible network. Location error is the mean error, in km, when locating later aftershocks.
+        Here the quantum answer sits next to the exact best answer and simpler methods. The chart
+        shows how far off each choice would be when locating later aftershocks.
       </p>
       <Suspense fallback={<Loading label="Loading the comparison" />}>
         <SelfCheckContent searchParams={searchParams} />

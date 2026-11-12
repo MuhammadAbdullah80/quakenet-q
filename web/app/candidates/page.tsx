@@ -17,9 +17,8 @@ export default function CandidatesPage({ searchParams }: PageProps) {
     <>
       <h1>Candidates</h1>
       <p className="lede">
-        The candidate sites for portable seismometers, with the aftershocks and permanent stations
-        around them. Coordinates are kilometres in a local grid (x east, y north). Risk is the
-        access risk of a site.
+        The map shows the aftershocks recorded so far, the sensors that were already there, and the
+        ten candidate sites. Darker sites are harder or riskier to reach.
       </p>
       <Suspense fallback={<Loading label="Loading candidate sites" />}>
         <CandidatesContent searchParams={searchParams} />
@@ -55,11 +54,11 @@ async function CandidatesContent({ searchParams }: PageProps) {
           ) : null}
           <dl className="kpis">
             <div>
-              <dt>Candidate sites (n)</dt>
+              <dt>Candidate sites</dt>
               <dd>{data.n}</dd>
             </div>
             <div>
-              <dt>Sensors to place (k)</dt>
+              <dt>Sensors to place</dt>
               <dd>{data.k}</dd>
             </div>
             <div>

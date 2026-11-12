@@ -123,7 +123,7 @@ export function QuakeGlobe({
         size / 2,
         size * 0.52,
       );
-      const darkBase = document.documentElement.dataset.theme !== "light";
+      const darkBase = document.documentElement.dataset.theme === "dark";
       glow.addColorStop(0, darkBase ? "rgba(198, 243, 92, 0.10)" : "rgba(16, 41, 26, 0.18)");
       glow.addColorStop(1, darkBase ? "rgba(198, 243, 92, 0)" : "rgba(16, 41, 26, 0)");
       ctx.fillStyle = glow;

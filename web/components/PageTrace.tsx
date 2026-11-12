@@ -73,7 +73,8 @@ export function PageTrace() {
     const draw = (t: number) => {
       ctx.clearRect(0, 0, w, h);
       // Ink follows the theme: light lines on the dark green base, dark lines on the light one.
-      const rgb = document.documentElement.dataset.theme === "light" ? "16, 41, 26" : "232, 239, 233";
+      const rgb =
+        document.documentElement.dataset.theme === "dark" ? "232, 239, 233" : "16, 41, 26";
       const mid = h * 0.56;
       const amp = h * 0.36;
       const n = trace.length;

@@ -16,9 +16,8 @@ export default function FeedPage() {
     <>
       <h1>Live feed</h1>
       <p className="lede">
-        Real earthquakes of magnitude 2.5 and above from the past 24 hours, from the USGS live feed,
-        with what the agent did or would do with each one. The backend refreshes the feed at most
-        once a minute.
+        Every earthquake of magnitude 2.5 or more in the last 24 hours, straight from the U.S.
+        Geological Survey. Only a big one (the trigger size) would start the agent.
       </p>
       <Suspense fallback={<Loading label="Loading the live feed" />}>
         <FeedContent />

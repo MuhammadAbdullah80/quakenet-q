@@ -15,8 +15,8 @@ export default function EventsPage() {
     <>
       <h1>Events</h1>
       <p className="lede">
-        The earthquakes the backend can plan for: past benchmark earthquakes and, once the agent has
-        started on them, live ones from the USGS feed. Pick one to open its candidate sites.
+        Each earthquake here comes with its real aftershocks and ten places a sensor could go. The
+        globe shows where they struck; pick one in the list to follow it through the steps.
       </p>
       <Suspense fallback={<Loading label="Loading earthquakes" />}>
         <EventsContent />

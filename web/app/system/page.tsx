@@ -14,7 +14,8 @@ export default function SystemPage() {
     <>
       <h1>System</h1>
       <p className="lede">
-        Backend health, job counters, the external data sources it has cached, and recent jobs.
+        A quick health check: is the backend running, how many jobs have run, and where the data
+        comes from.
       </p>
       <Suspense fallback={<Loading label="Checking the backend" />}>
         <SystemContent />
