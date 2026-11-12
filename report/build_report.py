@@ -35,7 +35,7 @@ OUT = ROOT / "report" / "QuakeNet-Q_Report.docx"
 
 TEAM = ["Muhammad Abdullah", "Muhammad Hassaan-ul-Mustafa", "Rafia Ali"]
 REPO = "https://github.com/MuhammadAbdullah80/quakenet-q"
-CONSOLE = "https://quakenet-q.vercel.app"
+CONSOLE = "https://quakenet-q.vercel.app/"
 
 # ---------------------------------------------------------------------------- palette and type
 NAVY, TEAL, INK, MUTED = "1F3864", "2E75B6", "1F2933", "5A6570"
@@ -200,6 +200,20 @@ def bullets(items, style="List Bullet"):
         rich(doc.add_paragraph(style=style), it)
 
 
+def hyperlink(p, url: str, text: str | None = None):
+    """Adds a clickable external link to p."""
+    rid = p.part.relate_to(url, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+                           is_external=True)
+    h = OxmlElement("w:hyperlink"); h.set(qn("r:id"), rid); h.set(qn("w:history"), "1")
+    r = OxmlElement("w:r"); rpr = OxmlElement("w:rPr")
+    c = OxmlElement("w:color"); c.set(qn("w:val"), "0563C1"); rpr.append(c)
+    u = OxmlElement("w:u"); u.set(qn("w:val"), "single"); rpr.append(u)
+    r.append(rpr)
+    t = OxmlElement("w:t"); t.text = text or url; r.append(t)
+    h.append(r); p._p.append(h)
+    return p
+
+
 def caption(kind: str, text: str):
     COUNT[kind] += 1
     p = doc.add_paragraph(style="Caption QN")
@@ -356,7 +370,7 @@ cover = [("Domain", "Disaster Response"),
          ("Data", "Real USGS aftershock catalogues and IRIS station lists; six earthquakes"),
          ("Code", REPO),
          ("Live console", CONSOLE),
-         ("Date", date(2026, 11, 12).strftime("%d %B %Y"))]
+         ("Date", date(2026, 11, 13).strftime("%d %B %Y"))]
 t = doc.add_table(rows=0, cols=2)
 cell_margins(t, 50, 50, 0, 100)
 for k, v in cover:
@@ -365,7 +379,15 @@ for k, v in cover:
     for c in row:
         cell_borders(c, top=None, bottom=(4, RULE), left=None, right=None)
     r = row[0].paragraphs[0].add_run(k.upper()); r.bold = True; r.font.size = Pt(8.5); r.font.color.rgb = rgb(MUTED)
-    r = row[1].paragraphs[0].add_run(v); r.font.size = Pt(10.5)
+    if k == "Live console":
+        hyperlink(row[1].paragraphs[0], v)
+        np_ = row[1].add_paragraph()
+        np_.paragraph_format.space_before = Pt(2)
+        r = np_.add_run("Frontend hosted on Vercel. The backend runs on the team laptop: if the site does not work, "
+                         "the laptop is switched off.")
+        r.italic = True; r.font.size = Pt(8.5); r.font.color.rgb = rgb(MUTED)
+    else:
+        r = row[1].paragraphs[0].add_run(v); r.font.size = Pt(10.5)
     for c in row:
         c.paragraphs[0].paragraph_format.space_after = Pt(0)
 for _ in range(6):
@@ -697,7 +719,17 @@ bullets([
     "HTTPS without opening ports; every request needs a shared bearer token.",
     "The console on Vercel calls the backend from the server only, so the token never reaches a browser. Any change "
     "(settings, starting a run) needs a passcode, checked in an HTTP-only cookie with same-origin checks.",
-    "Secrets live in environment variables only and are never committed. With the laptop off, the console shows saved results.",
+    "Secrets live in environment variables only and are never committed.",
+])
+p = doc.add_paragraph(style="List Bullet")
+rich(p, "**Where the frontend lives.** The web console is hosted on Vercel at ")
+hyperlink(p, CONSOLE)
+rich(p, ". Anyone can open it; reading results needs no login.")
+bullets([
+    "**If the frontend is not working, the laptop is off.** Vercel only hosts the pages; every live calculation "
+    "(the agent, the QAOA runs, the replays) happens on the team laptop. If the site does not load its live data, "
+    "cannot start a run, or shows an offline notice with saved results, the laptop is switched off or not connected. "
+    "This is not a fault in the code: the live features return as soon as the laptop is on again.",
 ])
 
 # ============================================================================ 6 agent
