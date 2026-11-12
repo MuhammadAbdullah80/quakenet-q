@@ -15,10 +15,10 @@ Last updated: 2026-11-12
 | Live mode (watching the USGS feed) | ✅ Built, off by default; tested with a fake feed only |
 | Web API v1 + v2 (FastAPI, on the team laptop) | ✅ Built, 303 tests pass |
 | Next.js console with agent pages (Vercel) | ✅ Built: Settings, Live feed, Plan, Monitor, Memory, Noise study |
-| Redesigned landing page and guide page | ⏳ Handed to the frontend developer (`docs/FRONTEND_BRIEF.md`) |
-| Report and README | ⏳ Ridgecrest results updated; agent and benchmark sections added |
+| Frontend look, landing and guide page | Frontend developer's work (`docs/FRONTEND_BRIEF.md`) |
+| Report, README, video script | ✅ Updated with the agent and the benchmarks |
 | Video | ❌ Not recorded |
-| Spec v2 | ⏳ Not rewritten; `docs/API.md` and `docs/DECISIONS.md` record what changed |
+| Spec v2 | ✅ "Version 2: what was built" section with a status for every requirement; HTML rebuilt |
 
 ## Measured results
 
@@ -48,11 +48,9 @@ Last updated: 2026-11-12
 
 ## Next steps, in order
 
-1. Look at the console pages in a browser (not done yet; only checked as HTML).
-2. Decide what to say about the expert-rule result in the pitch. Suggested: the agent's value is speed,
+1. Decide what to say about the expert-rule result in the pitch. Suggested: the agent's value is speed,
    automation and re-planning; the score itself is not yet better than a field rule on most earthquakes.
-3. Rewrite the spec as v2 and rebuild its HTML.
-4. Record the video (`VIDEO_SCRIPT.md`), add the team name to the report, make the repo visible to judges, submit.
+2. Record the video (`VIDEO_SCRIPT.md`), add the team name to the report, make the repo visible to judges, submit.
 
 ## Risks to watch
 

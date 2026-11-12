@@ -1,10 +1,71 @@
 # QuakeNet-Q Agent: Design Specification
 
-**Status:** Draft, awaiting team approval  
+**Status:** Version 2, as built. Approved by the team; this version records what was built and measured  
 **Date:** 2026-11-12  
 **Author:** QuakeNet-Q team (drafted with Claude Code)  
 **Reviewers:** All team members  
 **Supersedes:** The single-run proof of concept in commit `d34e328`
+
+---
+
+## Version 2: what was built
+
+Version 1 of this document was the design. The team approved it with eight technique changes
+(`docs/DECISIONS.md`, decisions 12 to 18), two system changes (a web API and a test console, decisions
+21 and 25) and one removal (no AI or LLM features, decision 23). This section says what exists now.
+Where the rest of the document and this section disagree, this section and `docs/API.md` win.
+
+### How it runs
+
+- **Backend:** a FastAPI service on the team laptop (`api/`), bound to 127.0.0.1 and reached through a
+  Tailscale Funnel tunnel with a shared bearer token. The agent (`src/agent/`) runs inside it.
+- **Frontend:** a Next.js test console on Vercel (`web/`), one page per module. The browser never calls
+  the backend; the passcode protects every change. With the laptop off it shows saved results.
+- **No command-line agent.** The commands in "API Contracts" became web endpoints, listed in
+  `docs/API.md`. The experiments are scripts: `run_experiment.py` and `run_benchmarks.py`.
+
+### Requirement status
+
+| Requirement | Status |
+|---|---|
+| FR-1 Live feed | Built. Reads the USGS 2.5_day feed at most once a minute. Live mode is off by default and has been tested only with a recorded feed. The trigger magnitude is a setting a scientist can change (3.0 to 9.0) |
+| FR-2 Replay | Built. Simulated clock; tests check that no later data is used |
+| FR-3 Aftershocks, T0 plan | Built. Synthetic aftershocks (Wells & Coppersmith rupture length, Gutenberg-Richter magnitudes) when fewer than 30 real ones exist |
+| FR-4, FR-5 Stations, cache | Built, through one outbound gateway (`src/sources.py`) |
+| FR-6, FR-7 Candidate pool, backups | Built. Road check worked for all six benchmarks after one retry |
+| FR-8 Spread selection | Built. Ridgecrest keeps the 10 published sites so results stay comparable |
+| FR-9 Team overrides | **Not built** |
+| FR-10 Velocity ensemble | Built (three uniform models, 5.5, 6.0 and 6.5 km/s) |
+| FR-11 to FR-13 Exact objective | Built. 385 terms, zero error on all 210 networks |
+| FR-14 QAOA, Dicke + XY | Built |
+| FR-15, FR-16 CVaR, warm start | Built, alpha = 0.1. During tuning the circuit's output comes from an exact simulator of the same circuit, checked against Qiskit's Statevector (decision 29) |
+| FR-17, FR-18 Sampling, logging | Built. 1,024 shots on Qiskit's StatevectorSampler |
+| FR-19 Hardware demo | **Replaced** by a simulated gate-noise study (`src/noise.py`, page "Noise study"). No hardware access |
+| FR-20 Self-check | Built. Two retries with more layers and shots, then the exact optimum is published and flagged |
+| FR-21, FR-22 Plan, confidence | Built. Errors are relative to the predicted information gain (decision 30) |
+| FR-23 to FR-25 Monitoring, drift, re-plan | Built. Interval, duration and thresholds are settings |
+| FR-26 Reference strategies | **Partly built.** Each plan reports the expert rule; greedy and annealing are compared in the experiment and benchmark scripts |
+| FR-27, FR-28 Memory | Built. The velocity weights stay equal in practice: without measured arrival times the models cannot be told apart |
+| FR-29 Leave-one-out | **Partly built.** `run_benchmarks.py` warm-starts each earthquake from the angles of the other ones; there is no full replay loop |
+| NFR-1 Plan within 5 minutes | Met. A plan takes seconds; a 24-hour replay about 20 seconds |
+| NFR-2 to NFR-8 | Met. 303 tests run offline in about 45 s |
+| Hearing range (decision 16) | Built, opt-in, with assumed constants (decision 26) |
+| DN score (decision 18) | In the experiment only; the planner uses the D-criterion |
+| NMC check (decision 17) | **Not built** |
+
+### What was measured
+
+- Ridgecrest: QAOA's final pick was the exact optimum in 15 of 15 runs. Chance per measurement 5.1% to
+  11.0% for 1 to 3 layers. Simulated location error 3.00 km with no new sensors, 2.63 km expert rule,
+  2.31 km our pick.
+- Five benchmark earthquakes: CVaR made the final pick exact in 14 of 15 runs (8 of 15 without). The
+  20% target (AC-7) was missed in all runs.
+- **AC-16:** the best-scoring network beat the expert rule on 1 of 5 earthquakes in the simulated
+  location test (Ridgecrest, 2.4%); on Puerto Rico it was 15.8% worse. The D-criterion does not always
+  predict location error.
+
+Sources: `results/results.json`, `results/benchmarks.json`,
+`research/benchmarks/2026-11-12_benchmark_results.md`.
 
 ---
 
@@ -390,7 +451,7 @@ the exact optimum (step 6). How often the quantum step alone finds the optimum i
 
 ## API Contracts
 
-QuakeNet-Q is a command-line agent, not a web service, so there are no HTTP endpoints. Its contracts are the CLI commands, the Python module interfaces and the plan file format.
+**Version 2:** the agent runs behind a web API; the endpoints, JSON shapes, error codes and the fixed internal interfaces are in `docs/API.md`, which replaces the command line and module sketches below. They are kept as the original design.
 
 ### Command line
 
@@ -495,12 +556,14 @@ All public functions raise `QuakeNetError(code: str, message: str)`. The codes a
 - OS-4: Field logistics: travel routing, crew scheduling, permits.
 - OS-5: Claims of quantum speedup, or quantum hardware at planning scale. Hardware appears only as the
   FR-19 demonstration.
-- OS-6: Notifying real agencies. Outputs are files in this repository.
+- OS-6: Notifying real agencies. Outputs are shown on the team's web console and stored on the team laptop.
 - OS-7: Earthquakes outside regions covered by USGS ComCat at M ≥ 2.5.
 
 ---
 
 ## Architecture
+
+**Version 2:** the same modular monolith, laid out as `src/` (science), `src/agent/` (the agent), `api/` (FastAPI) and `web/` (Next.js console). `docs/ARCHITECTURE.md` describes hosting and security.
 
 **Style: modular monolith in one Python package (`quakenet/`).** A small team, one runtime and a
 batch-style loop do not justify services. Every module is pure and testable except `sources`
@@ -538,9 +601,9 @@ The `objective` and `self_check` interfaces are designed to allow that change wi
 ## Risks and Open Checks
 
 - R-1: Verify what the AuScope Network Design App and SN-CAST can do (inputs, live data, automation)
-  before claiming the gap. This affects the problem statement.
+  before claiming the gap. This affects the problem statement. **Done; problem statement changed (decision 11).**
 - R-2: Confirm that each benchmark earthquake has enough M ≥ 2.5 aftershocks in the first 12 h and
-  accessible station metadata. Replace any that fail.
+  accessible station metadata. Replace any that fail. **Done; South Napa 2014 has too few later aftershocks and is skipped.**
 - R-3: Find station metadata for real temporary deployments (for example, the USGS Ridgecrest 2019
   network). Without it, robustness test 3 is dropped and the report says so.
 - R-4: Verify that USGS event pages provide focal mechanisms quickly enough for T0 plans. Otherwise
@@ -548,6 +611,7 @@ The `objective` and `self_check` interfaces are designed to allow that change wi
 - R-5: Verify the claim that nodal sensors typically do not transmit in real time, with sources,
   before it appears in the pitch.
 - R-6: CVaR plus warm start may not reach the 20% P(opt) target. The report states whatever is achieved.
+  **Happened: best was about 10% per measurement.**
 
 ---
 
