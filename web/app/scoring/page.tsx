@@ -7,6 +7,7 @@ import { Empty, Loading, OfflineBanner, Problem } from "@/components/States";
 import { loadScoring, parseLam, resolveEvent } from "@/lib/data";
 import { fmt, fmtSites, sameSites } from "@/lib/format";
 import type { PageProps } from "@/lib/page-types";
+import { TableFold } from "@/components/TableFold";
 
 export const metadata: Metadata = { title: "Scoring" };
 
@@ -118,46 +119,48 @@ async function ScoringContent({ searchParams }: PageProps) {
           {data.top_networks.length === 0 ? (
             <Empty>No networks were returned.</Empty>
           ) : (
-            <div className="table-wrap">
-              <table>
-                <caption>The best {data.top_networks.length} networks by exact objective</caption>
-                <thead>
-                  <tr>
-                    <th scope="col" className="num">
-                      Rank
-                    </th>
-                    <th scope="col">Sites</th>
-                    <th scope="col" className="num">
-                      Objective
-                    </th>
-                    <th scope="col" className="num">
-                      Risk
-                    </th>
-                    <th scope="col" className="num">
-                      Blur (km)
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.top_networks.map((row) => (
-                    <tr
-                      key={row.sites.join("-")}
-                      className={
-                        sameSites(row.sites, data.exact_optimum) ? "is-highlight" : undefined
-                      }
-                    >
-                      <th scope="row" className="num">
-                        {row.rank}
+            <TableFold total={data.top_networks.length} limit={5} noun="networks">
+              <div className="table-wrap">
+                <table>
+                  <caption>The best {data.top_networks.length} networks by exact objective</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="num">
+                        Rank
                       </th>
-                      <td className="nowrap">{fmtSites(row.sites)}</td>
-                      <td className="num">{fmt(row.objective, 1)}</td>
-                      <td className="num">{fmt(row.risk)}</td>
-                      <td className="num">{fmt(row.blur_km)}</td>
+                      <th scope="col">Sites</th>
+                      <th scope="col" className="num">
+                        Objective
+                      </th>
+                      <th scope="col" className="num">
+                        Risk
+                      </th>
+                      <th scope="col" className="num">
+                        Blur (km)
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {data.top_networks.map((row) => (
+                      <tr
+                        key={row.sites.join("-")}
+                        className={
+                          sameSites(row.sites, data.exact_optimum) ? "is-highlight" : undefined
+                        }
+                      >
+                        <th scope="row" className="num">
+                          {row.rank}
+                        </th>
+                        <td className="nowrap">{fmtSites(row.sites)}</td>
+                        <td className="num">{fmt(row.objective, 1)}</td>
+                        <td className="num">{fmt(row.risk)}</td>
+                        <td className="num">{fmt(row.blur_km)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </TableFold>
           )}
           <p className="small muted">
             Blur is the predicted uncertainty, in km, when locating later aftershocks with the

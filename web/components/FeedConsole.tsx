@@ -7,6 +7,7 @@ import { errorMessage, readJson, type Message } from "@/lib/client-api";
 import { fmt, fmtTime } from "@/lib/format";
 import { ID_PATTERN, USGS_ID_PATTERN } from "@/lib/limits";
 import type { FeedQuake } from "@/lib/schemas";
+import { TableFold } from "@/components/TableFold";
 
 type Props = {
   quakes: FeedQuake[];
@@ -92,76 +93,80 @@ export function FeedConsole({ quakes, backendOnline, passcodeSet, initiallyUnloc
         </section>
       ) : null}
 
-      <div className="table-wrap">
-        <table>
-          <caption>Earthquakes in the past 24 hours, newest first ({quakes.length})</caption>
-          <thead>
-            <tr>
-              <th scope="col" className="num">
-                Magnitude
-              </th>
-              <th scope="col">Place</th>
-              <th scope="col">Time</th>
-              <th scope="col" className="num">
-                Depth (km)
-              </th>
-              <th scope="col">Location</th>
-              <th scope="col">Status</th>
-              <th scope="col">Reason</th>
-              <th scope="col">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {quakes.map((quake) => {
-              const status = STATUS[quake.status];
-              const jobId = started[quake.usgs_id];
-              return (
-                <tr key={quake.usgs_id}>
-                  <td className="num">{fmt(quake.magnitude, 1)}</td>
-                  <th scope="row">
-                    {place(quake)} <span className="muted small">({quake.usgs_id})</span>
-                  </th>
-                  <td>{fmtTime(quake.time_utc)}</td>
-                  <td className="num">
-                    {typeof quake.depth_km === "number" ? fmt(quake.depth_km, 1) : "n/a"}
-                  </td>
-                  <td>
-                    {typeof quake.lat === "number" && typeof quake.lon === "number"
-                      ? `${fmt(quake.lat, 2)}, ${fmt(quake.lon, 2)}`
-                      : "n/a"}
-                  </td>
-                  <td>
-                    <span className={`tag ${status.tone}`}>{status.label}</span>
-                  </td>
-                  <td>{quake.reason ?? ""}</td>
-                  <td>
-                    {jobId ? (
-                      <span>Started (job {jobId})</span>
-                    ) : qualifies(quake) ? (
-                      <button
-                        type="button"
-                        disabled={!canStart}
-                        onClick={() => trigger(quake)}
-                        aria-label={`Start the agent on this earthquake: magnitude ${fmt(quake.magnitude, 1)}, ${place(quake)}`}
-                      >
-                        {busyId === quake.usgs_id ? "Starting" : "Start the agent on this earthquake"}
-                      </button>
-                    ) : quake.status === "planned" &&
-                      quake.event_id &&
-                      ID_PATTERN.test(quake.event_id) ? (
-                      <Link href={`/monitor?event=${quake.event_id}`}>
-                        Open the monitor<span className="muted"> for {place(quake)}</span>
-                      </Link>
-                    ) : (
-                      <span className="muted">n/a</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <TableFold total={quakes.length} limit={8} noun="earthquakes">
+        <div className="table-wrap">
+          <table>
+            <caption>Earthquakes in the past 24 hours, newest first ({quakes.length})</caption>
+            <thead>
+              <tr>
+                <th scope="col" className="num">
+                  Magnitude
+                </th>
+                <th scope="col">Place</th>
+                <th scope="col">Time</th>
+                <th scope="col" className="num">
+                  Depth (km)
+                </th>
+                <th scope="col">Location</th>
+                <th scope="col">Status</th>
+                <th scope="col">Reason</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {quakes.map((quake) => {
+                const status = STATUS[quake.status];
+                const jobId = started[quake.usgs_id];
+                return (
+                  <tr key={quake.usgs_id}>
+                    <td className="num">{fmt(quake.magnitude, 1)}</td>
+                    <th scope="row">
+                      {place(quake)} <span className="muted small">({quake.usgs_id})</span>
+                    </th>
+                    <td>{fmtTime(quake.time_utc)}</td>
+                    <td className="num">
+                      {typeof quake.depth_km === "number" ? fmt(quake.depth_km, 1) : "n/a"}
+                    </td>
+                    <td>
+                      {typeof quake.lat === "number" && typeof quake.lon === "number"
+                        ? `${fmt(quake.lat, 2)}, ${fmt(quake.lon, 2)}`
+                        : "n/a"}
+                    </td>
+                    <td>
+                      <span className={`tag ${status.tone}`}>{status.label}</span>
+                    </td>
+                    <td>{quake.reason ?? ""}</td>
+                    <td>
+                      {jobId ? (
+                        <span>Started (job {jobId})</span>
+                      ) : qualifies(quake) ? (
+                        <button
+                          type="button"
+                          disabled={!canStart}
+                          onClick={() => trigger(quake)}
+                          aria-label={`Start the agent on this earthquake: magnitude ${fmt(quake.magnitude, 1)}, ${place(quake)}`}
+                        >
+                          {busyId === quake.usgs_id
+                            ? "Starting"
+                            : "Start the agent on this earthquake"}
+                        </button>
+                      ) : quake.status === "planned" &&
+                        quake.event_id &&
+                        ID_PATTERN.test(quake.event_id) ? (
+                        <Link href={`/monitor?event=${quake.event_id}`}>
+                          Open the monitor<span className="muted"> for {place(quake)}</span>
+                        </Link>
+                      ) : (
+                        <span className="muted">n/a</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </TableFold>
     </>
   );
 }

@@ -88,6 +88,44 @@ const PAGES: { href: string; name: string; what: ReactNode }[] = [
 
 type Term = { term: string; meaning: string; unit: string; better: string };
 
+// Glossary groups, in the order a newcomer meets them.
+const GROUPS: { title: string; terms: string[] }[] = [
+  {
+    title: "Places and data",
+    terms: [
+      "Candidate site",
+      "Network",
+      "Permanent station",
+      "Aftershocks used to plan",
+      "Later aftershocks",
+    ],
+  },
+  {
+    title: "Scores",
+    terms: [
+      "Risk",
+      "Risk weight (lam)",
+      "Objective",
+      "Rank",
+      "Blur",
+      "Location error",
+      "Rank agreement (Spearman)",
+    ],
+  },
+  {
+    title: "The quantum run",
+    terms: [
+      "Chance one measurement gives the best network (p_opt)",
+      "Same chance for a random pick",
+      "Quantum compared with random",
+      "Approximation ratio",
+      "Valid networks measured",
+      "Circuit depth, gates",
+    ],
+  },
+  { title: "The agent", terms: ["Confidence", "Drift"] },
+];
+
 const TERMS: Term[] = [
   {
     term: "Candidate site",
@@ -331,11 +369,11 @@ export default function GuidePage() {
             </li>
             <li>
               <Swatch>
-                <circle className="map-candidate" cx="10" cy="10" r="8" fill="rgb(255,243,214)" />
+                <circle className="map-candidate" cx="10" cy="10" r="8" fill="#d49a58" />
               </Swatch>
               <span>
-                <strong>Numbered circles:</strong> the candidate sites. Pale means low risk, dark
-                red means high risk.
+                <strong>Numbered circles:</strong> the candidate sites. Five steps from pale sand
+                (low access risk) to dark rust (high).
               </span>
             </li>
             <li>
@@ -377,29 +415,32 @@ export default function GuidePage() {
             For each number: what it means, its unit, and whether higher or lower is better. A blank
             means neither.
           </p>
-          <div className="table-wrap">
-            <table>
-              <caption className="visually-hidden">Terms used on the console pages</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Term</th>
-                  <th scope="col">Meaning</th>
-                  <th scope="col">Unit</th>
-                  <th scope="col">Better</th>
-                </tr>
-              </thead>
-              <tbody>
-                {TERMS.map((t) => (
-                  <tr key={t.term}>
-                    <th scope="row">{t.term}</th>
-                    <td>{t.meaning}</td>
-                    <td className="nowrap">{t.unit}</td>
-                    <td>{t.better}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {GROUPS.map((group) => (
+            <div key={group.title} className="term-group">
+              <h3>{group.title}</h3>
+              <dl className="terms">
+                {group.terms
+                  .map((name) => TERMS.find((t) => t.term === name))
+                  .filter((t): t is Term => t !== undefined)
+                  .map((t) => (
+                    <div key={t.term}>
+                      <dt>{t.term}</dt>
+                      <dd>
+                        {t.meaning}
+                        {t.unit || t.better ? (
+                          <span className="term-meta">
+                            {t.unit ? <span>Unit: {t.unit}</span> : null}
+                            {t.better ? (
+                              <span className="term-better">Better: {t.better}</span>
+                            ) : null}
+                          </span>
+                        ) : null}
+                      </dd>
+                    </div>
+                  ))}
+              </dl>
+            </div>
+          ))}
         </section>
 
         <section id="run" aria-labelledby="run-h">

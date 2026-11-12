@@ -7,6 +7,7 @@ import { Empty, Loading, OfflineBanner, Problem } from "@/components/States";
 import { loadInstance, resolveEvent } from "@/lib/data";
 import { fmt } from "@/lib/format";
 import type { PageProps } from "@/lib/page-types";
+import { TableFold } from "@/components/TableFold";
 
 export const metadata: Metadata = { title: "Candidates" };
 
@@ -130,31 +131,33 @@ async function CandidatesContent({ searchParams }: PageProps) {
                 </div>
               )}
               {data.stations.length > 0 ? (
-                <div className="table-wrap">
-                  <table>
-                    <caption>Permanent stations</caption>
-                    <thead>
-                      <tr>
-                        <th scope="col">Name</th>
-                        <th scope="col" className="num">
-                          x (km)
-                        </th>
-                        <th scope="col" className="num">
-                          y (km)
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.stations.map((s) => (
-                        <tr key={s.name}>
-                          <th scope="row">{s.name}</th>
-                          <td className="num">{fmt(s.x, 1)}</td>
-                          <td className="num">{fmt(s.y, 1)}</td>
+                <TableFold total={data.stations.length} limit={6} noun="stations">
+                  <div className="table-wrap">
+                    <table>
+                      <caption>Permanent stations</caption>
+                      <thead>
+                        <tr>
+                          <th scope="col">Name</th>
+                          <th scope="col" className="num">
+                            x (km)
+                          </th>
+                          <th scope="col" className="num">
+                            y (km)
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {data.stations.map((s) => (
+                          <tr key={s.name}>
+                            <th scope="row">{s.name}</th>
+                            <td className="num">{fmt(s.x, 1)}</td>
+                            <td className="num">{fmt(s.y, 1)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </TableFold>
               ) : null}
             </div>
           </div>

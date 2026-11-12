@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { FeedConsole } from "@/components/FeedConsole";
+import { FeedSummary } from "@/components/FeedSummary";
 import { QuakeGlobe } from "@/components/QuakeGlobe";
 import { Empty, Loading, OfflineBanner, Problem } from "@/components/States";
 import { loadFeed } from "@/lib/data";
@@ -69,6 +70,9 @@ async function FeedContent() {
             <strong>skipped</strong> is large enough but unusable, with the reason;{" "}
             <strong>planned</strong> means the agent has made a plan for it.
           </p>
+          {data.quakes.length > 0 ? (
+            <FeedSummary quakes={data.quakes} threshold={data.threshold} />
+          ) : null}
           {data.quakes.some((q) => typeof q.lat === "number" && typeof q.lon === "number") ? (
             <QuakeGlobe
               label={`The past 24 hours: ${data.quakes.length} earthquakes of magnitude 2.5 and above.`}

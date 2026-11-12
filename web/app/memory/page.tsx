@@ -4,6 +4,7 @@ import { Empty, Loading, OfflineBanner, Problem } from "@/components/States";
 import { loadMemory } from "@/lib/data";
 import { fmt, fmtPercent } from "@/lib/format";
 import { stageLabel } from "@/lib/sequence";
+import { TableFold } from "@/components/TableFold";
 
 export const metadata: Metadata = { title: "Memory" };
 
@@ -61,8 +62,8 @@ async function MemoryContent() {
             <div className="table-wrap">
               <table>
                 <caption>
-                  Median QAOA angles by problem size (sensors, candidates, layers). Used to warm-start
-                  the next run of the same size.
+                  Median QAOA angles by problem size (sensors, candidates, layers). Used to
+                  warm-start the next run of the same size.
                 </caption>
                 <thead>
                   <tr>
@@ -129,46 +130,48 @@ async function MemoryContent() {
           {data.track_record.length === 0 ? (
             <Empty>No plans have been checked against what happened yet.</Empty>
           ) : (
-            <div className="table-wrap">
-              <table>
-                <caption>
-                  Past plans: the score each plan predicted and the score it reached once the later
-                  aftershocks were known. Error is the relative difference.
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Earthquake</th>
-                    <th scope="col" className="num">
-                      Hour
-                    </th>
-                    <th scope="col">Stage</th>
-                    <th scope="col" className="num">
-                      Predicted score
-                    </th>
-                    <th scope="col" className="num">
-                      Realised score
-                    </th>
-                    <th scope="col" className="num">
-                      Error
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.track_record.map((t, i) => (
-                    <tr key={`${t.event_id}-${t.hour ?? "x"}-${i}`}>
-                      <th scope="row">{t.event_id}</th>
-                      <td className="num">{num(t.hour, 0)}</td>
-                      <td>{stageLabel(t.stage)}</td>
-                      <td className="num">{num(t.predicted_score)}</td>
-                      <td className="num">{num(t.realised_score)}</td>
-                      <td className="num">
-                        {typeof t.error === "number" ? fmtPercent(t.error, 1) : "n/a"}
-                      </td>
+            <TableFold total={data.track_record.length} limit={6} noun="plans">
+              <div className="table-wrap">
+                <table>
+                  <caption>
+                    Past plans: the score each plan predicted and the score it reached once the
+                    later aftershocks were known. Error is the relative difference.
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Earthquake</th>
+                      <th scope="col" className="num">
+                        Hour
+                      </th>
+                      <th scope="col">Stage</th>
+                      <th scope="col" className="num">
+                        Predicted score
+                      </th>
+                      <th scope="col" className="num">
+                        Realised score
+                      </th>
+                      <th scope="col" className="num">
+                        Error
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {data.track_record.map((t, i) => (
+                      <tr key={`${t.event_id}-${t.hour ?? "x"}-${i}`}>
+                        <th scope="row">{t.event_id}</th>
+                        <td className="num">{num(t.hour, 0)}</td>
+                        <td>{stageLabel(t.stage)}</td>
+                        <td className="num">{num(t.predicted_score)}</td>
+                        <td className="num">{num(t.realised_score)}</td>
+                        <td className="num">
+                          {typeof t.error === "number" ? fmtPercent(t.error, 1) : "n/a"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </TableFold>
           )}
         </>
       ) : null}
