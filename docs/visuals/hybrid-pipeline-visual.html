@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hybrid Quantum Pipeline</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#0f0f0f;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:32px 16px}
+  .wrap{max-width:1000px;margin:0 auto}
+  h1{margin:0 0 6px;font-size:28px}
+  .sub{color:#888;margin:0 0 20px;line-height:1.5}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .tab{background:#161616;border:1px solid #333;color:#ccc;padding:8px 14px;border-radius:999px;cursor:pointer;font-size:14px}
+  .tab.on{border-color:#10B981;color:#fff;background:#1a3d2e}
+  .board{background:#161616;border-radius:12px;padding:24px;position:relative}
+  .lanes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+  .lane h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#888;margin:0 0 10px;text-align:center}
+  .node{border:2px solid;border-radius:12px;padding:14px 16px;margin-bottom:14px;cursor:pointer;transition:transform .15s,opacity .2s,box-shadow .15s;position:relative}
+  .node:hover{transform:scale(1.04)}
+  .node .ic{font-size:20px}
+  .node b{display:block;margin:4px 0 2px;font-size:15px}
+  .node span{color:#cfcfcf;font-size:13px;line-height:1.4;display:block}
+  .node .arrow{color:#888;font-size:12px;margin-top:6px;display:block}
+  .trigger{background:#1e3a5f;border-color:#3B82F6}
+  .proc{background:#1a3d2e;border-color:#10B981}
+  .tool{background:#3d2e1a;border-color:#F59E0B}
+  .out{background:#3d1a1a;border-color:#EF4444}
+  .store{background:#1a1a2e;border-color:#6366F1}
+  .dec{background:#2e1a3d;border-color:#A855F7}
+  .dim{opacity:.25}
+  .hi{box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+  .detail{margin-top:18px;background:#1f1f1f;border-left:4px solid #10B981;border-radius:8px;padding:14px 16px;min-height:60px;line-height:1.55;color:#ddd}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:18px;font-size:13px;color:#aaa}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  .loop{font-size:12px;color:#A855F7;text-align:center;margin:-6px 0 12px}
+  @media (max-width:760px){.lanes{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Hybrid quantum–classical pipeline</h1>
+  <p class="sub">The classical computer does the number work and the quantum computer does the choosing. Pick an idea below, then click any step to see what it does for that idea. Click the background to reset.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-idea="seis">⭐ Aftershock seismometers</button>
+    <button class="tab" data-idea="beam">⭐ Proton beam angles</button>
+    <button class="tab" data-idea="pmu">PMU grid sensors</button>
+  </div>
+
+  <div class="board" id="board">
+    <div class="lanes">
+      <div class="lane">
+        <h2>1 · Classical: prepare</h2>
+        <div class="node trigger" data-id="n1" data-links="n2"><div class="ic">⚡</div><b>Real-world input</b><span data-k="n1"></span><span class="arrow">→ raw data</span></div>
+        <div class="node proc" data-id="n2" data-links="n1 n3"><div class="ic">⚙️</div><b>Physics / domain model</b><span data-k="n2"></span><span class="arrow">→ value per option, overlap per pair</span></div>
+        <div class="node store" data-id="n3" data-links="n2 n4"><div class="ic">🗄️</div><b>Score table (QUBO)</b><span data-k="n3"></span><span class="arrow">→ into quantum circuit</span></div>
+      </div>
+      <div class="lane">
+        <h2>2 · Quantum: choose</h2>
+        <div class="node tool" data-id="n4" data-links="n3 n5"><div class="ic">🎲</div><b>Start state: exactly k picked</b><span data-k="n4"></span></div>
+        <div class="node tool" data-id="n5" data-links="n4 n6 n7"><div class="ic">🌀</div><b>QAOA circuit (Qiskit)</b><span data-k="n5"></span></div>
+        <div class="node proc" data-id="n6" data-links="n5"><div class="ic">🔁</div><b>Classical optimizer tunes angles</b><span>COBYLA adjusts the circuit dials and runs it again until the average score stops improving.</span></div>
+        <div class="loop">↺ loop between the circuit and the optimizer</div>
+        <div class="node tool" data-id="n7" data-links="n5 n8"><div class="ic">📊</div><b>Measure many samples</b><span>Each shot gives one candidate selection. Keep the best few.</span></div>
+      </div>
+      <div class="lane">
+        <h2>3 · Classical: finish &amp; check</h2>
+        <div class="node proc" data-id="n8" data-links="n7 n9"><div class="ic">🧮</div><b>Second-stage solve</b><span data-k="n8"></span></div>
+        <div class="node dec" data-id="n9" data-links="n8 n10"><div class="ic">❓</div><b>Valid and good?</b><span data-k="n9"></span></div>
+        <div class="node out" data-id="n10" data-links="n9"><div class="ic">✅</div><b>Compare with baselines</b><span>Brute force (every option), greedy and random selections. Report the approximation ratio and how often the best answer appeared.</span></div>
+      </div>
+    </div>
+    <div class="detail" id="detail">Click a step to see its details.</div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:#3B82F6"></i>Trigger</span>
+    <span><i style="background:#10B981"></i>Processing</span>
+    <span><i style="background:#F59E0B"></i>Quantum</span>
+    <span><i style="background:#6366F1"></i>Data</span>
+    <span><i style="background:#A855F7"></i>Decision</span>
+    <span><i style="background:#EF4444"></i>Output</span>
+  </div>
+</div>
+
+<script>
+const T = {
+  seis:{
+    n1:"A big earthquake has struck. There are 10 candidate sites for portable seismometers, some unsafe or unreachable.",
+    n2:"Simulate aftershocks along the fault. Score each site by how well it detects them, and score each pair by redundancy (two sites in the same direction from the quakes add little).",
+    n3:"Site value on the diagonal, pair redundancy off-diagonal, plus a road-access risk penalty.",
+    n4:"Dicke state: every combination with exactly k = 4 sites, so no penalty tuning is needed.",
+    n5:"Alternate a cost layer (the scores) and an XY mixer that swaps sites while keeping exactly 4 picked.",
+    n8:"Locate each synthetic aftershock using only the chosen sites (least squares) and measure the location error in km.",
+    n9:"Exactly 4 sites, all safe? A lower location error is better.",
+    d:"Why this is safe from criticism: one kind of decision, one constraint, and the result is judged by an independent physical measure (location error in km)."},
+  beam:{
+    n1:"A patient's tumour sits beside two sensitive organs. There are 8 candidate beam angles, and you can use k = 3.",
+    n2:"Build a 2D grid model of the patient. Work out the dose each angle gives to the tumour and the organs; similar angles count as redundant.",
+    n3:"Tumour benefit minus organ dose on the diagonal, angle redundancy off-diagonal.",
+    n4:"Dicke state with exactly 3 angles picked.",
+    n5:"QAOA with an XY mixer explores sets of 3 angles.",
+    n8:"For the chosen angles, solve the beam strengths with non-negative least squares (scipy) and compute the plan quality: tumour coverage and organ dose.",
+    n9:"Does the plan cover the tumour while organ dose stays under its limit? If not, adjust the weights and loop again.",
+    d:"Anchored in Shinde et al., Medical Physics (2025), who used the same split: binary angle choice plus classical intensity optimisation. Be honest that the patient model is a toy."},
+  pmu:{
+    n1:"IEEE 14-bus test grid, an official benchmark with a published optimum.",
+    n2:"Graph pre-processing: apply the observability rules and fix the buses that must obviously get a PMU, shrinking the problem from 14 qubits to about 8.",
+    n3:"Cost per PMU plus penalties for any bus left unobserved (the trickiest part: 'at least one' constraints).",
+    n4:"Equal superposition of all placements (or Dicke for a fixed PMU count).",
+    n5:"QAOA on the reduced grid.",
+    n8:"Expand back to the full grid and run an exact observability check.",
+    n9:"Every bus observed? Is the PMU count equal to the known optimum?",
+    d:"The safest for correctness because the answer is published, but the least unique. The penalty for 'at least one' coverage is where formulations usually get criticised."}
+};
+let idea="seis";
+const nodes=[...document.querySelectorAll('.node')];
+function fill(){document.querySelectorAll('[data-k]').forEach(s=>s.textContent=T[idea][s.dataset.k]);document.getElementById('detail').textContent=T[idea].d;}
+function reset(){nodes.forEach(n=>n.classList.remove('dim','hi'));}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');idea=t.dataset.idea;reset();fill();});
+nodes.forEach(n=>n.onclick=e=>{e.stopPropagation();const keep=[n.dataset.id,...n.dataset.links.split(' ')];nodes.forEach(m=>{m.classList.toggle('dim',!keep.includes(m.dataset.id));m.classList.toggle('hi',m===n);});
+  const span=n.querySelector('span');document.getElementById('detail').textContent=n.querySelector('b').textContent+': '+span.textContent;});
+document.getElementById('board').onclick=()=>{reset();fill();};
+fill();
+</script>
+</body>
+</html>

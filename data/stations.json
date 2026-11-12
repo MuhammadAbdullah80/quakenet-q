@@ -1,0 +1,107 @@
+{
+ "meta": {
+  "event_url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2019-07-06&endtime=2019-07-13&minlatitude=35.4&maxlatitude=36.1&minlongitude=-117.9&maxlongitude=-117.2&minmagnitude=3.0&orderby=time-asc",
+  "station_url": "https://service.iris.edu/fdsnws/station/1/query?network=CI&level=station&format=text&minlatitude=35.4&maxlatitude=36.1&minlongitude=-117.9&maxlongitude=-117.2&starttime=2019-07-04&endtime=2019-07-12",
+  "licence": "USGS ComCat data are U.S. public domain; station metadata via IRIS/EarthScope FDSN."
+ },
+ "stations": [
+  {
+   "net": "CI",
+   "sta": "CCC",
+   "lat": 35.52495,
+   "lon": -117.36453,
+   "name": "Christmas Canyon China Lake"
+  },
+  {
+   "net": "CI",
+   "sta": "CLC",
+   "lat": 35.81574,
+   "lon": -117.59751,
+   "name": "China Lake"
+  },
+  {
+   "net": "CI",
+   "sta": "JRC2",
+   "lat": 35.98249,
+   "lon": -117.80885,
+   "name": "Joshua Ridge: China Lake"
+  },
+  {
+   "net": "CI",
+   "sta": "LRL",
+   "lat": 35.47954,
+   "lon": -117.68212,
+   "name": "Laurel Mtn"
+  },
+  {
+   "net": "CI",
+   "sta": "MPM",
+   "lat": 36.05799,
+   "lon": -117.48901,
+   "name": "Manuel Prospect Mine"
+  },
+  {
+   "net": "CI",
+   "sta": "Q0072",
+   "lat": 35.609617,
+   "lon": -117.666721,
+   "name": "Lakeland Street, Ridgecrest CA"
+  },
+  {
+   "net": "CI",
+   "sta": "SLA",
+   "lat": 35.89095,
+   "lon": -117.28332,
+   "name": "Slate Mountain"
+  },
+  {
+   "net": "CI",
+   "sta": "SRT",
+   "lat": 35.69235,
+   "lon": -117.75051,
+   "name": "Snort"
+  },
+  {
+   "net": "CI",
+   "sta": "TOW2",
+   "lat": 35.80856,
+   "lon": -117.76488,
+   "name": "Tower 2"
+  },
+  {
+   "net": "CI",
+   "sta": "WBM",
+   "lat": 35.60839,
+   "lon": -117.89049,
+   "name": "Bowman Road"
+  },
+  {
+   "net": "CI",
+   "sta": "WCS2",
+   "lat": 36.02521,
+   "lon": -117.76526,
+   "name": "Coso Hot Springs 2"
+  },
+  {
+   "net": "CI",
+   "sta": "WRC2",
+   "lat": 35.9479,
+   "lon": -117.65038,
+   "name": "Renegade Canyon"
+  },
+  {
+   "net": "CI",
+   "sta": "WRV2",
+   "lat": 36.00774,
+   "lon": -117.8904,
+   "name": "Rose Valley 2"
+  },
+  {
+   "net": "CI",
+   "sta": "WVP2",
+   "lat": 35.94939,
+   "lon": -117.81769,
+   "name": "Volcano Peak 2"
+  }
+ ]
+}

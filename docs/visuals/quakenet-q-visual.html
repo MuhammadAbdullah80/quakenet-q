@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuakeNet-Q Scorecard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f0f10;--sf:#1a1a1d;--bd:#2a2a2d;--tx:#fff;--t2:#a0a0a0;--ac:#D97757;--acm:rgba(217,119,87,.15)}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,sans-serif;line-height:1.55}
+  main{max-width:1000px;margin:0 auto;padding:48px 16px}
+  section{margin-bottom:80px}
+  h1{font-size:40px;margin:0 0 8px;font-weight:800}
+  h2{font-size:24px;margin:0 0 16px}
+  .lede{color:var(--t2);margin:0 0 24px;max-width:720px}
+  .badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;margin-right:6px}
+  .g{background:rgba(16,185,129,.18);color:#6ee7b7}.y{background:rgba(245,158,11,.18);color:#fcd34d}.b{background:rgba(59,130,246,.18);color:#93c5fd}.r{background:rgba(239,68,68,.18);color:#fca5a5}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:20px}
+  .stat b{display:block;font-size:34px;color:var(--ac)}
+  .stat span{color:var(--t2);font-size:14px}
+  .callout{background:var(--acm);border-left:4px solid var(--ac);border-radius:12px;padding:20px 24px;font-size:17px}
+  .bar{margin:12px 0}
+  .bar .lab{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+  .bar .lab em{color:var(--t2);font-style:normal}
+  .track{background:#26262a;border-radius:999px;height:10px;overflow:hidden}
+  .fill{height:100%;background:var(--ac);border-radius:999px}
+  .fill.warn{background:#f59e0b}
+  .tl{position:relative;padding-left:28px;border-left:2px solid var(--bd)}
+  .tl .it{position:relative;margin-bottom:18px}
+  .tl .it::before{content:"";position:absolute;left:-36px;top:6px;width:14px;height:14px;border-radius:50%;background:var(--ac)}
+  .tl .it.q::before{background:#a855f7}
+  .tl .yr{font-weight:800;color:var(--ac)}
+  .tl .it.q .yr{color:#c4b5fd}
+  .tl p{margin:2px 0 0;color:var(--t2);font-size:14px}
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .step .n{width:32px;height:32px;border-radius:50%;background:var(--ac);color:#111;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+  .step p{color:var(--t2);font-size:14px;margin:4px 0 0}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:10px;border-bottom:1px solid var(--bd);vertical-align:top}
+  th{color:var(--t2);font-weight:600}
+  tr:nth-child(even) td{background:#151517}
+  .scroll{overflow-x:auto}
+  @media (max-width:760px){.stats,.flow{grid-template-columns:1fr 1fr}h1{font-size:30px}}
+  @media (max-width:480px){.stats,.flow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+
+<section>
+  <span class="badge b">Disaster Response</span><span class="badge g">Hybrid quantum–classical</span><span class="badge y">Deadline today 23:59</span>
+  <h1>QuakeNet-Q</h1>
+  <p class="lede">Hybrid QAOA decision support for placing portable seismometers in the first hours after a major earthquake.</p>
+  <div class="stats">
+    <div class="card stat"><b>8.6/10</b><span>Fit with the brief</span></div>
+    <div class="card stat"><b>10</b><span>Qubits (candidate sites)</span></div>
+    <div class="card stat"><b>210</b><span>Feasible 4-site networks (brute force)</span></div>
+    <div class="card stat"><b>261</b><span>Real Ridgecrest aftershocks (USGS)</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Problem statement</h2>
+  <div class="callout">After a major earthquake, response teams have hours to decide where a handful of portable seismometers go. Good placement sharpens aftershock locations, which feeds hazard maps and rescue decisions, but published deployments describe siting by expert judgement and simple rules. We formulate siting as a budget-limited optimisation that balances location accuracy, station redundancy and access risk. We solve it with a constraint-preserving hybrid QAOA and check it against exact and classical methods on the real 2019 Ridgecrest sequence.</div>
+</section>
+
+<section>
+  <h2>Scorecard against the brief and rules</h2>
+  <div class="card">
+    <div class="bar"><div class="lab"><span>Allowed domain (Disaster Response)</span><em>10</em></div><div class="track"><div class="fill" style="width:100%"></div></div></div>
+    <div class="bar"><div class="lab"><span>Small, simulator-friendly instance</span><em>10</em></div><div class="track"><div class="fill" style="width:100%"></div></div></div>
+    <div class="bar"><div class="lab"><span>Exact and classical comparison</span><em>10</em></div><div class="track"><div class="fill" style="width:100%"></div></div></div>
+    <div class="bar"><div class="lab"><span>Real-world significance and named users</span><em>9</em></div><div class="track"><div class="fill" style="width:90%"></div></div></div>
+    <div class="bar"><div class="lab"><span>Competing objectives / limited resources</span><em>9</em></div><div class="track"><div class="fill" style="width:90%"></div></div></div>
+    <div class="bar"><div class="lab"><span>Novelty (no quantum precedent found)</span><em>9</em></div><div class="track"><div class="fill" style="width:90%"></div></div></div>
+    <div class="bar"><div class="lab"><span>Rules: original code with credited ideas</span><em>9</em></div><div class="track"><div class="fill" style="width:90%"></div></div></div>
+    <div class="bar"><div class="lab"><span>Quantum does real work (not decoration)</span><em>8</em></div><div class="track"><div class="fill" style="width:80%"></div></div></div>
+    <div class="bar"><div class="lab"><span>Formulation robustness (pairwise approximation)</span><em>7</em></div><div class="track"><div class="fill warn" style="width:70%"></div></div></div>
+    <div class="bar"><div class="lab"><span>Feasible before 23:59 today</span><em>5</em></div><div class="track"><div class="fill warn" style="width:50%"></div></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Research lineage you build on</h2>
+  <div class="tl">
+    <div class="it"><span class="yr">1977 · Kijko</span><p>Early optimal seismic network planning (Pure Appl. Geophys.). Historical root.</p></div>
+    <div class="it"><span class="yr">1990 · Rabinowitz &amp; Steinberg</span><p>D-optimality criterion (BSSA). <b>Our "true score".</b></p></div>
+    <div class="it"><span class="yr">1994 · Hardt &amp; Scherbaum</span><p>Optimum <b>aftershock</b> networks by simulated annealing (GJI). <b>Problem framing and a classical baseline.</b></p></div>
+    <div class="it"><span class="yr">1995 · Steinberg et al.</span><p>Extension to fault systems (BSSA).</p></div>
+    <div class="it"><span class="yr">2019 · Cochran et al. (pub. 2020)</span><p>USGS Ridgecrest rapid deployment (SRL). <b>Real-world motivation and our dataset.</b></p></div>
+    <div class="it q"><span class="yr">2019 · Hadfield; Bärtschi &amp; Eidenbenz</span><p>Constrained mixers and Dicke states. <b>Our quantum machinery.</b></p></div>
+    <div class="it"><span class="yr">2020 · Toledo et al.; Bloem, Curtis &amp; Maurer</span><p>Backward elimination plus modern criteria. <b>Greedy baseline.</b></p></div>
+    <div class="it q"><span class="yr">2023 · San Martín et al.</span><p>QAOA sensor placement on structures, with XY and Dicke beating penalties. <b>Our quantum template (credit it).</b></p></div>
+    <div class="it q"><span class="yr">2026 · You</span><p>First quantum seismometer-placement study we found. The bridge.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>What you will build</h2>
+  <div class="flow">
+    <div class="card step"><div class="n">1</div><b>Real data</b><p>USGS aftershocks, 14 existing stations, 10 candidate gap sites, k = 4.</p></div>
+    <div class="card step"><div class="n">2</div><b>Classical QUBO</b><p>Site gains and pairwise redundancy from the D-criterion, minus access risk.</p></div>
+    <div class="card step"><div class="n">3</div><b>Quantum choose</b><p>Dicke start state and XY-mixer QAOA keep exactly 4 sites; COBYLA tunes the angles.</p></div>
+    <div class="card step"><div class="n">4</div><b>Classical check</b><p>True D-score versus brute force, greedy, simulated annealing and random.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Honest limitations (these score points)</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Limitation</th><th>How you handle it</th></tr></thead>
+    <tbody>
+      <tr><td>The QUBO only approximates log-det</td><td>Report Spearman ρ between the QUBO value and the true score over all 210 sets</td></tr>
+      <tr><td>No quantum speedup</td><td>Say so openly; the contribution is the formulation plus the benchmark</td></tr>
+      <tr><td>Simplified physics (constant 6 km/s)</td><td>State it; real velocity models are future work</td></tr>
+      <tr><td>Access risk is a rule, not field data</td><td>Document the rule in the README</td></tr>
+      <tr><td>"No quantum precedent" comes from searches</td><td>Claim "first we found", never "first ever"</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+</main>
+</body>
+</html>

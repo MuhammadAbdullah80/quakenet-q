@@ -1,0 +1,7 @@
+__pycache__/
+.pytest_cache/
+*.pyc
+.venv/
+figures_quick/
+results/results_quick.json
+docs/superpowers/
