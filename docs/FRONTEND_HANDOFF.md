@@ -12,6 +12,9 @@ The frontend is a **test console**: one page per backend module, so each can be 
 It works and is live, but it is plain. **Your job is to make it look and feel good without breaking
 how it works.**
 
+**The redesign brief is in `docs/FRONTEND_BRIEF.md`.** It covers the landing page, the guide page, the
+new agent pages, and the assets that are already prepared.
+
 - Live site: https://quakenet-q.vercel.app
 - Hackathon: Qiskit Fall Fest 2026, domain "Disaster Response"
 
@@ -163,5 +166,6 @@ done by the team; send a pull request and we will deploy it. Preview links can b
 ## 12. Read next
 
 - `web/README.md`: more detail on offline mode, environment variables and security.
+- `docs/FRONTEND_BRIEF.md`: what to build next and the design direction.
 - `docs/API.md`: the backend contract (endpoints and JSON shapes).
 - `docs/ARCHITECTURE.md`: the whole system. Section 5 lists the pages; section 6 lists the rules.
