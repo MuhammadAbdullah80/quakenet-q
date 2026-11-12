@@ -3,6 +3,10 @@
 **Hybrid quantum–classical placement of portable seismometers after a major earthquake.**
 Qiskit Fall Fest 2026 Hackathon · Domain: **Disaster Response**
 
+**Live console:** https://quakenet-q.vercel.app
+The pages are hosted on Vercel; live calculations run on the team laptop. If the site cannot load
+live data or start a run, the laptop is off and the site shows saved results instead.
+
 After a big earthquake, response teams rush a few portable seismometers into the field. Where they
 put them decides how sharply the aftershocks can be located, and published deployment reports
 describe that choice as expert judgement under time pressure. QuakeNet-Q treats it as an
