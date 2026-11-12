@@ -3455,3 +3455,119 @@ dd > .coord + .coord {
     animation: none;
   }
 }
+
+/* Map magnifier (components/ZoomFrame.tsx) */
+.zoom-frame {
+  position: relative;
+  max-width: 44rem;
+}
+.zoom-controls {
+  position: absolute;
+  z-index: 3;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.2rem;
+  border-radius: 8px;
+  background: rgba(16, 41, 26, 0.88);
+  box-shadow: 0 6px 18px rgba(16, 41, 26, 0.25);
+}
+.zoom-controls button {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--paper);
+}
+.zoom-controls button:hover:not(:disabled) {
+  background: rgba(246, 247, 244, 0.14);
+}
+.zoom-controls button:disabled {
+  opacity: 0.35;
+}
+.zoom-controls svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.zoom-controls .zoom-reset {
+  width: auto;
+  padding: 0 0.6rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.zoom-level {
+  min-width: 2.4rem;
+  text-align: center;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+  color: var(--paper);
+  font-variant-numeric: tabular-nums;
+}
+.zoom-scroll {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 4px;
+  overscroll-behavior: contain;
+}
+.zoom-frame[data-zoomed="true"] .zoom-scroll {
+  overflow: auto;
+  cursor: grab;
+  touch-action: pan-x pan-y;
+}
+.zoom-frame[data-zoomed="true"] .zoom-scroll:active {
+  cursor: grabbing;
+}
+.zoom-content .map-svg {
+  max-width: none;
+  width: 100%;
+}
+/* Marks keep their screen size as the map grows. */
+.map-svg .mz {
+  transform-box: view-box;
+  transform: scale(calc(1 / var(--mz, 1)));
+}
+.map-grid line,
+.map-move,
+.map-svg .map-chosen,
+.map-svg .map-chosen-halo,
+.map-svg .map-secondary {
+  vector-effect: non-scaling-stroke;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .map-svg .mz {
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+}
+/* In the expanded view the magnified map fills the space. */
+.expand-figure .zoom-frame {
+  max-width: min(100%, calc(100dvh - 13rem));
+  margin: 0 auto;
+}
+.expand-figure .zoom-content .map-svg {
+  max-height: none;
+}
+/* The demo takes the whole screen: hide the site frame behind it. */
+body:has(.demo) .site-header,
+body:has(.demo) .site-footer {
+  display: none;
+}
+.demo-visual .bar-chart {
+  padding: 1.25rem 1.5rem;
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+}

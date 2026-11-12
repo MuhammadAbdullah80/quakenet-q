@@ -18,6 +18,7 @@ const PAGES = [
 
 // Less used pages sit under "More" so the main row stays short.
 const MORE = [
+  { href: "/demo", label: "Demo" },
   { href: "/memory", label: "Memory" },
   { href: "/noise", label: "Noise study" },
   { href: "/settings", label: "Settings" },
