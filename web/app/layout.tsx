@@ -1,7 +1,25 @@
 import type { Metadata } from "next";
+import { IBM_Plex_Mono, IBM_Plex_Sans, IBM_Plex_Sans_Condensed } from "next/font/google";
 import type { ReactNode } from "react";
 import { Nav } from "@/components/Nav";
 import "./globals.css";
+
+// next/font self-hosts these files, so the CSP's font-src 'self' still holds.
+const plexHead = IBM_Plex_Sans_Condensed({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-head",
+});
+const plexBody = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
+});
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
   title: { default: "QuakeNet-Q test console", template: "%s | QuakeNet-Q test console" },
@@ -12,7 +30,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${plexHead.variable} ${plexBody.variable} ${plexMono.variable}`}>
       <body>
         <a className="skip-link" href="#main">
           Skip to content

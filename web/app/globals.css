@@ -1,20 +1,39 @@
 :root {
   color-scheme: light;
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --text: #16202b;
-  --muted: #55606e;
-  --border: #cfd6de;
-  --accent: #0b5cad;
-  --accent-text: #ffffff;
-  --ok: #1a6b3a;
-  --ok-bg: #e5f4ea;
+  /* Palette from docs/FRONTEND_BRIEF.md section 2. Lime means a sensor or a chosen site, nothing else. */
+  --ink: #10291a;
+  --ink2: #2c4434;
+  --mist: #e7ebe8;
+  --paper: #f6f7f4;
+  --lime: #c6f35c;
+  /* Darker than the brief's #4f8a12, which is 3.51:1 on mist and fails WCAG AA for text. This is 5.08:1. */
+  --lime-text: #3d6e0c;
+  --rule: #c3ccc5;
+  --rule-strong: #10291a;
+  --ok-bg: #eef7dc;
   --warn: #7a4b00;
-  --warn-bg: #fff3d6;
+  --warn-bg: #fbf1dc;
   --bad: #9b1c1c;
-  --bad-bg: #fde8e8;
-  --info-bg: #e8f0fa;
-  --focus: #b3009e;
+  --bad-bg: #fbe9e7;
+  --focus: #10291a;
+
+  --step--1: 0.8125rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.625rem;
+  --step-3: 2.25rem;
+  --step-4: clamp(2.5rem, 6vw, 4rem);
+
+  /* Older names, kept so every existing rule maps onto the new palette. */
+  --bg: var(--mist);
+  --surface: var(--paper);
+  --text: var(--ink);
+  --muted: var(--ink2);
+  --border: var(--rule);
+  --accent: var(--ink);
+  --accent-text: var(--paper);
+  --ok: var(--lime-text);
+  --info-bg: #dde3df;
 }
 
 * {
@@ -22,9 +41,10 @@
 }
 
 html {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -34,12 +54,18 @@ body {
 }
 
 :focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px var(--lime);
 }
 
 a {
-  color: var(--accent);
+  color: var(--ink);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+a:hover {
+  text-decoration-thickness: 2px;
 }
 
 .skip-link {
@@ -101,28 +127,47 @@ main {
   padding: 1rem;
 }
 
-h1 {
-  font-size: 1.6rem;
-  margin: 0.5rem 0 0.25rem;
+h1,
+h2,
+h3 {
+  font-family: var(--font-head), sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-wrap: balance;
 }
-h2 {
-  font-size: 1.2rem;
+h1 {
+  font-size: var(--step-3);
   margin: 1.5rem 0 0.5rem;
 }
+h2 {
+  font-size: var(--step-2);
+  margin: 2.5rem 0 0.75rem;
+}
 h3 {
-  font-size: 1rem;
-  margin: 1rem 0 0.4rem;
+  font-size: var(--step-1);
+  margin: 1.5rem 0 0.5rem;
 }
 .lede {
-  color: var(--muted);
-  margin: 0 0 1rem;
-  max-width: 60rem;
+  color: var(--ink2);
+  font-size: var(--step-1);
+  line-height: 1.45;
+  max-width: 42rem;
+  margin: 0 0 1.5rem;
+  text-wrap: pretty;
 }
 .muted {
-  color: var(--muted);
+  color: var(--ink2);
 }
 .small {
-  font-size: 0.875rem;
+  font-size: var(--step--1);
+}
+.num,
+td.num,
+th.num,
+dl.facts dd {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 .panel {
