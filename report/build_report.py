@@ -73,6 +73,9 @@ uni = Q["uniform_p_opt"]
 n_runs = len(Q["runs"])
 n_exact = sum(r["xy_final_is_exact"] for r in Q["runs"])
 lam300 = next(s for s in F["lam_sweep"] if s["lam"] == 300)
+FID = {f["order"]: f for f in F["fidelity"]}
+LT = R["location_test"]
+EXPERT = M["Expert rule (azimuthal gap)"]
 sites = "{" + ", ".join(map(str, qaoa["sites"])) + "}"
 
 # ------------------------------------------------------------------ title
@@ -126,18 +129,20 @@ bullets([
     "Plain-language metric: “blur” = the expected hypocentre uncertainty in km, the square root of the trace of the location covariance, averaged over events.",
     "Access risk: c_i = exp(−d_i / 5 km), where d_i is the distance from site i to the nearest early aftershock.",
 ])
-para("The log-determinant is not quadratic in x, so it cannot be put on a QAOA circuit directly. "
-     "We keep the first two orders of its inclusion–exclusion expansion:")
-para("maximise  f(x) = Σ_i (a_i − λ c_i) x_i + Σ_{i<j} b_ij x_i x_j     subject to  Σ_i x_i = 4", bold=True,
+para("The log-determinant is not a quadratic function of x. Because the circuit only ever holds networks of "
+     "exactly 4 sites, we can still encode it exactly, using its inclusion–exclusion (Möbius) expansion up to "
+     "groups of 4 sites:")
+para("maximise  f(x) = Σ_{T, |T| ≤ 4} w_T Π_{i∈T} x_i − λ Σ_i c_i x_i     subject to  Σ_i x_i = 4", bold=True,
      align=WD_ALIGN_PARAGRAPH.CENTER)
 bullets([
-    "a_i = D({i}) − D(∅): information gained by site i alone.",
-    "b_ij = D({i, j}) − D({i}) − D({j}) + D(∅): interaction of two sites; negative when they are redundant.",
+    "w_{i} = D({i}) − D(∅): information gained by site i alone.",
+    "w_{i,j} = D({i, j}) − D({i}) − D({j}) + D(∅): interaction of two sites; negative when they are redundant. Groups of 3 and 4 sites follow the same pattern.",
     f"λ = {I['lam']:.0f}: how much information one unit of access risk must buy.",
+    f"With 10 sites this gives {FID[4]['terms']} terms. On every 4-site network the sum equals the true score exactly.",
 ])
-para("Substituting x_i = (1 − Z_i)/2 gives an Ising Hamiltonian with Z and ZZ terms whose ground state "
-     "(within the 4-site subspace) is the best network. The formulation is exact for one- and two-site "
-     "networks and an approximation for four; Section 5.1 measures how good it is.")
+para("Substituting x_i = (1 − Z_i)/2 gives a Hamiltonian made of Z, ZZ, ZZZ and ZZZZ terms whose ground state "
+     "(within the 4-site subspace) is the best network. The usual pairwise QUBO keeps only groups of up to 2 "
+     "sites; Section 5.1 compares the two.")
 
 doc.add_heading("2.3 Assumptions we made", 2)
 bullets([
@@ -153,7 +158,7 @@ para("We use the Quantum Approximate Optimization Algorithm (QAOA; Farhi et al. 
      "Alternating Operator Ansatz of Hadfield et al. 2019):")
 bullets([
     "Initial state: the Dicke state |D(10,4)⟩, an equal superposition of exactly the 210 allowed networks, prepared with the deterministic circuit of Bärtschi & Eidenbenz (2019).",
-    "Cost layer: exp(−iγH), built from RZ and RZZ gates, which imprints each network's score as a phase.",
+    "Cost layer: exp(−iγH), which imprints each network's score as a phase. A product of Z gates on several qubits is computed as their parity with a ladder of CX gates, rotated with one RZ, and uncomputed.",
     "Mixer: a ring of XY gates, exp(−iβ(XX+YY)/2). Each gate swaps a chosen site with an unchosen neighbour, so the number of chosen sites never changes.",
     "A classical optimiser (COBYLA) tunes the 2p angles to minimise ⟨H⟩ (Qiskit Estimator); the tuned circuit is then measured 1024 times (Qiskit Sampler).",
 ])
@@ -170,18 +175,22 @@ bullets([
     "Stage 1 (classical): data/fetch_data.py caches USGS and IRIS data; src/geometry.py computes the D-criterion; src/qubo.py builds the QUBO and the Hamiltonian (SparsePauliOp).",
     "Stage 2 (quantum): src/qaoa_solver.py builds the circuits gate by gate in Qiskit 2.6.2 and runs the hybrid loop with StatevectorEstimator and StatevectorSampler.",
     f"Stage 3 (classical): run_experiment.py re-scores the {10} most frequently measured networks with the true objective, picks the best, and compares it with src/baselines.py.",
-    "tests/ holds 13 automated checks: the Hamiltonian equals the QUBO on every basis state, the Dicke circuit is exactly uniform over allowed networks, the XY mixer never leaves them, and brute force is never beaten.",
-    f"Experiment: p = 1, 2, 3 layers × 5 random seeds, 3 optimiser restarts each; total runtime {R['runtime_seconds']:.0f} s on a laptop.",
+    "tests/ holds 163 automated checks, among them: the Hamiltonian equals the objective on every basis state, the Dicke circuit is exactly uniform over allowed networks, the XY mixer never leaves them, and brute force is never beaten.",
+    f"Experiment: p = 1, 2, 3 layers × 5 random seeds, each deeper circuit warm-started from the angles of the shallower one; total runtime {R['runtime_seconds'] / 60:.0f} minutes on a laptop.",
 ])
 
 # ------------------------------------------------------------------ 5
 doc.add_heading("5. Results", 1)
-doc.add_heading("5.1 Is the QUBO a fair stand-in for the real score?", 2)
-para(f"Across all {I['feasible_networks']} allowed networks the QUBO value and the true objective have a Spearman rank "
-     f"correlation of {F['spearman_qubo_vs_true']:.3f}, and at λ = {I['lam']:.0f} the QUBO optimum is the true optimum. "
-     f"The approximation is not perfect: when we repeated the check for seven values of λ, the QUBO optimum was the "
-     f"true optimum in six, and at λ = 300 it was the {lam300['rank_of_qubo_opt']}nd-best network.")
-figure("formulation_check.png", "Figure 3. QUBO objective against the true objective for every allowed network.", 3.8)
+doc.add_heading("5.1 Exact objective against the usual pairwise approximation", 2)
+table(["Terms kept", "Number of terms", "Rank correlation with true score", "Largest error", "Rank of its optimum", "Gates per layer"],
+      [[f"groups up to {o} sites", FID[o]["terms"], f"{FID[o]['spearman']:.4f}", f"{FID[o]['max_abs_error']:.1f}",
+        FID[o]["rank_of_its_optimum"], FID[o]["gates_one_layer"]] for o in (2, 3, 4)])
+para(f"Keeping groups of up to 4 sites reproduces the true score of all {I['feasible_networks']} networks with zero error. "
+     f"The pairwise version ranks networks well (ρ = {FID[2]['spearman']:.3f}) and happens to share the optimum at λ = {I['lam']:.0f}, "
+     f"but at λ = 300 its optimum is only the {lam300['rank_of_pairwise_optimum']}nd-best network. The exact version costs about "
+     f"{FID[4]['gates_one_layer'] / FID[2]['gates_one_layer']:.1f} times as many gates per layer. We chose correctness.")
+figure("formulation_check.png", "Figure 3. Pairwise approximation against the true objective for every allowed network. "
+       "The exact expansion lies on the diagonal.", 3.8)
 
 doc.add_heading("5.2 Does the quantum circuit work?", 2)
 rows = []
@@ -195,7 +204,7 @@ para(f"A random allowed network is the best one with probability 1/210 = {100*un
      f"{Q['uniform_ratio']:.3f}; it would take about 630 shots to see the optimum with 95% confidence. The XY-mixer QAOA "
      f"raises that probability to {100*p1[0]:.1f}% at p = 1 and {100*p3[0]:.1f}% at p = 3, and every measurement is a valid "
      f"4-site network. After the classical re-scoring step, the pipeline returned the exact optimum, sites {sites}, in "
-     f"{n_exact} of {n_runs} runs.")
+     f"{n_exact} of {n_runs} runs. Our own target was 20% per measurement; we did not reach it.")
 para("The penalty-based circuit produced a valid 4-site answer only about half to three quarters of the time and measured "
      "the optimum less often than random guessing among valid networks. On this problem the constraint-preserving design is "
      "what makes QAOA useful. One caveat: we used a single penalty weight (P = 2 in scaled units) and did not tune it, "
@@ -204,15 +213,23 @@ figure("qaoa_performance.png", "Figure 4. Left: probability of measuring the bes
        "Right: probability that a measurement is a valid 4-site network.", 6.2)
 
 doc.add_heading("5.3 Comparison with exact and classical methods", 2)
-table(["Method", "Sites", "Rank of 210 (true objective)", "Blur on later aftershocks (km)"],
-      [["No new sensors", "–", "–", f"{B['no_new_sensors_valid_km']:.2f}"],
-       ["Average random network", "–", "–", f"{B['mean_random_valid_km']:.2f}"]] +
-      [[name, ", ".join(map(str, m["sites"])), m["rank_true"], f"{m['blur_valid_km']:.2f}"] for name, m in M.items()])
-para(f"On the {I['validation_events']} later aftershocks, which played no part in planning, the chosen network reduces the mean "
-     f"location uncertainty from {B['no_new_sensors_valid_km']:.2f} km to {qaoa['blur_valid_km']:.2f} km. The hybrid QAOA matches "
-     f"the exact brute-force answer. So do greedy selection, backward elimination and simulated annealing "
-     f"({Q['sa_found_exact']} of {Q['sa_runs']} seeds): this instance is easy for classical methods.")
-figure("blur_by_method.png", "Figure 5. Location uncertainty on later aftershocks for each method (lower is better).", 5.2)
+para("The score above is a prediction. To test it independently we simulated locating the later aftershocks: "
+     "arrival times were computed with a different wave speed (5.8 km/s instead of the planner's 6.0) and random "
+     "timing noise was added, then each aftershock was located by least squares with the permanent stations plus "
+     "the 4 chosen sites. We did this for every one of the 210 networks.")
+table(["Method", "Sites", "Rank of 210 (score)", "Mean location error (km)", "90th percentile (km)"],
+      [["No new sensors", "–", "–", f"{LT['no_new_sensors_mean_km']:.2f}", "–"],
+       ["Average of all 210 networks", "–", "–", f"{LT['all_networks_mean_km']:.2f}", "–"]] +
+      [[name, ", ".join(map(str, m["sites"])), m["rank_true"], f"{m['loc_error_mean_km']:.2f}", f"{m['loc_error_p90_km']:.2f}"]
+       for name, m in M.items()])
+para(f"On the {I['validation_events']} later aftershocks, which played no part in planning, the chosen network lowers the mean "
+     f"location error from {LT['no_new_sensors_mean_km']:.2f} km to {qaoa['loc_error_mean_km']:.2f} km, against "
+     f"{EXPERT['loc_error_mean_km']:.2f} km for a field rule that closes the largest azimuthal gap. In the simulated test it is "
+     f"number {LT['rank_of_qaoa_pick']} of 210 networks (best: {LT['best_network_km']:.2f} km). The score and the test agree "
+     f"reasonably (rank correlation {-LT['spearman_d_vs_error']:.2f}). The hybrid QAOA matches the exact brute-force answer. "
+     f"So do greedy selection, backward elimination and simulated annealing ({Q['sa_found_exact']} of {Q['sa_runs']} seeds): "
+     "this instance is easy for classical methods.")
+figure("location_test.png", "Figure 5. Mean error when locating later aftershocks in the simulated test (lower is better).", 5.6)
 
 doc.add_heading("5.4 The trade-off between accuracy and crew risk", 2)
 para(f"Ignoring risk (λ = 0), the best network is {{0, 1, 4, 7}} with a blur of {B['best_possible_valid_km']:.2f} km but a total "
@@ -225,10 +242,11 @@ figure("tradeoff.png", "Figure 6. Exact optimum for different risk weights λ.",
 doc.add_heading("6. Limitations and reflection", 1)
 bullets([
     "No quantum advantage. With 210 allowed networks, brute force takes milliseconds and simple heuristics find the optimum. We make no speedup claim; the instance is small so that every result can be verified exactly.",
-    f"The QUBO approximates the real criterion. It ranked networks well (ρ = {F['spearman_qubo_vs_true']:.3f}) but picked the 2nd-best network at λ = 300. The classical re-scoring step exists to catch such cases, and it would matter more for larger budgets, where higher-order interactions grow.",
-    "QAOA finds the optimum by sampling, not with certainty. The single most likely measurement is not guaranteed to be the best network; the probability of the optimum was 5–11% per shot.",
-    "The circuit is deep. After decomposition the XY-mixer circuit is 445–595 layers deep, against 54–118 for the penalty circuit, mostly because of the Dicke-state preparation and the XY gates. We ran a noise-free statevector simulation only; on current hardware this depth would be a serious problem.",
-    "Simplified physics: uniform velocity, P arrivals only, a fixed picking error, no station noise or site effects. The blur values are relative indicators, not operational location errors.",
+    f"The exact objective has a price. It needs {FID[4]['terms']} terms instead of {FID[2]['terms']}, and the number of terms grows quickly with the number of sensors, so this exact encoding does not scale to large budgets.",
+    f"QAOA finds the optimum by sampling, not with certainty. The probability of the optimum was {100*p1[0]:.0f}–{100*p3[0]:.0f}% per measurement, below our 20% target.",
+    "The circuit is deep. Its depth is about 2,300 at one layer and 6,300 at three, against 54–118 for the penalty circuit, mostly from the 4-site cost terms, the Dicke-state preparation and the XY gates. We ran a noise-free statevector simulation only; on current hardware this depth would be a serious problem.",
+    "The location test is simulated: the same simple physics with a different wave speed and added noise, not real recordings.",
+    "Simplified physics: uniform velocity, P arrivals only, a fixed picking error, no station noise or site effects. The error values are relative indicators, not operational location errors.",
     "Synthetic inputs: candidate sites and access risk follow rules we wrote, and λ is a judgement call that a response team would need to set.",
     "Evidence limits: our statement that siting is mostly manual rests on published deployment reports, not interviews, and “no earlier quantum formulation” means only that our literature searches found none.",
     "What we would do next: a layered velocity model, real access data, larger instances (20–30 sites) where enumeration stops being trivial, and noisy simulation.",

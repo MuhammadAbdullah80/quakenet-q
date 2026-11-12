@@ -38,9 +38,9 @@ speedup is claimed.
 ## Commands
 
 ```bash
-python -m pytest tests -q            # 13 checks
+python -m pytest tests -q            # 163 checks, about 25 s
 python run_experiment.py --quick     # proof of concept, under a minute
-python run_experiment.py             # full run, about 5 minutes
+python run_experiment.py             # full run, about 45 minutes
 python report/build_report.py        # rebuild the .docx report
 python docs/specs/build_spec_html.py # rebuild the spec HTML
 ```

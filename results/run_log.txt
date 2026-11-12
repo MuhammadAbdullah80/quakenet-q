@@ -1,26 +1,30 @@
-p=1 seed=0  XY: ratio=0.738 P(opt)=0.051 final=(1, 3, 4, 7)  | penalty: feasible=0.524 P(opt)=0.0027 (10.5s)
-p=1 seed=1  XY: ratio=0.738 P(opt)=0.051 final=(1, 3, 4, 7)  | penalty: feasible=0.524 P(opt)=0.0027 (11.3s)
-p=1 seed=2  XY: ratio=0.738 P(opt)=0.051 final=(1, 3, 4, 7)  | penalty: feasible=0.524 P(opt)=0.0027 (10.3s)
-p=1 seed=3  XY: ratio=0.738 P(opt)=0.051 final=(1, 3, 4, 7)  | penalty: feasible=0.524 P(opt)=0.0027 (11.2s)
-p=1 seed=4  XY: ratio=0.738 P(opt)=0.051 final=(1, 3, 4, 7)  | penalty: feasible=0.524 P(opt)=0.0027 (13.0s)
-p=2 seed=0  XY: ratio=0.773 P(opt)=0.085 final=(1, 3, 4, 7)  | penalty: feasible=0.806 P(opt)=0.0044 (22.2s)
-p=2 seed=1  XY: ratio=0.772 P(opt)=0.080 final=(1, 3, 4, 7)  | penalty: feasible=0.552 P(opt)=0.0029 (21.7s)
-p=2 seed=2  XY: ratio=0.773 P(opt)=0.083 final=(1, 3, 4, 7)  | penalty: feasible=0.780 P(opt)=0.0042 (20.4s)
-p=2 seed=3  XY: ratio=0.770 P(opt)=0.066 final=(1, 3, 4, 7)  | penalty: feasible=0.727 P(opt)=0.0039 (24.6s)
-p=2 seed=4  XY: ratio=0.773 P(opt)=0.087 final=(1, 3, 4, 7)  | penalty: feasible=0.636 P(opt)=0.0032 (20.2s)
-p=3 seed=0  XY: ratio=0.791 P(opt)=0.110 final=(1, 3, 4, 7)  | penalty: feasible=0.781 P(opt)=0.0028 (27.5s)
-p=3 seed=1  XY: ratio=0.787 P(opt)=0.092 final=(1, 3, 4, 7)  | penalty: feasible=0.651 P(opt)=0.0034 (26.2s)
-p=3 seed=2  XY: ratio=0.785 P(opt)=0.109 final=(1, 3, 4, 7)  | penalty: feasible=0.708 P(opt)=0.0038 (26.2s)
-p=3 seed=3  XY: ratio=0.785 P(opt)=0.098 final=(1, 3, 4, 7)  | penalty: feasible=0.681 P(opt)=0.0038 (25.5s)
-p=3 seed=4  XY: ratio=0.786 P(opt)=0.092 final=(1, 3, 4, 7)  | penalty: feasible=0.837 P(opt)=0.0048 (25.4s)
+p=1 seed=0  XY: ratio=0.735 P(opt)=0.051 final=(1, 3, 4, 7)  | penalty: feasible=0.524 P(opt)=0.0027 (81.5s)
+p=2 seed=0  XY: ratio=0.769 P(opt)=0.083 final=(1, 3, 4, 7)  | penalty: feasible=0.806 P(opt)=0.0044 (221.6s)
+p=3 seed=0  XY: ratio=0.784 P(opt)=0.119 final=(1, 3, 4, 7)  | penalty: feasible=0.785 P(opt)=0.0028 (259.5s)
+p=1 seed=1  XY: ratio=0.735 P(opt)=0.051 final=(1, 3, 4, 7)  | penalty: feasible=0.524 P(opt)=0.0027 (89.8s)
+p=2 seed=1  XY: ratio=0.767 P(opt)=0.092 final=(1, 3, 4, 7)  | penalty: feasible=0.549 P(opt)=0.0028 (212.8s)
+p=3 seed=1  XY: ratio=0.780 P(opt)=0.093 final=(1, 3, 4, 7)  | penalty: feasible=0.651 P(opt)=0.0034 (320.1s)
+p=1 seed=2  XY: ratio=0.735 P(opt)=0.051 final=(1, 3, 4, 7)  | penalty: feasible=0.524 P(opt)=0.0027 (81.8s)
+p=2 seed=2  XY: ratio=0.769 P(opt)=0.083 final=(1, 3, 4, 7)  | penalty: feasible=0.671 P(opt)=0.0036 (233.3s)
+p=3 seed=2  XY: ratio=0.784 P(opt)=0.120 final=(1, 3, 4, 7)  | penalty: feasible=0.705 P(opt)=0.0038 (304.3s)
+p=1 seed=3  XY: ratio=0.735 P(opt)=0.051 final=(1, 3, 4, 7)  | penalty: feasible=0.524 P(opt)=0.0027 (38.7s)
+p=2 seed=3  XY: ratio=0.766 P(opt)=0.069 final=(1, 3, 4, 7)  | penalty: feasible=0.729 P(opt)=0.0040 (152.4s)
+p=3 seed=3  XY: ratio=0.805 P(opt)=0.090 final=(1, 3, 4, 7)  | penalty: feasible=0.683 P(opt)=0.0038 (232.3s)
+p=1 seed=4  XY: ratio=0.735 P(opt)=0.051 final=(1, 3, 4, 7)  | penalty: feasible=0.524 P(opt)=0.0027 (28.9s)
+p=2 seed=4  XY: ratio=0.769 P(opt)=0.089 final=(1, 3, 4, 7)  | penalty: feasible=0.636 P(opt)=0.0032 (94.3s)
+p=3 seed=4  XY: ratio=0.785 P(opt)=0.126 final=(1, 3, 4, 7)  | penalty: feasible=0.837 P(opt)=0.0048 (156.9s)
 
 === Summary ===
-QUBO vs true score: Spearman rho = 0.987; QUBO optimum is rank 1 of 210 on the true score
-Exact (brute force, true score)    sites=[1, 3, 4, 7]  rank=  1/210  blur on later quakes=1.50 km
-Hybrid QAOA (XY mixer)             sites=[1, 3, 4, 7]  rank=  1/210  blur on later quakes=1.50 km
-Greedy forward                     sites=[1, 3, 4, 7]  rank=  1/210  blur on later quakes=1.50 km
-Backward elimination               sites=[1, 3, 4, 7]  rank=  1/210  blur on later quakes=1.50 km
-Simulated annealing                sites=[1, 3, 4, 7]  rank=  1/210  blur on later quakes=1.50 km
-Random pick (seed 0)               sites=[2, 4, 5, 7]  rank= 44/210  blur on later quakes=2.02 km
-No new sensors                     blur on later quakes=2.73 km
-done in 297.0 s -> results/results.json, figures/
+objective with terms up to 2 sites: 55 terms, Spearman 0.9873, max error 99
+objective with terms up to 3 sites: 175 terms, Spearman 0.9995, max error 17
+objective with terms up to 4 sites: 385 terms, Spearman 1.0000, max error 0
+No new sensors                 location error=3.00 km
+Exact (brute force)            sites=[1, 3, 4, 7] rank=  1/210 location error=2.31 km
+Hybrid QAOA (XY mixer)         sites=[1, 3, 4, 7] rank=  1/210 location error=2.31 km
+Greedy forward                 sites=[1, 3, 4, 7] rank=  1/210 location error=2.31 km
+Backward elimination           sites=[1, 3, 4, 7] rank=  1/210 location error=2.31 km
+Simulated annealing            sites=[1, 3, 4, 7] rank=  1/210 location error=2.31 km
+Expert rule (azimuthal gap)    sites=[0, 1, 2, 6] rank=159/210 location error=2.63 km
+Best by D_N criterion          sites=[0, 1, 2, 4] rank= 45/210 location error=2.36 km
+Random pick (seed 0)           sites=[2, 4, 5, 7] rank= 44/210 location error=2.70 km
+done in 2608.1 s -> results/results.json, figures/

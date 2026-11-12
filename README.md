@@ -19,11 +19,13 @@ All numbers come from `python run_experiment.py` (`results/results.json`).
 
 | Question | Answer |
 |---|---|
-| Does the placement help? | Mean location uncertainty of **later** aftershocks falls from **2.73 km** (no new sensors) to **1.50 km**. An average random 4-site network gives 1.91 km. |
+| Does the placement help? | In a simulated location test on **217 later aftershocks** the planner never saw, the mean location error falls from **3.00 km** (no new sensors) to **2.31 km** with the chosen sites. A field rule that closes the largest azimuthal gap gives 2.63 km; the average of all 210 networks gives 2.60 km. Our pick ranks 4th of 210 in that test. |
 | Is the quantum answer correct? | Yes. In 15 of 15 runs the hybrid QAOA returned sites **{1, 3, 4, 7}**, the exact optimum found by brute force over all 210 networks. |
-| Does the quantum circuit do real work? | It raises the chance of measuring the best network from 0.48% (random allowed network) to **5.1%** at p = 1 and **10.0%** at p = 3, so about 29 shots are enough instead of about 630. |
-| Is the QUBO a fair stand-in for the real seismology score? | Spearman ρ = **0.987** across all 210 networks, and the QUBO optimum equals the true optimum at our setting. At one other risk weight (λ = 300) it picks the 2nd-best network. |
+| Does the quantum circuit do real work? | It raises the chance that one measurement gives the best network from 0.48% (random valid network) to **5.1%** with 1 layer, **8.3%** with 2 and **11.0%** with 3. Our target was 20%; we did not reach it. |
+| Is the circuit's score the real score? | Yes. The circuit encodes the exact D-optimality score (385 terms with up to 4-site interactions), with zero error on all 210 networks. The usual pairwise approximation ranks well (ρ = 0.987) but picks only the 2nd-best network at risk weight λ = 300. |
 | Does it beat classical methods? | **No.** Greedy, backward elimination and simulated annealing also find the optimum, and brute force takes milliseconds at this size. We claim no quantum speedup. |
+
+![Location error on later aftershocks](figures/location_test.png)
 
 ## The problem
 
@@ -38,15 +40,17 @@ All numbers come from `python run_experiment.py` (`results/results.json`).
 | Variables | `x_i ∈ {0,1}`, 1 if a sensor goes to candidate site `i` (10 sites → 10 qubits) |
 | Constraint | `Σ x_i = 4` (enforced by the circuit, not by a penalty) |
 | True score | `D(S) = Σ_events log det F_e(S)`, the D-optimality criterion: `F_e` is the Fisher information of an aftershock's location (x, y, depth, origin time) given the permanent stations plus the chosen sites |
-| QUBO | `f(x) = Σ_i (a_i − λ c_i) x_i + Σ_{i<j} b_ij x_i x_j`, with `a_i` = information gained by site `i` alone, `b_ij` = pair interaction (negative when two sites are redundant), `c_i` = access risk, λ = 150 |
+| Circuit objective | `f(x) = Σ_{|T|≤4} w_T Π_{i∈T} x_i − λ Σ_i c_i x_i`: the inclusion–exclusion (Möbius) expansion of `D`, exact on every 4-site network. `w_{i}` = information from site `i` alone, `w_{ij}` = pair interaction (negative when two sites are redundant), and so on up to groups of 4; `c_i` = access risk, λ = 150 |
 | Test instance | 550 M≥3 aftershocks from the first 12 h (planning), 217 later aftershocks (testing), 14 permanent stations, 10 candidate sites, 210 allowed networks |
 
-The log-determinant is not quadratic, so the QUBO keeps the first two orders of its
-inclusion–exclusion expansion. We measure how good that approximation is instead of assuming it.
+The log-determinant is not quadratic. Because the circuit only holds 4-site networks, terms up to
+4 sites reproduce it exactly: 385 terms, which become Z, ZZ, ZZZ and ZZZZ terms in the Hamiltonian
+(about 3,000 gates per layer, against about 900 for the pairwise version). We chose exactness and
+measured the cost.
 
 ### Why this quantum algorithm
 
-QAOA is the standard near-term algorithm for QUBO problems. The usual way to handle "exactly 4
+QAOA is the standard near-term algorithm for this kind of yes/no selection problem. The usual way to handle "exactly 4
 sites" is a penalty term, which wastes probability on invalid answers and needs a hand-tuned
 weight. We instead start in a **Dicke state** (an equal mix of all 210 valid networks) and use an
 **XY ring mixer**, which only swaps a chosen site with an unchosen one. The circuit can never leave
@@ -62,12 +66,12 @@ Requires Python 3.10+.
 
 ```bash
 pip install -r requirements.txt
-python -m pytest tests -q          # 13 checks, about 10 s
+python -m pytest tests -q          # 163 checks, about 25 s
 python run_experiment.py --quick   # 1 seed, p = 1: under a minute
-python run_experiment.py           # full run: about 5 minutes
+python run_experiment.py           # full run: about 45 minutes
 ```
 
-Outputs: `results/results.json` and five figures in `figures/` (the quick run writes
+Outputs: `results/results.json` and the figures in `figures/` (the quick run writes
 `results/results_quick.json` and `figures_quick/` so it never overwrites the full results). The data is cached in `data/`, so
 no internet is needed. `python data/fetch_data.py` re-downloads it from USGS and IRIS.
 
@@ -77,9 +81,14 @@ no internet is needed. `python data/fetch_data.py` re-downloads it from USGS and
 |---|---|
 | `data/fetch_data.py`, `data/*.json` | Download and cache of USGS aftershocks and IRIS station locations |
 | `src/geometry.py` | Instance, travel-time physics, D-criterion, blur metric |
-| `src/qubo.py` | QUBO coefficients and Ising Hamiltonian |
+| `src/qubo.py` | Exact objective (terms up to 4 sites), pairwise QUBO, Hamiltonian |
+| `src/location.py` | Independent simulated location test |
+| `src/sources.py`, `src/candidates.py` | Outbound data gateway; candidate sites from roads and terrain |
 | `src/qaoa_solver.py` | Dicke state, XY mixer, QAOA circuits, COBYLA loop, sampling |
-| `src/baselines.py` | Brute force, greedy, backward elimination, simulated annealing, random |
+| `src/baselines.py` | Brute force, greedy, backward elimination, simulated annealing, expert rule, random |
+| `api/` | FastAPI backend (runs on the team laptop) |
+| `web/` | Next.js test console, deployed on Vercel |
+| `docs/` | Architecture, API contract, decisions, design spec |
 | `run_experiment.py` | End-to-end experiment and figures |
 | `tests/` | Checks of the formulation and the circuit |
 | `report/` | Report (.docx), its build script and the diagram script |
@@ -89,10 +98,12 @@ no internet is needed. `python data/fetch_data.py` re-downloads it from USGS and
 ## Limitations
 
 - **No quantum advantage.** 210 networks can be enumerated instantly and simple classical heuristics find the optimum.
-- **The QUBO is an approximation** of the log-determinant score. It ranked networks well here (ρ = 0.987) but chose the 2nd-best network at λ = 300.
+- **The exact objective does not scale.** It needs 385 terms for 4 of 10 sites, and the count grows fast with more sensors.
+- **Below our success target.** The best network comes up in 5–11% of measurements, not the 20% we aimed for.
+- **The location test is simulated** with the same simple physics (different wave speed, added noise), not real recordings.
 - **Simplified physics:** uniform 6 km/s velocity, P arrivals only, 0.1 s picking error, flat earth.
 - **Synthetic parts:** candidate sites come from a grid rule and access risk from a distance-to-rupture rule (`exp(−d / 5 km)`). Real deployments would use road, permit and safety data.
-- **Noise-free simulation only.** The XY circuit is deep (about 450–600 gates deep after decomposition, against 54–118 for the penalty circuit), so it would suffer on today's hardware.
+- **Noise-free simulation only.** The XY circuit is deep (depth about 2,300 to 6,300 for 1 to 3 layers, against 54–118 for the penalty circuit), so it would suffer on today's hardware.
 - **The "siting is manual" claim** rests on published deployment reports, not interviews with practitioners, and "no prior quantum work" means our searches found none.
 
 ## Credits
