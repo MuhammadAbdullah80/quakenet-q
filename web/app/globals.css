@@ -3543,12 +3543,11 @@ dd > .coord + .coord {
   transform-box: view-box;
   transform: scale(calc(1 / var(--mz, 1)));
 }
-.map-grid line,
-.map-move,
-.map-svg .map-chosen,
-.map-svg .map-chosen-halo,
-.map-svg .map-secondary {
+/* Rings sit inside the counter-scaled site groups, so they keep their size already. The move arrow
+   is drawn between sites, so it holds a fixed screen width instead. */
+.map-move {
   vector-effect: non-scaling-stroke;
+  stroke-width: 2.5px;
 }
 @media (prefers-reduced-motion: no-preference) {
   .map-svg .mz {
